@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "/user";
+
+
+service UserService {
+      rpc NewUser(NewUserRequest) returns (NewUserResponse);
+      rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
+      rpc DeleteUserById(DeleteUserByIdRequest) returns (DeleteUserByIdResponse);
+}
+
+// delete
+message DeleteUserByIdRequest { int64 id = 1; }
+message DeleteUserByIdResponse { bool ok = 1; }
+
+// get
+message GetUserByIdRequest { int64 id = 1; }
+message GetUserByIdResponse {
+      int64  id = 1;
+      string name = 2;
+      string family = 3;
+      string email = 4;
+      string gender = 5;
+}
+
+// new
+message NewUserRequest {
+      string name = 1;
+      string family = 2;
+      string email = 3;
+      string gender = 4;
+      string password = 5;
+}
+message NewUserResponse {
+      bool  ok = 1;
+      int64 id = 2;
+}
