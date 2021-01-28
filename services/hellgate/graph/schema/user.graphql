@@ -1,0 +1,30 @@
+type User {
+	id: Int!
+	name: String!
+	email: String!
+	gender: String!
+}
+
+# get user
+type Query {
+	GetUser(id: Int!): User
+	GetUsers: getUserRes
+}
+type getUserRes {
+	users: [User!]!
+}
+
+# create user
+type Mutation {
+	createUser(input: createUserInput!): createUserRes!
+	deleteUser(id: Int!): Boolean!
+}
+input createUserInput {
+	name: String!
+	email: String!
+	gender: String!
+	password: String!
+}
+type createUserRes {
+	id: Int
+}

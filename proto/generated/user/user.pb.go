@@ -25,17 +25,15 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-// delete
-type DeleteUserByIdRequest struct {
+// get Users
+type GetUsersRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
-func (x *DeleteUserByIdRequest) Reset() {
-	*x = DeleteUserByIdRequest{}
+func (x *GetUsersRequest) Reset() {
+	*x = GetUsersRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_user_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -43,13 +41,13 @@ func (x *DeleteUserByIdRequest) Reset() {
 	}
 }
 
-func (x *DeleteUserByIdRequest) String() string {
+func (x *GetUsersRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteUserByIdRequest) ProtoMessage() {}
+func (*GetUsersRequest) ProtoMessage() {}
 
-func (x *DeleteUserByIdRequest) ProtoReflect() protoreflect.Message {
+func (x *GetUsersRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_user_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -61,28 +59,24 @@ func (x *DeleteUserByIdRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteUserByIdRequest.ProtoReflect.Descriptor instead.
-func (*DeleteUserByIdRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetUsersRequest.ProtoReflect.Descriptor instead.
+func (*GetUsersRequest) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *DeleteUserByIdRequest) GetId() int64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-type DeleteUserByIdResponse struct {
+type UserinGetUsers struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Ok bool `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+	Id     int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Email  string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Gender string `protobuf:"bytes,4,opt,name=gender,proto3" json:"gender,omitempty"`
 }
 
-func (x *DeleteUserByIdResponse) Reset() {
-	*x = DeleteUserByIdResponse{}
+func (x *UserinGetUsers) Reset() {
+	*x = UserinGetUsers{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_user_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -90,13 +84,13 @@ func (x *DeleteUserByIdResponse) Reset() {
 	}
 }
 
-func (x *DeleteUserByIdResponse) String() string {
+func (x *UserinGetUsers) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteUserByIdResponse) ProtoMessage() {}
+func (*UserinGetUsers) ProtoMessage() {}
 
-func (x *DeleteUserByIdResponse) ProtoReflect() protoreflect.Message {
+func (x *UserinGetUsers) ProtoReflect() protoreflect.Message {
 	mi := &file_user_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -108,31 +102,99 @@ func (x *DeleteUserByIdResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteUserByIdResponse.ProtoReflect.Descriptor instead.
-func (*DeleteUserByIdResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use UserinGetUsers.ProtoReflect.Descriptor instead.
+func (*UserinGetUsers) Descriptor() ([]byte, []int) {
 	return file_user_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *DeleteUserByIdResponse) GetOk() bool {
+func (x *UserinGetUsers) GetId() int64 {
 	if x != nil {
-		return x.Ok
+		return x.Id
 	}
-	return false
+	return 0
 }
 
-// get
+func (x *UserinGetUsers) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UserinGetUsers) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *UserinGetUsers) GetGender() string {
+	if x != nil {
+		return x.Gender
+	}
+	return ""
+}
+
+type GetUsersResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Users []*UserinGetUsers `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+}
+
+func (x *GetUsersResponse) Reset() {
+	*x = GetUsersResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_user_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetUsersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUsersResponse) ProtoMessage() {}
+
+func (x *GetUsersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUsersResponse.ProtoReflect.Descriptor instead.
+func (*GetUsersResponse) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetUsersResponse) GetUsers() []*UserinGetUsers {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
+// get user
 type GetUserByIdRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id int64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
 func (x *GetUserByIdRequest) Reset() {
 	*x = GetUserByIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_user_proto_msgTypes[2]
+		mi := &file_user_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -145,7 +207,7 @@ func (x *GetUserByIdRequest) String() string {
 func (*GetUserByIdRequest) ProtoMessage() {}
 
 func (x *GetUserByIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[2]
+	mi := &file_user_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -158,10 +220,10 @@ func (x *GetUserByIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserByIdRequest.ProtoReflect.Descriptor instead.
 func (*GetUserByIdRequest) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{2}
+	return file_user_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetUserByIdRequest) GetId() int64 {
+func (x *GetUserByIdRequest) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
@@ -173,17 +235,16 @@ type GetUserByIdResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id     int64  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id     uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Family string `protobuf:"bytes,3,opt,name=family,proto3" json:"family,omitempty"`
-	Email  string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"`
-	Gender string `protobuf:"bytes,5,opt,name=gender,proto3" json:"gender,omitempty"`
+	Email  string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Gender string `protobuf:"bytes,4,opt,name=gender,proto3" json:"gender,omitempty"`
 }
 
 func (x *GetUserByIdResponse) Reset() {
 	*x = GetUserByIdResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_user_proto_msgTypes[3]
+		mi := &file_user_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -196,7 +257,7 @@ func (x *GetUserByIdResponse) String() string {
 func (*GetUserByIdResponse) ProtoMessage() {}
 
 func (x *GetUserByIdResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[3]
+	mi := &file_user_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -209,10 +270,10 @@ func (x *GetUserByIdResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserByIdResponse.ProtoReflect.Descriptor instead.
 func (*GetUserByIdResponse) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{3}
+	return file_user_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *GetUserByIdResponse) GetId() int64 {
+func (x *GetUserByIdResponse) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
@@ -222,13 +283,6 @@ func (x *GetUserByIdResponse) GetId() int64 {
 func (x *GetUserByIdResponse) GetName() string {
 	if x != nil {
 		return x.Name
-	}
-	return ""
-}
-
-func (x *GetUserByIdResponse) GetFamily() string {
-	if x != nil {
-		return x.Family
 	}
 	return ""
 }
@@ -247,6 +301,101 @@ func (x *GetUserByIdResponse) GetGender() string {
 	return ""
 }
 
+// delete
+type DeleteUserByIdRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *DeleteUserByIdRequest) Reset() {
+	*x = DeleteUserByIdRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_user_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteUserByIdRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteUserByIdRequest) ProtoMessage() {}
+
+func (x *DeleteUserByIdRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteUserByIdRequest.ProtoReflect.Descriptor instead.
+func (*DeleteUserByIdRequest) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *DeleteUserByIdRequest) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+type DeleteUserByIdResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Ok bool `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
+}
+
+func (x *DeleteUserByIdResponse) Reset() {
+	*x = DeleteUserByIdResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_user_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteUserByIdResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteUserByIdResponse) ProtoMessage() {}
+
+func (x *DeleteUserByIdResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteUserByIdResponse.ProtoReflect.Descriptor instead.
+func (*DeleteUserByIdResponse) Descriptor() ([]byte, []int) {
+	return file_user_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DeleteUserByIdResponse) GetOk() bool {
+	if x != nil {
+		return x.Ok
+	}
+	return false
+}
+
 // new
 type NewUserRequest struct {
 	state         protoimpl.MessageState
@@ -254,16 +403,15 @@ type NewUserRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	Name     string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Family   string `protobuf:"bytes,2,opt,name=family,proto3" json:"family,omitempty"`
-	Email    string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	Gender   string `protobuf:"bytes,4,opt,name=gender,proto3" json:"gender,omitempty"`
-	Password string `protobuf:"bytes,5,opt,name=password,proto3" json:"password,omitempty"`
+	Email    string `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	Gender   string `protobuf:"bytes,3,opt,name=gender,proto3" json:"gender,omitempty"`
+	Password string `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
 }
 
 func (x *NewUserRequest) Reset() {
 	*x = NewUserRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_user_proto_msgTypes[4]
+		mi := &file_user_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -276,7 +424,7 @@ func (x *NewUserRequest) String() string {
 func (*NewUserRequest) ProtoMessage() {}
 
 func (x *NewUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[4]
+	mi := &file_user_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -289,19 +437,12 @@ func (x *NewUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NewUserRequest.ProtoReflect.Descriptor instead.
 func (*NewUserRequest) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{4}
+	return file_user_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *NewUserRequest) GetName() string {
 	if x != nil {
 		return x.Name
-	}
-	return ""
-}
-
-func (x *NewUserRequest) GetFamily() string {
-	if x != nil {
-		return x.Family
 	}
 	return ""
 }
@@ -332,14 +473,13 @@ type NewUserResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Ok bool  `protobuf:"varint,1,opt,name=ok,proto3" json:"ok,omitempty"`
-	Id int64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
 func (x *NewUserResponse) Reset() {
 	*x = NewUserResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_user_proto_msgTypes[5]
+		mi := &file_user_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -352,7 +492,7 @@ func (x *NewUserResponse) String() string {
 func (*NewUserResponse) ProtoMessage() {}
 
 func (x *NewUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_user_proto_msgTypes[5]
+	mi := &file_user_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -365,17 +505,10 @@ func (x *NewUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NewUserResponse.ProtoReflect.Descriptor instead.
 func (*NewUserResponse) Descriptor() ([]byte, []int) {
-	return file_user_proto_rawDescGZIP(), []int{5}
+	return file_user_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *NewUserResponse) GetOk() bool {
-	if x != nil {
-		return x.Ok
-	}
-	return false
-}
-
-func (x *NewUserResponse) GetId() int64 {
+func (x *NewUserResponse) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
@@ -386,49 +519,60 @@ var File_user_proto protoreflect.FileDescriptor
 
 var file_user_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x04, 0x75, 0x73,
-	0x65, 0x72, 0x22, 0x27, 0x0a, 0x15, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72,
-	0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x22, 0x28, 0x0a, 0x16, 0x44,
-	0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x6b, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x08, 0x52, 0x02, 0x6f, 0x6b, 0x22, 0x24, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72,
-	0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x22, 0x7f, 0x0a, 0x13, 0x47,
-	0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02,
-	0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x66, 0x61, 0x6d, 0x69, 0x6c, 0x79,
-	0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x66, 0x61, 0x6d, 0x69, 0x6c, 0x79, 0x12, 0x14,
-	0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65,
-	0x6d, 0x61, 0x69, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x05,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x86, 0x01, 0x0a,
-	0x0e, 0x4e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
-	0x61, 0x6d, 0x65, 0x12, 0x16, 0x0a, 0x06, 0x66, 0x61, 0x6d, 0x69, 0x6c, 0x79, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x06, 0x66, 0x61, 0x6d, 0x69, 0x6c, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x65,
+	0x65, 0x72, 0x22, 0x11, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x22, 0x62, 0x0a, 0x0e, 0x55, 0x73, 0x65, 0x72, 0x69, 0x6e, 0x47,
+	0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x65,
 	0x6d, 0x61, 0x69, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69,
 	0x6c, 0x12, 0x16, 0x0a, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73,
-	0x73, 0x77, 0x6f, 0x72, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x70, 0x61, 0x73,
-	0x73, 0x77, 0x6f, 0x72, 0x64, 0x22, 0x31, 0x0a, 0x0f, 0x4e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x6b, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x08, 0x52, 0x02, 0x6f, 0x6b, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x32, 0xd6, 0x01, 0x0a, 0x0b, 0x55, 0x73, 0x65,
-	0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x36, 0x0a, 0x07, 0x4e, 0x65, 0x77, 0x55,
-	0x73, 0x65, 0x72, 0x12, 0x14, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x4e, 0x65, 0x77, 0x55, 0x73,
-	0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15, 0x2e, 0x75, 0x73, 0x65, 0x72,
-	0x2e, 0x4e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x42, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x12,
-	0x18, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79,
-	0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x19, 0x2e, 0x75, 0x73, 0x65, 0x72,
-	0x2e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4b, 0x0a, 0x0e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73,
-	0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x12, 0x1b, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x44, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74,
-	0x65, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x42, 0x07, 0x5a, 0x05, 0x2f, 0x75, 0x73, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x09, 0x52, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x3e, 0x0a, 0x10, 0x47, 0x65, 0x74,
+	0x55, 0x73, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2a, 0x0a,
+	0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x14, 0x2e, 0x75,
+	0x73, 0x65, 0x72, 0x2e, 0x55, 0x73, 0x65, 0x72, 0x69, 0x6e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65,
+	0x72, 0x73, 0x52, 0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x22, 0x24, 0x0a, 0x12, 0x47, 0x65, 0x74,
+	0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x22,
+	0x67, 0x0a, 0x13, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d,
+	0x61, 0x69, 0x6c, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c,
+	0x12, 0x16, 0x0a, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x22, 0x27, 0x0a, 0x15, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69,
+	0x64, 0x22, 0x28, 0x0a, 0x16, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x42,
+	0x79, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x6f,
+	0x6b, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x02, 0x6f, 0x6b, 0x22, 0x6e, 0x0a, 0x0e, 0x4e,
+	0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x12, 0x14, 0x0a, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x05, 0x65, 0x6d, 0x61, 0x69, 0x6c, 0x12, 0x16, 0x0a, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65,
+	0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x67, 0x65, 0x6e, 0x64, 0x65, 0x72, 0x12,
+	0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x22, 0x21, 0x0a, 0x0f, 0x4e,
+	0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x0e,
+	0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x32, 0x91,
+	0x02, 0x0a, 0x0b, 0x55, 0x73, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x36,
+	0x0a, 0x07, 0x4e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x12, 0x14, 0x2e, 0x75, 0x73, 0x65, 0x72,
+	0x2e, 0x4e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x15, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x4e, 0x65, 0x77, 0x55, 0x73, 0x65, 0x72, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x42, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65,
+	0x72, 0x42, 0x79, 0x49, 0x64, 0x12, 0x18, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74,
+	0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x19, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79,
+	0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x39, 0x0a, 0x08, 0x47, 0x65,
+	0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x12, 0x15, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x47, 0x65,
+	0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e,
+	0x75, 0x73, 0x65, 0x72, 0x2e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x73, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4b, 0x0a, 0x0e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55,
+	0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x12, 0x1b, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x1c, 0x2e, 0x75, 0x73, 0x65, 0x72, 0x2e, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x42, 0x79, 0x49, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
+	0x73, 0x65, 0x42, 0x07, 0x5a, 0x05, 0x2f, 0x75, 0x73, 0x65, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -443,27 +587,33 @@ func file_user_proto_rawDescGZIP() []byte {
 	return file_user_proto_rawDescData
 }
 
-var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_user_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_user_proto_goTypes = []interface{}{
-	(*DeleteUserByIdRequest)(nil),  // 0: user.DeleteUserByIdRequest
-	(*DeleteUserByIdResponse)(nil), // 1: user.DeleteUserByIdResponse
-	(*GetUserByIdRequest)(nil),     // 2: user.GetUserByIdRequest
-	(*GetUserByIdResponse)(nil),    // 3: user.GetUserByIdResponse
-	(*NewUserRequest)(nil),         // 4: user.NewUserRequest
-	(*NewUserResponse)(nil),        // 5: user.NewUserResponse
+	(*GetUsersRequest)(nil),        // 0: user.GetUsersRequest
+	(*UserinGetUsers)(nil),         // 1: user.UserinGetUsers
+	(*GetUsersResponse)(nil),       // 2: user.GetUsersResponse
+	(*GetUserByIdRequest)(nil),     // 3: user.GetUserByIdRequest
+	(*GetUserByIdResponse)(nil),    // 4: user.GetUserByIdResponse
+	(*DeleteUserByIdRequest)(nil),  // 5: user.DeleteUserByIdRequest
+	(*DeleteUserByIdResponse)(nil), // 6: user.DeleteUserByIdResponse
+	(*NewUserRequest)(nil),         // 7: user.NewUserRequest
+	(*NewUserResponse)(nil),        // 8: user.NewUserResponse
 }
 var file_user_proto_depIdxs = []int32{
-	4, // 0: user.UserService.NewUser:input_type -> user.NewUserRequest
-	2, // 1: user.UserService.GetUserById:input_type -> user.GetUserByIdRequest
-	0, // 2: user.UserService.DeleteUserById:input_type -> user.DeleteUserByIdRequest
-	5, // 3: user.UserService.NewUser:output_type -> user.NewUserResponse
-	3, // 4: user.UserService.GetUserById:output_type -> user.GetUserByIdResponse
-	1, // 5: user.UserService.DeleteUserById:output_type -> user.DeleteUserByIdResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: user.GetUsersResponse.users:type_name -> user.UserinGetUsers
+	7, // 1: user.UserService.NewUser:input_type -> user.NewUserRequest
+	3, // 2: user.UserService.GetUserById:input_type -> user.GetUserByIdRequest
+	0, // 3: user.UserService.GetUsers:input_type -> user.GetUsersRequest
+	5, // 4: user.UserService.DeleteUserById:input_type -> user.DeleteUserByIdRequest
+	8, // 5: user.UserService.NewUser:output_type -> user.NewUserResponse
+	4, // 6: user.UserService.GetUserById:output_type -> user.GetUserByIdResponse
+	2, // 7: user.UserService.GetUsers:output_type -> user.GetUsersResponse
+	6, // 8: user.UserService.DeleteUserById:output_type -> user.DeleteUserByIdResponse
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_user_proto_init() }
@@ -473,7 +623,7 @@ func file_user_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_user_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteUserByIdRequest); i {
+			switch v := v.(*GetUsersRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -485,7 +635,7 @@ func file_user_proto_init() {
 			}
 		}
 		file_user_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteUserByIdResponse); i {
+			switch v := v.(*UserinGetUsers); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -497,7 +647,7 @@ func file_user_proto_init() {
 			}
 		}
 		file_user_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUserByIdRequest); i {
+			switch v := v.(*GetUsersResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -509,7 +659,7 @@ func file_user_proto_init() {
 			}
 		}
 		file_user_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUserByIdResponse); i {
+			switch v := v.(*GetUserByIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -521,7 +671,7 @@ func file_user_proto_init() {
 			}
 		}
 		file_user_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*NewUserRequest); i {
+			switch v := v.(*GetUserByIdResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -533,6 +683,42 @@ func file_user_proto_init() {
 			}
 		}
 		file_user_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteUserByIdRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_user_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteUserByIdResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_user_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*NewUserRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_user_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*NewUserResponse); i {
 			case 0:
 				return &v.state
@@ -551,7 +737,7 @@ func file_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_user_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

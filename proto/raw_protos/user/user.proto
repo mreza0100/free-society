@@ -8,32 +8,46 @@ option go_package = "/user";
 service UserService {
       rpc NewUser(NewUserRequest) returns (NewUserResponse);
       rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
+      rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
       rpc DeleteUserById(DeleteUserByIdRequest) returns (DeleteUserByIdResponse);
 }
 
-// delete
-message DeleteUserByIdRequest { int64 id = 1; }
-message DeleteUserByIdResponse { bool ok = 1; }
 
-// get
-message GetUserByIdRequest { int64 id = 1; }
-message GetUserByIdResponse {
+// get Users
+message GetUsersRequest {}
+message UserinGetUsers {
       int64  id = 1;
       string name = 2;
-      string family = 3;
-      string email = 4;
-      string gender = 5;
+      string email = 3;
+      string gender = 4;
 }
+message GetUsersResponse {
+      repeated UserinGetUsers users = 1;
+}
+
+// get user
+message GetUserByIdRequest { uint64 id = 1; }
+message GetUserByIdResponse {
+      uint64  id = 1;
+      string name = 2;
+      string email = 3;
+      string gender = 4;
+}
+
+
+// delete
+message DeleteUserByIdRequest { uint64 id = 1; }
+message DeleteUserByIdResponse { bool ok = 1; }
+
+
 
 // new
 message NewUserRequest {
       string name = 1;
-      string family = 2;
-      string email = 3;
-      string gender = 4;
-      string password = 5;
+      string email = 2;
+      string gender = 3;
+      string password = 4;
 }
 message NewUserResponse {
-      bool  ok = 1;
-      int64 id = 2;
+      uint64 id = 1;
 }
