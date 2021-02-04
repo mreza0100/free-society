@@ -1,8 +1,16 @@
 #!/bin/bash 
 clear
-root=$GOPATH/src/microServiceBoilerplate
 
-cd $root/services/hellgate
+
+
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+cd $dir
+cd ../..
+root=$(pwd)
+
+cd $root
 
 gqlgen generate 
 

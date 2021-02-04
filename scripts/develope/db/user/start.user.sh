@@ -4,10 +4,11 @@ clear
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 cd $dir
-cd ../../..
+cd ../../../..
 root=$(pwd)
 
 
+cd $root/services/user/docker
 
+sudo docker-compose up
 
-go run $root/services/hellgate/server

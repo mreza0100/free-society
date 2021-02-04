@@ -1,13 +1,13 @@
 package db
 
 import (
-	"fmt"
+	fmt "fmt"
 
-	"microServiceBoilerplate/services/user/models"
+	models "microServiceBoilerplate/services/user/models"
 
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
+	postgres "gorm.io/driver/postgres"
+	gorm "gorm.io/gorm"
+	schema "gorm.io/gorm/schema"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 const (
 	host   = " host=localhost "
 	user   = " user=postgres "
-	dbname = " dbname=users "
+	dbname = " dbname=postgres "
 	port   = " port=5433 "
 )
 

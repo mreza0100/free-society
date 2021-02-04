@@ -1,15 +1,15 @@
 version: "2.8"
 
 services:
-      db_postgres:
-            image: postgres
-            restart: always
-            environment:
-                  POSTGRES_HOST_AUTH_METHOD: trust
-            expose:
-                  - 5433
-            ports:
-                  - 5433:5433
-            command: -p 5433
-            volumes:
-                  - ~/databases/user:/var/lib/postgresql/data
+  db_postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    expose:
+      - 5433
+    ports:
+      - 5433:5433
+    command: -p 5433
+    volumes:
+      - ~/databases/user:/var/lib/postgresql/data
