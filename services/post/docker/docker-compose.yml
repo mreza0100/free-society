@@ -1,0 +1,15 @@
+version: "2.8"
+
+services:
+      post_service_postgres:
+            image: postgres
+            restart: always
+            environment:
+                  POSTGRES_HOST_AUTH_METHOD: trust
+            expose:
+                  - 5434
+            ports:
+                  - 5434:5434
+            command: -p 5434
+            volumes:
+                  - ~/databases/posts:/var/lib/postgresql/data

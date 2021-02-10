@@ -2,18 +2,21 @@ package microservice
 
 import (
 	"microServiceBoilerplate/proto/generated/user"
-	"microServiceBoilerplate/services/user/db"
 	"microServiceBoilerplate/services/user/domain"
 	"microServiceBoilerplate/services/user/handlers"
+	userNats "microServiceBoilerplate/services/user/nats"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewUserService(Lg *golog.Core) user.UserServiceServer {
-	businessLogic := domain.NewService(domain.ServiceOptions{
-		DB: db.DB,
-		Lg: Lg.With("In domain: "),
+func NewUserService(lgr *golog.Core) user.UserServiceServer {
+	services := domain.NewService(domain.ServiceOptions{
+		Lgr: lgr,
 	})
 
-	return handlers.NewHandlers(businessLogic)
+	return handlers.NewHandlers(handlers.NewHandlersOpts{
+		Srv:        services,
+		Lgr:        lgr,
+		Publishers: userNats.NewPublishers(lgr),
+	})
 }

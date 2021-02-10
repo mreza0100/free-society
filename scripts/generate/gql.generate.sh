@@ -12,6 +12,8 @@ root=$(pwd)
 
 cd $root
 
+cd ./services/hellgate
+
 gqlgen generate 
 
-echo "Done!"
+# echo "Done!"

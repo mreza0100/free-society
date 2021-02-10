@@ -4,6 +4,7 @@ import (
 	"log"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/user"
+	"microServiceBoilerplate/utils"
 	"net"
 
 	"google.golang.org/grpc"
@@ -15,16 +16,20 @@ import (
 
 func initLogger() *golog.Core {
 	return golog.New(golog.InitOprions{
-		LogPath:    "./services/user/logs/out.log",
-		Name:       "User_Service",
-		PanicOnErr: false,
+		LogPath:   configs.LogPath,
+		Name:      "User_Service",
+		WithTime:  true,
+		DebugMode: utils.IsDevMode,
 	})
 }
 
 func main() {
-	Lg := initLogger()
-	grpcServer := grpc.NewServer()
-	pb.RegisterUserServiceServer(grpcServer, microservice.NewUserService(Lg))
+	var (
+		lgr        = initLogger()
+		service    = microservice.NewUserService(lgr)
+		grpcServer = grpc.NewServer()
+	)
+	pb.RegisterUserServiceServer(grpcServer, service)
 
 	lis, err := net.Listen("tcp", ":"+configs.UserConfigs.StrPort)
 	if err != nil {

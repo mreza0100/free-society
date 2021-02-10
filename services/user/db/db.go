@@ -19,15 +19,12 @@ const (
 	user   = " user=postgres "
 	dbname = " dbname=postgres "
 	port   = " port=5433 "
-)
-
-var (
-	dsn = host + user + dbname + port
+	dsn    = host + user + dbname + port
 )
 
 func init() {
 	DB = connectDB()
-	fmt.Println("user service: ", "✅db is connected✅")
+	fmt.Println("User service: ", "✅ db is connected")
 }
 
 func getConfigs() (gormConfigs *gorm.Config, driverConfigs gorm.Dialector) {
@@ -38,6 +35,7 @@ func getConfigs() (gormConfigs *gorm.Config, driverConfigs gorm.Dialector) {
 	gormConfigs = &gorm.Config{
 		NamingStrategy:         schema.NamingStrategy{},
 		SkipDefaultTransaction: true,
+		// PrepareStmt:            false,
 	}
 
 	return

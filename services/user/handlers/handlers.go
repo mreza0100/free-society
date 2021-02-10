@@ -4,16 +4,30 @@ import (
 	"context"
 	pb "microServiceBoilerplate/proto/generated/user"
 	domain "microServiceBoilerplate/services/user/domain"
+	userNats "microServiceBoilerplate/services/user/nats"
+
+	"github.com/mreza0100/golog"
 )
 
 type handlers struct {
-	srv domain.Sevice
+	srv        domain.Sevice
+	lgr        *golog.Core
+	publishers userNats.Publishers
+
 	pb.UnimplementedUserServiceServer
 }
 
-func NewHandlers(srv domain.Sevice) pb.UserServiceServer {
+type NewHandlersOpts struct {
+	Srv        domain.Sevice
+	Lgr        *golog.Core
+	Publishers userNats.Publishers
+}
+
+func NewHandlers(opts NewHandlersOpts) pb.UserServiceServer {
 	return &handlers{
-		srv: srv,
+		srv:        opts.Srv,
+		lgr:        opts.Lgr.With("In handlers: "),
+		publishers: opts.Publishers,
 	}
 }
 
@@ -25,25 +39,35 @@ func (s *handlers) NewUser(ctx context.Context, in *pb.NewUserRequest) (*pb.NewU
 	}, err
 }
 
-func (s *handlers) GetUserById(ctx context.Context, in *pb.GetUserByIdRequest) (*pb.GetUserByIdResponse, error) {
-	return s.srv.GetUserById(in.Id)
+func (s *handlers) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
+	return s.srv.GetUser(in.Id)
 }
-func (s *handlers) GetUsers(ctx context.Context, in *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
-	users, err := s.srv.GetUsers()
-	return &pb.GetUsersResponse{
-		Users: users,
-	}, err
-}
-func (s *handlers) DeleteUserById(ctx context.Context, in *pb.DeleteUserByIdRequest) (*pb.DeleteUserByIdResponse, error) {
-	err := s.srv.DeleteUserById(in.Id)
 
-	if err != nil {
-		return &pb.DeleteUserByIdResponse{
-			Ok: false,
-		}, err
+func (s *handlers) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
+	errsCh := make(chan error, 2)
+
+	// flow request to services.DeleteUser and publish request to post service to delete user posts
+	go func(errsCh chan error) { errsCh <- s.srv.DeleteUser(in.Id) }(errsCh)
+	go func(errsCh chan error) { errsCh <- s.publishers.DeleteUser(in.Id) }(errsCh)
+
+	// start from 1 not 0
+	for i := 1; i < cap(errsCh); i++ {
+		if err := <-errsCh; err != nil {
+			return &pb.DeleteUserResponse{
+				Ok: false,
+			}, err
+		}
 	}
 
-	return &pb.DeleteUserByIdResponse{
+	return &pb.DeleteUserResponse{
 		Ok: true,
 	}, nil
+}
+
+func (this *handlers) Validation(ctx context.Context, in *pb.ValidationRequest) (*pb.ValidationResponse, error) {
+	userId, err := this.srv.Validation(in.Email, in.Password)
+
+	return &pb.ValidationResponse{
+		Id: userId,
+	}, err
 }

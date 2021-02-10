@@ -9,6 +9,11 @@ type User struct {
 	Gender string `json:"gender"`
 }
 
+type CreatePostInput struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+}
+
 type CreateUserInput struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
@@ -20,6 +25,17 @@ type CreateUserRes struct {
 	ID *int `json:"id"`
 }
 
-type GetUserRes struct {
-	Users []*User `json:"users"`
+type DeletePostInput struct {
+	PostID int `json:"postId"`
+}
+
+type GetPostInput struct {
+	PostIds []int `json:"postIds"`
+}
+
+type GetPostRes struct {
+	Title   string `json:"title"`
+	Body    string `json:"body"`
+	ID      int    `json:"id"`
+	OwnerID int    `json:"ownerId"`
 }

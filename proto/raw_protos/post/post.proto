@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package post;
+
+option go_package = "/post";
+
+
+service PostService {
+      rpc NewPost(NewPostRequest) returns (NewPostResponse);
+      rpc GetPost(GetPostRequest) returns (GetPostResponse);
+      rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+}
+
+
+// delete
+message DeletePostRequest {
+      uint64 postId = 1;
+      uint64 userId = 2;
+}
+message DeletePostResponse {}
+//
+
+// get
+message GetPostRequest { 
+      repeated uint64 ids = 1;
+}
+message GetPostResponseInner {
+      string title   = 1;
+      string body    = 2;
+      uint64 id      = 3;
+      uint64 ownerId = 4;
+}
+message GetPostResponse {
+      repeated GetPostResponseInner posts = 1;
+}
+//
+
+// new
+message NewPostRequest {
+      string title  = 1;
+      string body   = 2;
+      uint64 userId = 3;
+}
+message NewPostResponse { uint64 id = 1; }
+//

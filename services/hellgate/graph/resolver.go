@@ -1,23 +1,39 @@
 package graph
 
 import (
-	"microServiceBoilerplate/proto/generated/user"
-	"microServiceBoilerplate/services/hellgate/graph/generated"
+	pbPost "microServiceBoilerplate/proto/generated/post"
+	pbUser "microServiceBoilerplate/proto/generated/user"
+	gqlGenerated "microServiceBoilerplate/services/hellgate/graph/generated"
+
+	"github.com/mreza0100/golog"
 )
 
 type Resolver struct {
-	userConn user.UserServiceClient
+	Lgr *golog.Core
+
+	userConn pbUser.UserServiceClient
+	postConn pbPost.PostServiceClient
 }
 
-func New(userConn user.UserServiceClient) generated.Config {
+type NewOpts struct {
+	Lgr *golog.Core
+
+	UserConn pbUser.UserServiceClient
+	PostConn pbPost.PostServiceClient
+}
+
+func New(opts NewOpts) gqlGenerated.Config {
 	var (
-		resolvers generated.ResolverRoot = &Resolver{
-			userConn: userConn,
+		resolvers gqlGenerated.ResolverRoot = &Resolver{
+			Lgr: opts.Lgr,
+
+			userConn: opts.UserConn,
+			postConn: opts.PostConn,
 		}
-		directives generated.DirectiveRoot = generated.DirectiveRoot{}
+		directives gqlGenerated.DirectiveRoot = gqlGenerated.DirectiveRoot{}
 	)
 
-	return generated.Config{
+	return gqlGenerated.Config{
 		Resolvers:  resolvers,
 		Directives: directives,
 	}

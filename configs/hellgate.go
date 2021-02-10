@@ -2,21 +2,16 @@ package configs
 
 import "strconv"
 
-type hellgateConfigs struct {
-	Addr    string
-	StrPort string
-	Port    int
-	timeout int
-}
-
-var HellgateConfigs hellgateConfigs
+var HellgateConfigs serviceConfigs
 
 func init() {
-	const port = 10000
-	HellgateConfigs = hellgateConfigs{
+	const (
+		port = 10000
+	)
+	HellgateConfigs = serviceConfigs{
 		Addr:    "localhost:" + strconv.Itoa(port),
 		StrPort: strconv.Itoa(port),
 		Port:    port,
-		timeout: int(connectionTimeout),
+		Timeout: stdConnectionTimeout,
 	}
 }

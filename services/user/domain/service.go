@@ -1,37 +1,40 @@
 package domain
 
 import (
-	"fmt"
+	"errors"
 	pb "microServiceBoilerplate/proto/generated/user"
+	"microServiceBoilerplate/services/user/db"
 	"microServiceBoilerplate/services/user/models"
+	"microServiceBoilerplate/utils/security"
 
 	"github.com/mreza0100/golog"
-	"gorm.io/gorm"
 )
 
 type ServiceOptions struct {
-	DB *gorm.DB
-	Lg *golog.Core
+	Lgr *golog.Core
 }
 
-func NewService(options ServiceOptions) Sevice {
+func NewService(opts ServiceOptions) Sevice {
+	daos := db.DAOS{
+		Lgr: opts.Lgr.With("in DAOS: "),
+	}
+
 	return &service{
-		DB: options.DB,
-		Lg: options.Lg,
+		DAOS: daos,
+		Lgr:  opts.Lgr.With("In domain: "),
 	}
 }
 
 type Sevice interface {
 	NewUser(in *pb.NewUserRequest) (uint64, error)
-	GetUserById(id uint64) (*pb.GetUserByIdResponse, error)
-	GetUsers() ([]*pb.UserinGetUsers, error)
-	DeleteUserById(id uint64) error
+	GetUser(id uint64) (*pb.GetUserResponse, error)
+	DeleteUser(id uint64) error
+	Validation(email, password string) (uint64, error)
 }
 
 type service struct {
-	DB *gorm.DB
-	Lg *golog.Core
-	pb.UnimplementedUserServiceServer
+	DAOS db.DAOS
+	Lgr  *golog.Core
 }
 
 func (this *service) NewUser(in *pb.NewUserRequest) (uint64, error) {
@@ -39,43 +42,29 @@ func (this *service) NewUser(in *pb.NewUserRequest) (uint64, error) {
 		Name:     in.Name,
 		Gender:   in.Gender,
 		Email:    in.Email,
-		Password: in.Password,
+		Password: security.HashIt(in.Password),
 	}
 
-	this.Lg.Log("mamad")
-
-	tx := this.DB.Create(&user)
-
-	return user.ID, tx.Error
+	return this.DAOS.NewUser(&user)
 }
 
-func (this *service) GetUserById(id uint64) (*pb.GetUserByIdResponse, error) {
-	user := pb.GetUserByIdResponse{}
+func (this *service) GetUser(id uint64) (*pb.GetUserResponse, error) {
+	return this.DAOS.GetUser(id)
+}
 
-	tx := this.DB.Raw(`SELECT * FROM users WHERE id = ?`, id).Scan(&user)
+func (this *service) DeleteUser(id uint64) error {
+	return this.DAOS.DeleteUser(id)
+}
 
-	if tx.RowsAffected == -1 {
-		return nil, fmt.Errorf("Not found")
+func (this *service) Validation(email, password string) (uint64, error) {
+	user, err := this.DAOS.GetUserByEmail(email)
+	if err != nil {
+		return 0, errors.New("Password or email is wrong")
 	}
 
-	return &user, tx.Error
-}
-
-func (this *service) GetUsers() ([]*pb.UserinGetUsers, error) {
-	users := []*pb.UserinGetUsers{}
-
-	tx := this.DB.Raw(`SELECT * FROM users`).Scan(&users)
-
-	return users, tx.Error
-}
-
-func (this *service) DeleteUserById(id uint64) error {
-	tx := this.DB.Exec(`DELETE FROM users WHERE id = ?`, id)
-
-	if tx.RowsAffected == 0 {
-		return fmt.Errorf("Not found")
+	if !security.HashCompare(user.Password, password) {
+		return 0, errors.New("Password or email is wrong")
 	}
 
-	return nil
-
+	return user.ID, nil
 }

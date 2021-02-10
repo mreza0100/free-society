@@ -8,6 +8,8 @@ cd ../../..
 root=$(pwd)
 
 
+export SALT="saltsalt___salt"
+export MODE=dev
 
 
 go run $root/services/user/server

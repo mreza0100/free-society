@@ -1,0 +1,57 @@
+schema {
+	query: Query
+	mutation: Mutation
+}
+
+type Query {
+	getUser(id: Int!): User
+	getPost(input: getPostInput!): [getPostRes!]!
+}
+type Mutation {
+	# user
+	createUser(input: createUserInput!): createUserRes!
+	deleteUser: Boolean!
+
+	# post
+	createPost(input: createPostInput!): Int!
+	deletePost(input: deletePostInput!): Boolean!
+	login(email: String!, password: String!): Boolean!
+}
+
+# create post
+input createPostInput {
+	title: String!
+	body: String!
+}
+# delete post
+input deletePostInput {
+	postId: Int!
+}
+# get post
+input getPostInput {
+	postIds: [Int!]
+}
+type getPostRes {
+	title: String!
+	body: String!
+	id: Int!
+	ownerId: Int!
+}
+
+type User {
+	id: Int!
+	name: String!
+	email: String!
+	gender: String!
+}
+
+# create user
+input createUserInput {
+	name: String!
+	email: String!
+	gender: String!
+	password: String!
+}
+type createUserRes {
+	id: Int
+}

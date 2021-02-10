@@ -9,6 +9,7 @@ import (
 	models "microServiceBoilerplate/services/hellgate/graph/model"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -43,13 +44,16 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
+		CreatePost func(childComplexity int, input models.CreatePostInput) int
 		CreateUser func(childComplexity int, input models.CreateUserInput) int
-		DeleteUser func(childComplexity int, id int) int
+		DeletePost func(childComplexity int, input models.DeletePostInput) int
+		DeleteUser func(childComplexity int) int
+		Login      func(childComplexity int, email string, password string) int
 	}
 
 	Query struct {
-		GetUser  func(childComplexity int, id int) int
-		GetUsers func(childComplexity int) int
+		GetPost func(childComplexity int, input models.GetPostInput) int
+		GetUser func(childComplexity int, id int) int
 	}
 
 	User struct {
@@ -63,18 +67,24 @@ type ComplexityRoot struct {
 		ID func(childComplexity int) int
 	}
 
-	GetUserRes struct {
-		Users func(childComplexity int) int
+	GetPostRes struct {
+		Body    func(childComplexity int) int
+		ID      func(childComplexity int) int
+		OwnerID func(childComplexity int) int
+		Title   func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input models.CreateUserInput) (*models.CreateUserRes, error)
-	DeleteUser(ctx context.Context, id int) (bool, error)
+	DeleteUser(ctx context.Context) (bool, error)
+	CreatePost(ctx context.Context, input models.CreatePostInput) (int, error)
+	DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error)
+	Login(ctx context.Context, email string, password string) (bool, error)
 }
 type QueryResolver interface {
 	GetUser(ctx context.Context, id int) (*models.User, error)
-	GetUsers(ctx context.Context) (*models.GetUserRes, error)
+	GetPost(ctx context.Context, input models.GetPostInput) ([]*models.GetPostRes, error)
 }
 
 type executableSchema struct {
@@ -92,6 +102,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Mutation.createPost":
+		if e.complexity.Mutation.CreatePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreatePost(childComplexity, args["input"].(models.CreatePostInput)), true
+
 	case "Mutation.createUser":
 		if e.complexity.Mutation.CreateUser == nil {
 			break
@@ -104,36 +126,60 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateUser(childComplexity, args["input"].(models.CreateUserInput)), true
 
+	case "Mutation.deletePost":
+		if e.complexity.Mutation.DeletePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeletePost(childComplexity, args["input"].(models.DeletePostInput)), true
+
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_deleteUser_args(context.TODO(), rawArgs)
+		return e.complexity.Mutation.DeleteUser(childComplexity), true
+
+	case "Mutation.login":
+		if e.complexity.Mutation.Login == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_login_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteUser(childComplexity, args["id"].(int)), true
+		return e.complexity.Mutation.Login(childComplexity, args["email"].(string), args["password"].(string)), true
 
-	case "Query.GetUser":
+	case "Query.getPost":
+		if e.complexity.Query.GetPost == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getPost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetPost(childComplexity, args["input"].(models.GetPostInput)), true
+
+	case "Query.getUser":
 		if e.complexity.Query.GetUser == nil {
 			break
 		}
 
-		args, err := ec.field_Query_GetUser_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_getUser_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
 		return e.complexity.Query.GetUser(childComplexity, args["id"].(int)), true
-
-	case "Query.GetUsers":
-		if e.complexity.Query.GetUsers == nil {
-			break
-		}
-
-		return e.complexity.Query.GetUsers(childComplexity), true
 
 	case "User.email":
 		if e.complexity.User.Email == nil {
@@ -170,12 +216,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateUserRes.ID(childComplexity), true
 
-	case "getUserRes.users":
-		if e.complexity.GetUserRes.Users == nil {
+	case "getPostRes.body":
+		if e.complexity.GetPostRes.Body == nil {
 			break
 		}
 
-		return e.complexity.GetUserRes.Users(childComplexity), true
+		return e.complexity.GetPostRes.Body(childComplexity), true
+
+	case "getPostRes.id":
+		if e.complexity.GetPostRes.ID == nil {
+			break
+		}
+
+		return e.complexity.GetPostRes.ID(childComplexity), true
+
+	case "getPostRes.ownerId":
+		if e.complexity.GetPostRes.OwnerID == nil {
+			break
+		}
+
+		return e.complexity.GetPostRes.OwnerID(childComplexity), true
+
+	case "getPostRes.title":
+		if e.complexity.GetPostRes.Title == nil {
+			break
+		}
+
+		return e.complexity.GetPostRes.Title(childComplexity), true
 
 	}
 	return 0, false
@@ -241,27 +308,54 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema/user.graphql", Input: `type User {
+	{Name: "graph/schema/schema.graphql", Input: `schema {
+	query: Query
+	mutation: Mutation
+}
+
+type Query {
+	getUser(id: Int!): User
+	getPost(input: getPostInput!): [getPostRes!]!
+}
+type Mutation {
+	# user
+	createUser(input: createUserInput!): createUserRes!
+	deleteUser: Boolean!
+
+	# post
+	createPost(input: createPostInput!): Int!
+	deletePost(input: deletePostInput!): Boolean!
+	login(email: String!, password: String!): Boolean!
+}
+
+# create post
+input createPostInput {
+	title: String!
+	body: String!
+}
+# delete post
+input deletePostInput {
+	postId: Int!
+}
+# get post
+input getPostInput {
+	postIds: [Int!]
+}
+type getPostRes {
+	title: String!
+	body: String!
+	id: Int!
+	ownerId: Int!
+}
+
+type User {
 	id: Int!
 	name: String!
 	email: String!
 	gender: String!
 }
 
-# get user
-type Query {
-	GetUser(id: Int!): User
-	GetUsers: getUserRes
-}
-type getUserRes {
-	users: [User!]!
-}
-
 # create user
-type Mutation {
-	createUser(input: createUserInput!): createUserRes!
-	deleteUser(id: Int!): Boolean!
-}
 input createUserInput {
 	name: String!
 	email: String!
@@ -279,13 +373,13 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_createPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.CreateUserInput
+	var arg0 models.CreatePostInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNcreateUserInput2vvᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserInput(ctx, tmp)
+		arg0, err = ec.unmarshalNcreatePostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreatePostInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -294,33 +388,57 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_deleteUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+	var arg0 models.CreateUserInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNcreateUserInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["input"] = arg0
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_GetUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+	var arg0 models.DeletePostInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNdeletePostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐDeletePostInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["email"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["email"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["password"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["password"] = arg1
 	return args, nil
 }
 
@@ -336,6 +454,36 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.GetPostInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNgetPostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -416,7 +564,7 @@ func (ec *executionContext) _Mutation_createUser(ctx context.Context, field grap
 	}
 	res := resTmp.(*models.CreateUserRes)
 	fc.Result = res
-	return ec.marshalNcreateUserRes2ᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserRes(ctx, field.Selections, res)
+	return ec.marshalNcreateUserRes2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserRes(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -435,16 +583,9 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_deleteUser_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteUser(rctx, args["id"].(int))
+		return ec.resolvers.Mutation().DeleteUser(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -461,7 +602,133 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_GetUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_createPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createPost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreatePost(rctx, args["input"].(models.CreatePostInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deletePost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeletePost(rctx, args["input"].(models.DeletePostInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_login_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Login(rctx, args["email"].(string), args["password"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -478,7 +745,7 @@ func (ec *executionContext) _Query_GetUser(ctx context.Context, field graphql.Co
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_GetUser_args(ctx, rawArgs)
+	args, err := ec.field_Query_getUser_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -497,10 +764,10 @@ func (ec *executionContext) _Query_GetUser(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*models.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_GetUsers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -516,20 +783,30 @@ func (ec *executionContext) _Query_GetUsers(ctx context.Context, field graphql.C
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getPost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetUsers(rctx)
+		return ec.resolvers.Query().GetPost(rctx, args["input"].(models.GetPostInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.GetUserRes)
+	res := resTmp.([]*models.GetPostRes)
 	fc.Result = res
-	return ec.marshalOgetUserRes2ᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetUserRes(ctx, field.Selections, res)
+	return ec.marshalNgetPostRes2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostResᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1858,7 +2135,7 @@ func (ec *executionContext) _createUserRes_id(ctx context.Context, field graphql
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _getUserRes_users(ctx context.Context, field graphql.CollectedField, obj *models.GetUserRes) (ret graphql.Marshaler) {
+func (ec *executionContext) _getPostRes_title(ctx context.Context, field graphql.CollectedField, obj *models.GetPostRes) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1866,7 +2143,7 @@ func (ec *executionContext) _getUserRes_users(ctx context.Context, field graphql
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "getUserRes",
+		Object:     "getPostRes",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -1876,7 +2153,7 @@ func (ec *executionContext) _getUserRes_users(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Users, nil
+		return obj.Title, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1888,14 +2165,147 @@ func (ec *executionContext) _getUserRes_users(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.User)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNUser2ᚕᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _getPostRes_body(ctx context.Context, field graphql.CollectedField, obj *models.GetPostRes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "getPostRes",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Body, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _getPostRes_id(ctx context.Context, field graphql.CollectedField, obj *models.GetPostRes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "getPostRes",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _getPostRes_ownerId(ctx context.Context, field graphql.CollectedField, obj *models.GetPostRes) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "getPostRes",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OwnerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
+
+func (ec *executionContext) unmarshalInputcreatePostInput(ctx context.Context, obj interface{}) (models.CreatePostInput, error) {
+	var it models.CreatePostInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "body":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
+			it.Body, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
 
 func (ec *executionContext) unmarshalInputcreateUserInput(ctx context.Context, obj interface{}) (models.CreateUserInput, error) {
 	var it models.CreateUserInput
@@ -1941,6 +2351,46 @@ func (ec *executionContext) unmarshalInputcreateUserInput(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputdeletePostInput(ctx context.Context, obj interface{}) (models.DeletePostInput, error) {
+	var it models.DeletePostInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "postId":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
+			it.PostID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputgetPostInput(ctx context.Context, obj interface{}) (models.GetPostInput, error) {
+	var it models.GetPostInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "postIds":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postIds"))
+			it.PostIds, err = ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -1974,6 +2424,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "createPost":
+			out.Values[i] = ec._Mutation_createPost(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deletePost":
+			out.Values[i] = ec._Mutation_deletePost(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "login":
+			out.Values[i] = ec._Mutation_login(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2000,7 +2465,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "GetUser":
+		case "getUser":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2008,10 +2473,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_GetUser(ctx, field)
+				res = ec._Query_getUser(ctx, field)
 				return res
 			})
-		case "GetUsers":
+		case "getPost":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2019,7 +2484,10 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_GetUsers(ctx, field)
+				res = ec._Query_getPost(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "__type":
@@ -2344,19 +2812,34 @@ func (ec *executionContext) _createUserRes(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var getUserResImplementors = []string{"getUserRes"}
+var getPostResImplementors = []string{"getPostRes"}
 
-func (ec *executionContext) _getUserRes(ctx context.Context, sel ast.SelectionSet, obj *models.GetUserRes) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, getUserResImplementors)
+func (ec *executionContext) _getPostRes(ctx context.Context, sel ast.SelectionSet, obj *models.GetPostRes) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, getPostResImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("getUserRes")
-		case "users":
-			out.Values[i] = ec._getUserRes_users(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("getPostRes")
+		case "title":
+			out.Values[i] = ec._getPostRes_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "body":
+			out.Values[i] = ec._getPostRes_body(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "id":
+			out.Values[i] = ec._getPostRes_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "ownerId":
+			out.Values[i] = ec._getPostRes_ownerId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2418,53 +2901,6 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNUser2ᚕᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.User) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNUser2ᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) marshalNUser2ᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -2696,16 +3132,21 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) unmarshalNcreateUserInput2vvᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserInput(ctx context.Context, v interface{}) (models.CreateUserInput, error) {
+func (ec *executionContext) unmarshalNcreatePostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreatePostInput(ctx context.Context, v interface{}) (models.CreatePostInput, error) {
+	res, err := ec.unmarshalInputcreatePostInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNcreateUserInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserInput(ctx context.Context, v interface{}) (models.CreateUserInput, error) {
 	res, err := ec.unmarshalInputcreateUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNcreateUserRes2vvᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserRes(ctx context.Context, sel ast.SelectionSet, v models.CreateUserRes) graphql.Marshaler {
+func (ec *executionContext) marshalNcreateUserRes2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserRes(ctx context.Context, sel ast.SelectionSet, v models.CreateUserRes) graphql.Marshaler {
 	return ec._createUserRes(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNcreateUserRes2ᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserRes(ctx context.Context, sel ast.SelectionSet, v *models.CreateUserRes) graphql.Marshaler {
+func (ec *executionContext) marshalNcreateUserRes2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserRes(ctx context.Context, sel ast.SelectionSet, v *models.CreateUserRes) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2713,6 +3154,63 @@ func (ec *executionContext) marshalNcreateUserRes2ᚖvvᚋservicesᚋhellgateᚋ
 		return graphql.Null
 	}
 	return ec._createUserRes(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNdeletePostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐDeletePostInput(ctx context.Context, v interface{}) (models.DeletePostInput, error) {
+	res, err := ec.unmarshalInputdeletePostInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNgetPostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostInput(ctx context.Context, v interface{}) (models.GetPostInput, error) {
+	res, err := ec.unmarshalInputgetPostInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNgetPostRes2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostResᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.GetPostRes) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNgetPostRes2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostRes(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNgetPostRes2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostRes(ctx context.Context, sel ast.SelectionSet, v *models.GetPostRes) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._getPostRes(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
@@ -2737,6 +3235,42 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
@@ -2778,7 +3312,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return graphql.MarshalString(*v)
 }
 
-func (ec *executionContext) marshalOUser2ᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -2957,13 +3491,6 @@ func (ec *executionContext) marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgen�
 		return graphql.Null
 	}
 	return ec.___Type(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalOgetUserRes2ᚖvvᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetUserRes(ctx context.Context, sel ast.SelectionSet, v *models.GetUserRes) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._getUserRes(ctx, sel, v)
 }
 
 // endregion ***************************** type.gotpl *****************************
