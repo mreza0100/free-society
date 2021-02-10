@@ -47,8 +47,8 @@ func (s *handlers) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*p
 	errsCh := make(chan error, 2)
 
 	// flow request to services.DeleteUser and publish request to post service to delete user posts
-	go func(errsCh chan error) { errsCh <- s.srv.DeleteUser(in.Id) }(errsCh)
-	go func(errsCh chan error) { errsCh <- s.publishers.DeleteUser(in.Id) }(errsCh)
+	go func(ch chan error) { ch <- s.srv.DeleteUser(in.Id) }(errsCh)
+	go func(ch chan error) { ch <- s.publishers.DeleteUser(in.Id) }(errsCh)
 
 	// start from 1 not 0
 	for i := 1; i < cap(errsCh); i++ {

@@ -3,7 +3,6 @@ package userNats
 import (
 	"log"
 	"microServiceBoilerplate/configs"
-	"os"
 
 	"github.com/nats-io/nats.go"
 )
@@ -18,9 +17,7 @@ func init() {
 		configs.NatsConfigs.GetDefaultNatsOpts(natName)...,
 	)
 	if err != nil {
-		log.Fatal("✖✖✖From nats connection: cant connect to nats server exiting NOW✖✖✖")
-		log.Fatal(err)
-		os.Exit(1)
+		log.Fatal("✖✖✖From nats connection: cant connect to nats server exiting NOW✖✖✖", "\t", err)
 	}
 
 	nc = nConnection
