@@ -10,13 +10,15 @@ type Query {
 type Mutation {
 	# user
 	createUser(input: createUserInput!): createUserRes!
-	deleteUser: Boolean!
-	follow(following: Int!): Boolean!
+	deleteUser: Boolean! @private
+	follow(following: Int!): Boolean! @private
+	unfollow(following: Int!): Boolean! @private
 
 	# post
-	createPost(input: createPostInput!): Int!
-	deletePost(input: deletePostInput!): Boolean!
+	createPost(input: createPostInput!): Int! @private
+	deletePost(input: deletePostInput!): Boolean! @private
 	login(email: String!, password: String!): Boolean!
+	logout: Boolean! @private
 }
 
 # create post
@@ -56,3 +58,5 @@ input createUserInput {
 type createUserRes {
 	id: Int
 }
+
+directive @private on FIELD_DEFINITION

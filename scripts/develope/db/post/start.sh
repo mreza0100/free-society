@@ -10,5 +10,5 @@ root=$(pwd)
 
 cd $root/services/post/docker
 
-sudo docker-compose up 
+sudo docker-compose up $1
 

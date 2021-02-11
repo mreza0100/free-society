@@ -79,9 +79,9 @@ func (this *DAOS) DeleteUserPosts(userId uint64) error {
 	}
 
 	if tx.RowsAffected == 0 {
-		this.Lgr.Log("tx.RowsAffected: ", tx.RowsAffected)
-		this.Lgr.Log("Cant find posts")
-		return errors.New("Cant find posts")
+		this.Lgr.Debug.CyanLog("tx.RowsAffected: ", tx.RowsAffected)
+		this.Lgr.Debug.YellowLog("user dont have any posts")
+		return errors.New("user dont have any posts")
 	}
 
 	return nil

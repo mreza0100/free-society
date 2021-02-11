@@ -27,6 +27,10 @@ type service struct {
 	Lgr  *golog.Core
 }
 
-func (s *service) Follow(following, follower uint64) error {
-	return s.DAOS.SetFollower(following, follower)
+func (s *service) Follow(follower, following uint64) error {
+	return s.DAOS.SetFollower(follower, following)
+}
+
+func (s *service) Unfollow(following, follower uint64) error {
+	return s.DAOS.RemoveFollower(following, follower)
 }

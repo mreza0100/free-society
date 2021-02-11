@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"errors"
-	"fmt"
 	"microServiceBoilerplate/proto/generated/post"
 	"microServiceBoilerplate/proto/generated/relation"
 	pb "microServiceBoilerplate/proto/generated/user"
@@ -51,9 +50,6 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUs
 
 func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
 	CA := security.GetCookieAccess(ctx)
-	if !CA.IsLoggedIn {
-		return false, CA.NotLoginErr
-	}
 
 	response, err := r.userConn.DeleteUser(ctx, &pb.DeleteUserRequest{
 		Id: CA.UserId,
@@ -66,11 +62,19 @@ func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
 
 func (r *mutationResolver) Follow(ctx context.Context, following int) (bool, error) {
 	CA := security.GetCookieAccess(ctx)
-	if !CA.IsLoggedIn {
-		return false, CA.NotLoginErr
-	}
 
 	_, err := r.RelationConn.Follow(ctx, &relation.FollowRequest{
+		Follower:  CA.UserId,
+		Following: uint64(following),
+	})
+
+	return err == nil, utils.GetGRPCMSG(err)
+}
+
+func (r *mutationResolver) Unfollow(ctx context.Context, following int) (bool, error) {
+	CA := security.GetCookieAccess(ctx)
+
+	_, err := r.RelationConn.Unfollow(ctx, &relation.UnfollowRequest{
 		Follower:  CA.UserId,
 		Following: uint64(following),
 	})
@@ -100,9 +104,6 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePo
 
 func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error) {
 	CA := security.GetCookieAccess(ctx)
-	if !CA.IsLoggedIn {
-		return false, CA.NotLoginErr
-	}
 
 	_, err := r.postConn.DeletePost(ctx, &post.DeletePostRequest{
 		PostId: uint64(input.PostID),
@@ -131,6 +132,11 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 	CA.SetToken(token)
 	CA.UserId = userId
 
+	return true, nil
+}
+
+func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	security.GetCookieAccess(ctx).DeleteToken()
 	return true, nil
 }
 
@@ -192,13 +198,3 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *mutationResolver) AddFollower(ctx context.Context, following int) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
-}

@@ -10,4 +10,4 @@ root=$(pwd)
 
 cd $root/nats/docker
 
-sudo docker-compose up
+sudo docker-compose up $1
