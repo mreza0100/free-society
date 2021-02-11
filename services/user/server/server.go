@@ -15,7 +15,7 @@ import (
 )
 
 func initLogger() *golog.Core {
-	return golog.New(golog.InitOprions{
+	return golog.New(golog.InitOpns{
 		LogPath:   configs.LogPath,
 		Name:      "User_Service",
 		WithTime:  true,

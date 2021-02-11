@@ -3,16 +3,13 @@ package userNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
+	"microServiceBoilerplate/services/user/types"
 
 	"github.com/mreza0100/golog"
 	"google.golang.org/protobuf/proto"
 )
 
-type Publishers interface {
-	DeleteUser(userId uint64) error
-}
-
-func NewPublishers(lgr *golog.Core) Publishers {
+func NewPublishers(lgr *golog.Core) types.Publishers {
 	publishers := publishersT{
 		lgr: lgr.With("In publishers: "),
 	}

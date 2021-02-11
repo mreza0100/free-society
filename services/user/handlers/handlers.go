@@ -3,27 +3,26 @@ package handlers
 import (
 	"context"
 	pb "microServiceBoilerplate/proto/generated/user"
-	domain "microServiceBoilerplate/services/user/domain"
-	userNats "microServiceBoilerplate/services/user/nats"
+	"microServiceBoilerplate/services/user/types"
 
 	"github.com/mreza0100/golog"
 )
 
 type handlers struct {
-	srv        domain.Sevice
+	srv        types.Sevice
 	lgr        *golog.Core
-	publishers userNats.Publishers
+	publishers types.Publishers
 
 	pb.UnimplementedUserServiceServer
 }
 
 type NewHandlersOpts struct {
-	Srv        domain.Sevice
+	Srv        types.Sevice
 	Lgr        *golog.Core
-	Publishers userNats.Publishers
+	Publishers types.Publishers
 }
 
-func NewHandlers(opts NewHandlersOpts) pb.UserServiceServer {
+func NewHandlers(opts NewHandlersOpts) types.Handlers {
 	return &handlers{
 		srv:        opts.Srv,
 		lgr:        opts.Lgr.With("In handlers: "),
@@ -70,4 +69,7 @@ func (this *handlers) Validation(ctx context.Context, in *pb.ValidationRequest) 
 	return &pb.ValidationResponse{
 		Id: userId,
 	}, err
+}
+func (this *handlers) IsUserExist(userId uint64) bool {
+	return this.srv.IsUserExist(userId)
 }

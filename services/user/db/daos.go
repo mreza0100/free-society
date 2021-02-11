@@ -70,3 +70,19 @@ func (this *DAOS) GetUserByEmail(email string) (*models.User, error) {
 
 	return user, nil
 }
+
+func (this *DAOS) IsUserExist(userId uint64) bool {
+	const query = `SELECT EXISTS(SELECT 1 FROM users WHERE id=?)`
+	params := []interface{}{userId}
+
+	tx := DB.Raw(query, params...)
+	if tx.Error != nil {
+		return false
+	}
+
+	data := struct{ Exists bool }{}
+	tx.Scan(&data)
+	this.Lgr.Log(data)
+
+	return data.Exists
+}

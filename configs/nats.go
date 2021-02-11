@@ -8,7 +8,8 @@ import (
 )
 
 type SubjectsT struct {
-	DeleteUser string
+	DeleteUser          string
+	IsUserExist_REQUEST string
 }
 
 type natsConfigsT struct {
@@ -16,6 +17,7 @@ type natsConfigsT struct {
 	TotalWait      time.Duration
 	ReconnectDelay time.Duration
 	Subjects       *SubjectsT
+	Timeout        time.Duration
 }
 
 func (this *natsConfigsT) GetDefaultNatsOpts(name string) []nats.Option {
@@ -56,9 +58,11 @@ func init() {
 		TotalWait:      2 * time.Minute,
 		ReconnectDelay: time.Second,
 		Subjects:       sbjs,
+		Timeout:        time.Second,
 	}
 
 	{
 		sbjs.DeleteUser = "user.delete"
+		sbjs.IsUserExist_REQUEST = "user.is_exist"
 	}
 }

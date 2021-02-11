@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"microServiceBoilerplate/configs"
-	pb "microServiceBoilerplate/proto/generated/post"
+	pb "microServiceBoilerplate/proto/generated/relation"
 	"microServiceBoilerplate/utils"
 	"net"
 
@@ -11,13 +11,13 @@ import (
 
 	"github.com/mreza0100/golog"
 
-	"microServiceBoilerplate/services/post/microservice"
+	"microServiceBoilerplate/services/relation/microservice"
 )
 
 func initLogger() *golog.Core {
 	return golog.New(golog.InitOpns{
 		LogPath:   configs.LogPath,
-		Name:      "Post_Service",
+		Name:      "Relation_Service",
 		WithTime:  true,
 		DebugMode: utils.IsDevMode,
 	})
@@ -25,13 +25,14 @@ func initLogger() *golog.Core {
 
 func main() {
 	var (
-		Lgr        = initLogger()
-		service    = microservice.NewPostService(Lgr)
+		lgr        = initLogger()
+		service    = microservice.NewRelationService(lgr)
 		grpcServer = grpc.NewServer()
 	)
-	pb.RegisterPostServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", ":"+configs.PostConfigs.StrPort)
+	pb.RegisterRelationServiceServer(grpcServer, service)
+
+	lis, err := net.Listen("tcp", ":"+configs.RelationConfigs.StrPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

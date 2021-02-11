@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package relation;
+
+option go_package = "/relation";
+
+
+service RelationService {
+      rpc Follow(FollowRequest) returns (FollowResponse);
+}
+
+// Follow
+message FollowRequest {
+      uint64 following = 2;
+      uint64 follower = 1;
+}
+message FollowResponse {}

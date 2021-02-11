@@ -1,17 +1,15 @@
 package configs
 
-import "strconv"
-
-var PostConfigs serviceConfigs
+var PostConfigs *serviceConfigs
 
 func init() {
 	const (
-		port   = 9092
+		port   = 9091
 		dbPort = 5434
 	)
-	PostConfigs = serviceConfigs{
-		Addr:    "localhost:" + strconv.Itoa(port),
-		StrPort: strconv.Itoa(port),
+	PostConfigs = &serviceConfigs{
+		Addr:    "localhost:" + str(port),
+		StrPort: str(port),
 		Port:    port,
 		DBPort:  dbPort,
 		Timeout: stdConnectionTimeout,

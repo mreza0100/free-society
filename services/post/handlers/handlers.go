@@ -8,17 +8,24 @@ import (
 	"github.com/mreza0100/golog"
 )
 
-type handlers struct {
-	srv domain.Sevice
-	lgr *golog.Core
-	pb.UnimplementedPostServiceServer
+type Handlers interface {
+	pb.PostServiceServer
+
+	DeleteUserPosts(userId uint64) error
 }
 
-func NewHandlers(srv domain.Sevice, Lgr *golog.Core) pb.PostServiceServer {
+func NewHandlers(srv domain.Sevice, Lgr *golog.Core) Handlers {
 	return &handlers{
 		srv: srv,
 		lgr: Lgr,
 	}
+}
+
+type handlers struct {
+	srv domain.Sevice
+	lgr *golog.Core
+
+	pb.UnimplementedPostServiceServer
 }
 
 func (h *handlers) NewPost(_ context.Context, in *pb.NewPostRequest) (*pb.NewPostResponse, error) {
@@ -41,4 +48,7 @@ func (h *handlers) GetPost(_ context.Context, in *pb.GetPostRequest) (*pb.GetPos
 
 	return &pb.GetPostResponse{Posts: res}, nil
 
+}
+func (h *handlers) DeleteUserPosts(userId uint64) error {
+	return h.srv.DeleteUserPosts(userId)
 }

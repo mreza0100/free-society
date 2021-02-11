@@ -5,6 +5,7 @@ import (
 	pb "microServiceBoilerplate/proto/generated/user"
 	"microServiceBoilerplate/services/user/db"
 	"microServiceBoilerplate/services/user/models"
+	"microServiceBoilerplate/services/user/types"
 	"microServiceBoilerplate/utils/security"
 
 	"github.com/mreza0100/golog"
@@ -14,7 +15,7 @@ type ServiceOptions struct {
 	Lgr *golog.Core
 }
 
-func NewService(opts ServiceOptions) Sevice {
+func NewService(opts ServiceOptions) types.Sevice {
 	daos := db.DAOS{
 		Lgr: opts.Lgr.With("in DAOS: "),
 	}
@@ -23,13 +24,6 @@ func NewService(opts ServiceOptions) Sevice {
 		DAOS: daos,
 		Lgr:  opts.Lgr.With("In domain: "),
 	}
-}
-
-type Sevice interface {
-	NewUser(in *pb.NewUserRequest) (uint64, error)
-	GetUser(id uint64) (*pb.GetUserResponse, error)
-	DeleteUser(id uint64) error
-	Validation(email, password string) (uint64, error)
 }
 
 type service struct {
@@ -67,4 +61,7 @@ func (this *service) Validation(email, password string) (uint64, error) {
 	}
 
 	return user.ID, nil
+}
+func (this *service) IsUserExist(userId uint64) bool {
+	return this.DAOS.IsUserExist(userId)
 }

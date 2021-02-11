@@ -6,7 +6,9 @@ package graph
 import (
 	"context"
 	"errors"
+	"fmt"
 	"microServiceBoilerplate/proto/generated/post"
+	"microServiceBoilerplate/proto/generated/relation"
 	pb "microServiceBoilerplate/proto/generated/user"
 	"microServiceBoilerplate/services/hellgate/graph/generated"
 	models "microServiceBoilerplate/services/hellgate/graph/model"
@@ -60,6 +62,20 @@ func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
 	CA.DeleteToken()
 
 	return response.GetOk(), utils.GetGRPCMSG(err)
+}
+
+func (r *mutationResolver) Follow(ctx context.Context, following int) (bool, error) {
+	CA := security.GetCookieAccess(ctx)
+	if !CA.IsLoggedIn {
+		return false, CA.NotLoginErr
+	}
+
+	_, err := r.RelationConn.Follow(ctx, &relation.FollowRequest{
+		Follower:  CA.UserId,
+		Following: uint64(following),
+	})
+
+	return err == nil, utils.GetGRPCMSG(err)
 }
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (int, error) {
@@ -176,3 +192,13 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *mutationResolver) AddFollower(ctx context.Context, following int) (bool, error) {
+	panic(fmt.Errorf("not implemented"))
+}

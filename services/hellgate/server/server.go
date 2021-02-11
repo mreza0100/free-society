@@ -17,9 +17,9 @@ import (
 )
 
 func initLogger() *golog.Core {
-	return golog.New(golog.InitOprions{
+	return golog.New(golog.InitOpns{
 		LogPath:   configs.LogPath,
-		Name:      "🔥Hellgate_Service🔥",
+		Name:      "🔥__Hellgate__🔥",
 		WithTime:  true,
 		DebugMode: utils.IsDevMode,
 	})
@@ -27,11 +27,12 @@ func initLogger() *golog.Core {
 
 func main() {
 	lgr := initLogger()
-	graphqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(graph.New(graph.NewOpts{
+	graphqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(*graph.New(graph.NewOpts{
 		Lgr: lgr,
 
-		UserConn: connections.UserSrvConn(),
-		PostConn: connections.PostSrvConn(),
+		RelationConn: connections.RelationSrvConn(lgr),
+		UserConn:     connections.UserSrvConn(lgr),
+		PostConn:     connections.PostSrvConn(lgr),
 	})))
 
 	ginServer := gin.New()

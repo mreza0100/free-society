@@ -48,6 +48,7 @@ type ComplexityRoot struct {
 		CreateUser func(childComplexity int, input models.CreateUserInput) int
 		DeletePost func(childComplexity int, input models.DeletePostInput) int
 		DeleteUser func(childComplexity int) int
+		Follow     func(childComplexity int, following int) int
 		Login      func(childComplexity int, email string, password string) int
 	}
 
@@ -78,6 +79,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateUser(ctx context.Context, input models.CreateUserInput) (*models.CreateUserRes, error)
 	DeleteUser(ctx context.Context) (bool, error)
+	Follow(ctx context.Context, following int) (bool, error)
 	CreatePost(ctx context.Context, input models.CreatePostInput) (int, error)
 	DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error)
 	Login(ctx context.Context, email string, password string) (bool, error)
@@ -144,6 +146,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteUser(childComplexity), true
+
+	case "Mutation.follow":
+		if e.complexity.Mutation.Follow == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_follow_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Follow(childComplexity, args["following"].(int)), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -321,6 +335,7 @@ type Mutation {
 	# user
 	createUser(input: createUserInput!): createUserRes!
 	deleteUser: Boolean!
+	follow(following: Int!): Boolean!
 
 	# post
 	createPost(input: createPostInput!): Int!
@@ -415,6 +430,21 @@ func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_follow_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["following"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("following"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["following"] = arg0
 	return args, nil
 }
 
@@ -586,6 +616,48 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().DeleteUser(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_follow(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_follow_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Follow(rctx, args["following"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2421,6 +2493,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "deleteUser":
 			out.Values[i] = ec._Mutation_deleteUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "follow":
+			out.Values[i] = ec._Mutation_follow(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

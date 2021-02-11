@@ -12,16 +12,20 @@ type Sevice interface {
 	NewPost(title, body string, userId uint64) (uint64, error)
 	GetPost(postIds []uint64) ([]*pb.GetPostResponseInner, error)
 	DeletePost(postId, userId uint64) error
+	DeleteUserPosts(userId uint64) error
 }
 
 type ServiceOptions struct {
-	Lgr  *golog.Core
-	DAOS *db.DAOS
+	Lgr *golog.Core
 }
 
 func NewService(opts ServiceOptions) Sevice {
+	daos := &db.DAOS{
+		Lgr: opts.Lgr.With("In DAOS: "),
+	}
+
 	return &service{
-		daos: opts.DAOS,
+		daos: daos,
 		lgr:  opts.Lgr.With("In domain: "),
 	}
 }
@@ -45,4 +49,7 @@ func (this *service) GetPost(postIds []uint64) ([]*pb.GetPostResponseInner, erro
 	}
 	return this.daos.GetPost(postIds)
 
+}
+func (this *service) DeleteUserPosts(userId uint64) error {
+	return this.daos.DeleteUserPosts(userId)
 }
