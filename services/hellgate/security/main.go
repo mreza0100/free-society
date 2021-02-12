@@ -3,27 +3,26 @@ package security
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 const (
-	cookieAccessKeyCtx = "user_id"
-	cookieName         = "auth"
+	WriterKeyCtx  = "writter"
+	RequestKeyCtx = "request"
+	UserIdKeyCtx  = "user_id"
+	CookieName    = "auth"
 )
 
-type CookieAccess struct {
-	Writer      http.ResponseWriter
-	NotLoginErr error
-	UserId      uint64
-	IsLoggedIn  bool
-}
+func SetToken(ctx context.Context, userId uint64) error {
+	token, err := CreateToken(userId)
+	if err != nil {
+		return err
+	}
 
-func (this *CookieAccess) SetToken(token string) {
-	http.SetCookie(this.Writer, &http.Cookie{
-		Name:     cookieName,
+	http.SetCookie(*GetWriter(ctx), &http.Cookie{
+		Name:     CookieName,
 		Value:    token,
 		HttpOnly: true,
 		Path:     "/",
@@ -31,11 +30,12 @@ func (this *CookieAccess) SetToken(token string) {
 		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
 	})
+	return nil
 }
 
-func (this *CookieAccess) DeleteToken() {
-	http.SetCookie(this.Writer, &http.Cookie{
-		Name:     cookieName,
+func DeleteToken(ctx context.Context) {
+	http.SetCookie(*GetWriter(ctx), &http.Cookie{
+		Name:     CookieName,
 		Value:    "",
 		HttpOnly: true,
 		Path:     "/",
@@ -46,8 +46,8 @@ func (this *CookieAccess) DeleteToken() {
 	})
 }
 
-func extractUserId(ctx *gin.Context) (uint64, error) {
-	c, err := ctx.Request.Cookie(cookieName)
+func extractUserId(req *http.Request) (uint64, error) {
+	c, err := req.Cookie(CookieName)
 	if err != nil {
 		return 0, errors.New("There is no token in cookies")
 	}
@@ -59,37 +59,17 @@ func extractUserId(ctx *gin.Context) (uint64, error) {
 	return userId, nil
 }
 
-func setValInCtx(ctx *gin.Context, val interface{}) {
-	newCtx := context.WithValue(ctx.Request.Context(), cookieAccessKeyCtx, val)
-	ctx.Request = ctx.Request.WithContext(newCtx)
+func GetWriter(ctx context.Context) *http.ResponseWriter {
+	return ctx.Value(WriterKeyCtx).(*http.ResponseWriter)
 }
-
-var notLoginErr = errors.New("You are not logged in")
-
-func Middleware() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		cookieA := CookieAccess{
-			Writer:      ctx.Writer,
-			NotLoginErr: notLoginErr,
-			UserId:      0,
-			IsLoggedIn:  false,
-		}
-
-		setValInCtx(ctx, &cookieA)
-
-		userId, err := extractUserId(ctx)
-		if err != nil {
-			ctx.Next()
-			return
-		}
-
-		cookieA.UserId = userId
-		cookieA.IsLoggedIn = true
-
-		ctx.Next()
+func GetRequest(ctx context.Context) *http.Request {
+	return ctx.Value(RequestKeyCtx).(*http.Request)
+}
+func GetUserId(ctx context.Context) uint64 {
+	data, ok := ctx.Value(UserIdKeyCtx).(uint64)
+	if !ok {
+		log.Fatal("in GetUserId: ", "ok was false")
 	}
-}
 
-func GetCookieAccess(ctx context.Context) *CookieAccess {
-	return ctx.Value(cookieAccessKeyCtx).(*CookieAccess)
+	return data
 }

@@ -33,14 +33,10 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUs
 		return nil, utils.GetGRPCMSG(err)
 	}
 
-	token, err := security.CreateToken(response.Id)
+	err = security.SetToken(ctx, response.Id)
 	if err != nil {
 		return nil, err
 	}
-
-	CA := security.GetCookieAccess(ctx)
-	CA.SetToken(token)
-	CA.UserId = response.Id
 
 	id := int(response.Id)
 	return &models.CreateUserRes{
@@ -49,22 +45,22 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUs
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
-	CA := security.GetCookieAccess(ctx)
+	userId := security.GetUserId(ctx)
 
 	response, err := r.userConn.DeleteUser(ctx, &pb.DeleteUserRequest{
-		Id: CA.UserId,
+		Id: userId,
 	})
 
-	CA.DeleteToken()
+	security.DeleteToken(ctx)
 
 	return response.GetOk(), utils.GetGRPCMSG(err)
 }
 
 func (r *mutationResolver) Follow(ctx context.Context, following int) (bool, error) {
-	CA := security.GetCookieAccess(ctx)
+	userId := security.GetUserId(ctx)
 
 	_, err := r.RelationConn.Follow(ctx, &relation.FollowRequest{
-		Follower:  CA.UserId,
+		Follower:  userId,
 		Following: uint64(following),
 	})
 
@@ -72,10 +68,10 @@ func (r *mutationResolver) Follow(ctx context.Context, following int) (bool, err
 }
 
 func (r *mutationResolver) Unfollow(ctx context.Context, following int) (bool, error) {
-	CA := security.GetCookieAccess(ctx)
+	userId := security.GetUserId(ctx)
 
 	_, err := r.RelationConn.Unfollow(ctx, &relation.UnfollowRequest{
-		Follower:  CA.UserId,
+		Follower:  userId,
 		Following: uint64(following),
 	})
 
@@ -83,10 +79,7 @@ func (r *mutationResolver) Unfollow(ctx context.Context, following int) (bool, e
 }
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (int, error) {
-	CA := security.GetCookieAccess(ctx)
-	if !CA.IsLoggedIn {
-		return 0, CA.NotLoginErr
-	}
+	userId := security.GetUserId(ctx)
 
 	err := validation.CreatePost(&input)
 	if err != nil {
@@ -96,18 +89,18 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePo
 	response, err := r.postConn.NewPost(ctx, &post.NewPostRequest{
 		Title:  input.Title,
 		Body:   input.Body,
-		UserId: CA.UserId,
+		UserId: userId,
 	})
 
 	return int(response.Id), utils.GetGRPCMSG(err)
 }
 
 func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error) {
-	CA := security.GetCookieAccess(ctx)
+	userId := security.GetUserId(ctx)
 
 	_, err := r.postConn.DeletePost(ctx, &post.DeletePostRequest{
 		PostId: uint64(input.PostID),
-		UserId: CA.UserId,
+		UserId: userId,
 	})
 
 	return err != nil, utils.GetGRPCMSG(err)
@@ -121,22 +114,18 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 	if err != nil {
 		return false, utils.GetGRPCMSG(err)
 	}
-	userId := response.GetId()
 
-	token, err := security.CreateToken(userId)
+	err = security.SetToken(ctx, response.GetId())
 	if err != nil {
 		return false, err
 	}
-
-	CA := security.GetCookieAccess(ctx)
-	CA.SetToken(token)
-	CA.UserId = userId
 
 	return true, nil
 }
 
 func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
-	security.GetCookieAccess(ctx).DeleteToken()
+	security.DeleteToken(ctx)
+
 	return true, nil
 }
 

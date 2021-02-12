@@ -5,7 +5,7 @@ import (
 	"microServiceBoilerplate/configs"
 	"microServiceBoilerplate/services/hellgate/graph"
 	"microServiceBoilerplate/services/hellgate/graph/generated"
-	"microServiceBoilerplate/services/hellgate/security"
+	"microServiceBoilerplate/services/hellgate/middlewares"
 	"microServiceBoilerplate/utils"
 
 	"microServiceBoilerplate/proto/connections"
@@ -42,7 +42,8 @@ func main() {
 		playground.Handler("micro", "/")(ctx.Writer, ctx.Request)
 	})
 
-	ginServer.Use(security.Middleware())
+	ginServer.Use(middlewares.SetWritter())
+	ginServer.Use(middlewares.SetRequest())
 
 	ginServer.Use(func(ctx *gin.Context) {
 		set := ctx.SetCookie
@@ -56,6 +57,6 @@ func main() {
 		graphqlServer.ServeHTTP(ctx.Writer, ctx.Request)
 	})
 
-	lgr.Log("🔥🔥🔥 Hellgate is open now 🔥🔥🔥")
+	lgr.RedLog("🔥🔥🔥 Hellgate is open now 🔥🔥🔥")
 	ginServer.Run(":" + configs.HellgateConfigs.StrPort)
 }

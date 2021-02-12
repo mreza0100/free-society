@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"context"
 	pbPost "microServiceBoilerplate/proto/generated/post"
 	pbRelation "microServiceBoilerplate/proto/generated/relation"
 	pbUser "microServiceBoilerplate/proto/generated/user"
@@ -10,7 +9,6 @@ import (
 	gqlGenerated "microServiceBoilerplate/services/hellgate/graph/generated"
 	"microServiceBoilerplate/services/hellgate/security"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/mreza0100/golog"
 )
 
@@ -30,15 +28,6 @@ type NewOpts struct {
 	RelationConn pbRelation.RelationServiceClient
 }
 
-func privateRoute(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
-	CA := security.GetCookieAccess(ctx)
-	if !CA.IsLoggedIn {
-		return nil, CA.NotLoginErr
-	}
-
-	return next(ctx)
-}
-
 func New(opts NewOpts) *gqlGenerated.Config {
 	resolvers := &Resolver{
 		Lgr: opts.Lgr,
@@ -49,7 +38,7 @@ func New(opts NewOpts) *gqlGenerated.Config {
 	}
 
 	directives := generated.DirectiveRoot{
-		Private: privateRoute,
+		Private: security.PrivateRoute,
 	}
 
 	return &gqlGenerated.Config{
