@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	DB *gorm.DB
+	db *gorm.DB
 )
 
 func getDSN() string {
@@ -27,7 +27,7 @@ func getDSN() string {
 }
 
 func init() {
-	DB = connectDB()
+	db = connectDB()
 	fmt.Println("Relation service: ", "✅ db is connected")
 }
 

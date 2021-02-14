@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"microServiceBoilerplate/configs"
-	"microServiceBoilerplate/services/hellgate/graph"
 	"microServiceBoilerplate/services/hellgate/graph/generated"
+	"microServiceBoilerplate/services/hellgate/graph/resolvers"
 	"microServiceBoilerplate/services/hellgate/middlewares"
 	"microServiceBoilerplate/utils"
 
@@ -27,9 +27,10 @@ func initLogger() *golog.Core {
 
 func main() {
 	lgr := initLogger()
-	graphqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(*graph.New(graph.NewOpts{
+	graphqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(*resolvers.New(resolvers.NewOpts{
 		Lgr: lgr,
 
+		FeedConn:     connections.FeedSrvConn(lgr),
 		RelationConn: connections.RelationSrvConn(lgr),
 		UserConn:     connections.UserSrvConn(lgr),
 		PostConn:     connections.PostSrvConn(lgr),

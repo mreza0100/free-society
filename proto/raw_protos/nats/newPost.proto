@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package natsPb;
+
+option go_package = "/natsPb";
+
+
+
+
+
+// new post
+message NewPost_EVENT {
+      uint64 userId = 1;
+      uint64 postId = 2;
+}

@@ -24,14 +24,14 @@ message DeletePostResponse {}
 message GetPostRequest { 
       repeated uint64 ids = 1;
 }
-message GetPostResponseInner {
+message Post {
       string title   = 1;
       string body    = 2;
       uint64 id      = 3;
       uint64 ownerId = 4;
 }
 message GetPostResponse {
-      repeated GetPostResponseInner posts = 1;
+      repeated Post posts = 1;
 }
 //
 

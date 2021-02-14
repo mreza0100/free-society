@@ -9,5 +9,6 @@ type Sevice interface {
 	GetUser(id uint64) (*pb.GetUserResponse, error)
 	DeleteUser(id uint64) error
 	Validation(email, password string) (uint64, error)
+
 	IsUserExist(userId uint64) bool
 }

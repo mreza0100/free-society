@@ -14,7 +14,7 @@ func (this *DAOS) SetFollower(follower, following uint64) error {
 	const query = `INSERT INTO followers (follower, following) VALUES (?, ?)`
 	params := []interface{}{follower, following}
 
-	tx := DB.Exec(query, params...)
+	tx := db.Exec(query, params...)
 
 	{
 		if tx.Error != nil {
@@ -29,7 +29,7 @@ func (this *DAOS) RemoveFollower(follower, following uint64) error {
 	const query = `DELETE FROM followers WHERE follower=? AND following=?`
 	params := []interface{}{follower, following}
 
-	tx := DB.Exec(query, params...)
+	tx := db.Exec(query, params...)
 
 	{
 		if tx.Error != nil {
@@ -42,4 +42,17 @@ func (this *DAOS) RemoveFollower(follower, following uint64) error {
 
 		return nil
 	}
+}
+
+func (this *DAOS) GetFollowers(userId uint64) []uint64 {
+	const query = `SELECT follower from followers WHERE following=?`
+	params := []interface{}{userId}
+
+	tx := db.Raw(query, params...)
+
+	data := make([]uint64, 0)
+
+	tx.Scan(&data)
+
+	return data
 }

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"microServiceBoilerplate/services/relation/db"
 	"microServiceBoilerplate/services/relation/types"
 
@@ -28,9 +29,16 @@ type service struct {
 }
 
 func (s *service) Follow(follower, following uint64) error {
+	if follower == following {
+		return errors.New("you cant follow your self")
+	}
+
 	return s.DAOS.SetFollower(follower, following)
 }
 
 func (s *service) Unfollow(following, follower uint64) error {
 	return s.DAOS.RemoveFollower(following, follower)
+}
+func (this *service) GetFollowers(userId uint64) []uint64 {
+	return this.DAOS.GetFollowers(userId)
 }

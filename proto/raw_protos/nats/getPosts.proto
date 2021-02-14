@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package natsPb;
+
+option go_package = "/natsPb";
+
+
+
+
+// get posts
+message GetPosts_REQUEST_request {
+      repeated uint64 postIds = 1;
+}
+
+message Post {
+      string title = 1;
+      string body = 2;
+
+      uint64 id = 3;
+      uint64 owner_id = 4;
+}
+
+message GetPosts_REQUEST_response {
+      repeated Post posts = 1;
+}

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package natsPb;
+
+option go_package = "/natsPb";
+
+
+
+// get get followers 
+message Get_followers_REQUEST_request {
+      uint64 userId = 1;
+}
+message Get_followers_REQUEST_response {
+      repeated uint64 followers = 1;
+}

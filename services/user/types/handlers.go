@@ -6,6 +6,4 @@ import (
 
 type Handlers interface {
 	pb.UserServiceServer
-
-	IsUserExist(userId uint64) bool
 }

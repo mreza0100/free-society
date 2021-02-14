@@ -33,7 +33,7 @@ type GetPostInput struct {
 	PostIds []int `json:"postIds"`
 }
 
-type GetPostRes struct {
+type Post struct {
 	Title   string `json:"title"`
 	Body    string `json:"body"`
 	ID      int    `json:"id"`

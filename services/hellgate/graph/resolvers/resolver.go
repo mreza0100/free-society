@@ -1,6 +1,7 @@
-package graph
+package resolvers
 
 import (
+	pbFeed "microServiceBoilerplate/proto/generated/feed"
 	pbPost "microServiceBoilerplate/proto/generated/post"
 	pbRelation "microServiceBoilerplate/proto/generated/relation"
 	pbUser "microServiceBoilerplate/proto/generated/user"
@@ -15,14 +16,16 @@ import (
 type Resolver struct {
 	Lgr *golog.Core
 
+	feedConn     pbFeed.FeedServiceClient
 	userConn     pbUser.UserServiceClient
 	postConn     pbPost.PostServiceClient
-	RelationConn pbRelation.RelationServiceClient
+	relationConn pbRelation.RelationServiceClient
 }
 
 type NewOpts struct {
 	Lgr *golog.Core
 
+	FeedConn     pbFeed.FeedServiceClient
 	UserConn     pbUser.UserServiceClient
 	PostConn     pbPost.PostServiceClient
 	RelationConn pbRelation.RelationServiceClient
@@ -32,7 +35,8 @@ func New(opts NewOpts) *gqlGenerated.Config {
 	resolvers := &Resolver{
 		Lgr: opts.Lgr,
 
-		RelationConn: opts.RelationConn,
+		feedConn:     opts.FeedConn,
+		relationConn: opts.RelationConn,
 		userConn:     opts.UserConn,
 		postConn:     opts.PostConn,
 	}

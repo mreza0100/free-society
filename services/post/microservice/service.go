@@ -4,17 +4,20 @@ import (
 	"microServiceBoilerplate/services/post/domain"
 	"microServiceBoilerplate/services/post/handlers"
 	postNats "microServiceBoilerplate/services/post/nats"
+	"microServiceBoilerplate/services/post/types"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewPostService(Lgr *golog.Core) handlers.Handlers {
+func NewPostService(lgr *golog.Core) types.Handlers {
 	services := domain.NewService(domain.ServiceOptions{
-		Lgr: Lgr,
+		Lgr: lgr,
 	})
+	postNats.InitialNatsSubs(services, lgr)
 
-	h := handlers.NewHandlers(services, Lgr)
-
-	postNats.InitialNatsSubs(h, Lgr)
-	return h
+	return handlers.NewHandlers(&handlers.HandlersOptns{
+		Srv:        services,
+		Lgr:        lgr,
+		Publishers: postNats.NewPublishers(lgr),
+	})
 }

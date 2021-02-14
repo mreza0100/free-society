@@ -8,10 +8,11 @@ func init() {
 		dbPort = 5434
 	)
 	PostConfigs = &serviceConfigs{
-		Addr:    "localhost:" + str(port),
-		StrPort: str(port),
-		Port:    port,
-		DBPort:  dbPort,
-		Timeout: stdConnectionTimeout,
+		Addr:      "localhost:" + str(port),
+		StrPort:   str(port),
+		Port:      port,
+		DBPort:    dbPort,
+		StrDBPort: str(dbPort),
+		Timeout:   stdConnectionTimeout,
 	}
 }

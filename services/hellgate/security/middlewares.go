@@ -16,7 +16,7 @@ func PrivateRoute(ctx context.Context, obj interface{}, next graphql.Resolver) (
 		return nil, errors.New("not login | why? : " + err.Error())
 	}
 
-	ctx = context.WithValue(ctx, UserIdKeyCtx, &userId)
+	ctx = context.WithValue(ctx, UserIdKeyCtx, userId)
 
 	return next(ctx)
 }

@@ -3,35 +3,39 @@ package handlers
 import (
 	"context"
 	pb "microServiceBoilerplate/proto/generated/post"
-	"microServiceBoilerplate/services/post/domain"
+	"microServiceBoilerplate/services/post/types"
 
 	"github.com/mreza0100/golog"
 )
 
-type Handlers interface {
-	pb.PostServiceServer
-
-	DeleteUserPosts(userId uint64) error
+type HandlersOptns struct {
+	Srv        types.Sevice
+	Lgr        *golog.Core
+	Publishers types.Publishers
 }
 
-func NewHandlers(srv domain.Sevice, Lgr *golog.Core) Handlers {
+func NewHandlers(opts *HandlersOptns) types.Handlers {
 	return &handlers{
-		srv: srv,
-		lgr: Lgr,
+		srv:        opts.Srv,
+		lgr:        opts.Lgr,
+		publishers: opts.Publishers,
 	}
 }
 
 type handlers struct {
-	srv domain.Sevice
-	lgr *golog.Core
+	srv        types.Sevice
+	lgr        *golog.Core
+	publishers types.Publishers
 
 	pb.UnimplementedPostServiceServer
 }
 
 func (h *handlers) NewPost(_ context.Context, in *pb.NewPostRequest) (*pb.NewPostResponse, error) {
-	id, err := h.srv.NewPost(in.Title, in.Body, in.UserId)
+	postId, err := h.srv.NewPost(in.Title, in.Body, in.UserId)
 
-	return &pb.NewPostResponse{Id: id}, err
+	h.publishers.NewPost(in.UserId, postId)
+
+	return &pb.NewPostResponse{Id: postId}, err
 
 }
 
@@ -48,7 +52,4 @@ func (h *handlers) GetPost(_ context.Context, in *pb.GetPostRequest) (*pb.GetPos
 
 	return &pb.GetPostResponse{Posts: res}, nil
 
-}
-func (h *handlers) DeleteUserPosts(userId uint64) error {
-	return h.srv.DeleteUserPosts(userId)
 }

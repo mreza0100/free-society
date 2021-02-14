@@ -4,15 +4,12 @@ package natsPb;
 
 option go_package = "/natsPb";
 
-// is user exist req and res
+
+
+
 message IsUserExist_REQUEST_request {
       uint64 userId = 1;
 }
 message IsUserExist_REQUEST_response {
-      bool exist = 1;
-}
-//
-
-message DeleteUserPosts_EVENT {
-      uint64 id = 1;
+      bool   exist  = 1;
 }

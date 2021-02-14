@@ -62,6 +62,7 @@ func (this *service) Validation(email, password string) (uint64, error) {
 
 	return user.ID, nil
 }
+
 func (this *service) IsUserExist(userId uint64) bool {
 	return this.DAOS.IsUserExist(userId)
 }

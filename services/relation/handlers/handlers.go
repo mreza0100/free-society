@@ -48,3 +48,7 @@ func (h *handlers) Unfollow(_ context.Context, in *pb.UnfollowRequest) (*pb.Unfo
 
 	return &pb.UnfollowResponse{}, err
 }
+
+func (this *handlers) GetFollowers(userId uint64) []uint64 {
+	return this.srv.GetFollowers(userId)
+}

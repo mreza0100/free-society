@@ -70,6 +70,3 @@ func (this *handlers) Validation(ctx context.Context, in *pb.ValidationRequest) 
 		Id: userId,
 	}, err
 }
-func (this *handlers) IsUserExist(userId uint64) bool {
-	return this.srv.IsUserExist(userId)
-}

@@ -11,8 +11,8 @@ model:
 
 resolver:
       layout: follow-schema
-      dir: graph
-      package: graph
+      dir: graph/resolvers
+      package: resolvers
 
 autobind:
       - "microServiceBoilerplate/services/hellgate/graph/model"

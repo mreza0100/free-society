@@ -14,13 +14,11 @@ func NewUserService(lgr *golog.Core) types.Handlers {
 		Lgr: lgr,
 	})
 
-	h := handlers.NewHandlers(handlers.NewHandlersOpts{
+	userNats.InitialNatsSubs(services, lgr)
+
+	return handlers.NewHandlers(handlers.NewHandlersOpts{
 		Srv:        services,
 		Lgr:        lgr,
 		Publishers: userNats.NewPublishers(lgr),
 	})
-
-	userNats.InitialNatsSubs(h, lgr)
-
-	return h
 }

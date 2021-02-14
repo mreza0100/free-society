@@ -6,12 +6,16 @@ import (
 )
 
 type serviceConfigs struct {
-	Addr      string
-	StrPort   string
-	StrDBPort string
+	Addr    string
+	Timeout time.Duration
+
 	Port      int
 	DBPort    int
-	Timeout   time.Duration
+	RedisPort int
+
+	StrPort      string
+	StrRedisPort string
+	StrDBPort    string
 }
 
 const (

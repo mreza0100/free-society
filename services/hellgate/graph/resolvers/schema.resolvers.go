@@ -1,4 +1,4 @@
-package graph
+package resolvers
 
 // This file will be automatically regenerated based on the schema, any resolver implementations
 // will be copied through when generating and any unknown code will be moved to the end.
@@ -6,9 +6,10 @@ package graph
 import (
 	"context"
 	"errors"
+	"microServiceBoilerplate/proto/generated/feed"
 	"microServiceBoilerplate/proto/generated/post"
 	"microServiceBoilerplate/proto/generated/relation"
-	pb "microServiceBoilerplate/proto/generated/user"
+	"microServiceBoilerplate/proto/generated/user"
 	"microServiceBoilerplate/services/hellgate/graph/generated"
 	models "microServiceBoilerplate/services/hellgate/graph/model"
 	"microServiceBoilerplate/services/hellgate/security"
@@ -16,13 +17,35 @@ import (
 	"microServiceBoilerplate/utils"
 )
 
+func (r *mutationResolver) Follow(ctx context.Context, following int) (bool, error) {
+	userId := security.GetUserId(ctx)
+
+	_, err := r.relationConn.Follow(ctx, &relation.FollowRequest{
+		Follower:  userId,
+		Following: uint64(following),
+	})
+
+	return err == nil, utils.GetGRPCMSG(err)
+}
+
+func (r *mutationResolver) Unfollow(ctx context.Context, following int) (bool, error) {
+	userId := security.GetUserId(ctx)
+
+	_, err := r.relationConn.Unfollow(ctx, &relation.UnfollowRequest{
+		Follower:  userId,
+		Following: uint64(following),
+	})
+
+	return err == nil, utils.GetGRPCMSG(err)
+}
+
 func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUserInput) (*models.CreateUserRes, error) {
 	err := validation.CreateUser(&input)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := r.userConn.NewUser(ctx, &pb.NewUserRequest{
+	response, err := r.userConn.NewUser(ctx, &user.NewUserRequest{
 		Name:     input.Name,
 		Email:    input.Email,
 		Gender:   input.Gender,
@@ -47,35 +70,13 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUs
 func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
 	userId := security.GetUserId(ctx)
 
-	response, err := r.userConn.DeleteUser(ctx, &pb.DeleteUserRequest{
+	response, err := r.userConn.DeleteUser(ctx, &user.DeleteUserRequest{
 		Id: userId,
 	})
 
 	security.DeleteToken(ctx)
 
 	return response.GetOk(), utils.GetGRPCMSG(err)
-}
-
-func (r *mutationResolver) Follow(ctx context.Context, following int) (bool, error) {
-	userId := security.GetUserId(ctx)
-
-	_, err := r.RelationConn.Follow(ctx, &relation.FollowRequest{
-		Follower:  userId,
-		Following: uint64(following),
-	})
-
-	return err == nil, utils.GetGRPCMSG(err)
-}
-
-func (r *mutationResolver) Unfollow(ctx context.Context, following int) (bool, error) {
-	userId := security.GetUserId(ctx)
-
-	_, err := r.RelationConn.Unfollow(ctx, &relation.UnfollowRequest{
-		Follower:  userId,
-		Following: uint64(following),
-	})
-
-	return err == nil, utils.GetGRPCMSG(err)
 }
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (int, error) {
@@ -107,7 +108,7 @@ func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePo
 }
 
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (bool, error) {
-	response, err := r.userConn.Validation(ctx, &pb.ValidationRequest{
+	response, err := r.userConn.Validation(ctx, &user.ValidationRequest{
 		Email:    email,
 		Password: password,
 	})
@@ -130,7 +131,7 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id int) (*models.User, error) {
-	response, err := r.userConn.GetUser(ctx, &pb.GetUserRequest{
+	response, err := r.userConn.GetUser(ctx, &user.GetUserRequest{
 		Id: uint64(id),
 	})
 	if err != nil {
@@ -145,9 +146,9 @@ func (r *queryResolver) GetUser(ctx context.Context, id int) (*models.User, erro
 	}, nil
 }
 
-func (r *queryResolver) GetPost(ctx context.Context, input models.GetPostInput) ([]*models.GetPostRes, error) {
+func (r *queryResolver) GetPost(ctx context.Context, input models.GetPostInput) ([]*models.Post, error) {
 	if len(input.PostIds) > 50 {
-		return []*models.GetPostRes{}, errors.New("too many ids")
+		return []*models.Post{}, errors.New("too many ids")
 	}
 
 	ids := make([]uint64, len(input.PostIds))
@@ -162,12 +163,12 @@ func (r *queryResolver) GetPost(ctx context.Context, input models.GetPostInput) 
 	if err != nil {
 		return nil, utils.GetGRPCMSG(err)
 	}
-	result := make([]*models.GetPostRes, len(response.Posts))
+	result := make([]*models.Post, len(response.Posts))
 
 	{
 		for i := 0; i < len(response.Posts); i++ {
 			resVal := response.Posts[i]
-			result[i] = &models.GetPostRes{
+			result[i] = &models.Post{
 				Title:   resVal.Title,
 				Body:    resVal.Body,
 				OwnerID: int(resVal.OwnerId),
@@ -177,6 +178,54 @@ func (r *queryResolver) GetPost(ctx context.Context, input models.GetPostInput) 
 	}
 
 	return result, nil
+}
+
+func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error) {
+	{
+		if limit > 50 {
+			return nil, errors.New("limit must be less then 50")
+		}
+	}
+
+	userId := security.GetUserId(ctx)
+	postIds := make([]uint64, 0)
+	posts := make([]*post.Post, 0)
+	convertedPosts := make([]*models.Post, 0)
+
+	{
+		response, err := r.feedConn.GetFeed(ctx, &feed.GetFeedRequest{
+			UserId: userId,
+			Offset: 0,
+			Limit:  uint64(limit),
+		})
+		if err != nil {
+			return nil, err
+		}
+		postIds = response.PostIds
+	}
+	{
+		response, err := r.postConn.GetPost(ctx, &post.GetPostRequest{
+			Ids: postIds,
+		})
+		if err != nil {
+			return nil, err
+		}
+		posts = response.Posts
+	}
+
+	{
+		for _, p := range posts {
+			convertedPosts = append(convertedPosts,
+				&models.Post{
+					Title:   p.Title,
+					Body:    p.Body,
+					ID:      int(p.Id),
+					OwnerID: int(p.OwnerId),
+				})
+		}
+	}
+
+	return convertedPosts, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -8,8 +8,11 @@ import (
 )
 
 type SubjectsT struct {
+	NewPost             string
 	DeleteUser          string
 	IsUserExist_REQUEST string
+	GetFollowers        string
+	GetPosts            string
 }
 
 type natsConfigsT struct {
@@ -48,12 +51,12 @@ func (this *natsConfigsT) GetDefaultNatsOpts(name string) []nats.Option {
 	return opts
 }
 
-var NatsConfigs natsConfigsT
+var Nats *natsConfigsT
 
 func init() {
 	sbjs := &SubjectsT{}
 
-	NatsConfigs = natsConfigsT{
+	Nats = &natsConfigsT{
 		Url:            nats.DefaultURL,
 		TotalWait:      2 * time.Minute,
 		ReconnectDelay: time.Second,
@@ -63,6 +66,9 @@ func init() {
 
 	{
 		sbjs.DeleteUser = "user.delete"
+		sbjs.NewPost = "post.new"
 		sbjs.IsUserExist_REQUEST = "user.is_exist"
+		sbjs.GetFollowers = "relation.get_followers"
+		sbjs.GetPosts = "posts.get"
 	}
 }

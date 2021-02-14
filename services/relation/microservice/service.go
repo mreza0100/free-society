@@ -13,12 +13,11 @@ func NewRelationService(lgr *golog.Core) types.Handlers {
 	services := domain.NewService(domain.ServiceOptions{
 		Lgr: lgr,
 	})
+	relationNats.InitialNatsSubs(services, lgr)
 
-	h := handlers.NewHandlers(handlers.NewHandlersOpts{
+	return handlers.NewHandlers(handlers.NewHandlersOpts{
 		Srv:        services,
 		Lgr:        lgr,
 		Publishers: relationNats.NewPublishers(lgr),
 	})
-
-	return h
 }

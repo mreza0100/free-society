@@ -14,8 +14,8 @@ const natName = "Post Service"
 
 func init() {
 	nConnection, err := nats.Connect(
-		configs.NatsConfigs.Url,
-		configs.NatsConfigs.GetDefaultNatsOpts(natName)...,
+		configs.Nats.Url,
+		configs.Nats.GetDefaultNatsOpts(natName)...,
 	)
 	if err != nil {
 		log.Fatal("✖✖✖From nats connection: cant connect to nats server exiting NOW✖✖✖")

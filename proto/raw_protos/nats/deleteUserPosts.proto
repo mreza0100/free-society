@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package natsPb;
+
+option go_package = "/natsPb";
+
+
+message DeleteUserPosts_EVENT {
+      uint64 id = 1;
+}

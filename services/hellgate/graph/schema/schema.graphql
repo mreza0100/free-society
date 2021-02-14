@@ -5,20 +5,32 @@ schema {
 
 type Query {
 	getUser(id: Int!): User
-	getPost(input: getPostInput!): [getPostRes!]!
+	getPost(input: getPostInput!): [post!]!
+
+	# feed
+	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 type Mutation {
+	# relations
+	follow(following: Int!): Boolean! @private
+	unfollow(following: Int!): Boolean! @private
+
 	# user
 	createUser(input: createUserInput!): createUserRes!
 	deleteUser: Boolean! @private
-	follow(following: Int!): Boolean! @private
-	unfollow(following: Int!): Boolean! @private
 
 	# post
 	createPost(input: createPostInput!): Int! @private
 	deletePost(input: deletePostInput!): Boolean! @private
 	login(email: String!, password: String!): Boolean!
 	logout: Boolean! @private
+}
+
+type post {
+	title: String!
+	body: String!
+	id: Int!
+	ownerId: Int!
 }
 
 # create post
@@ -33,12 +45,6 @@ input deletePostInput {
 # get post
 input getPostInput {
 	postIds: [Int!]
-}
-type getPostRes {
-	title: String!
-	body: String!
-	id: Int!
-	ownerId: Int!
 }
 
 type User {

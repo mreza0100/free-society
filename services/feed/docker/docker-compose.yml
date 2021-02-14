@@ -1,0 +1,17 @@
+version: "2.8"
+
+services:
+      feed_service_redis:
+            image: redis:latest
+            restart: always
+            environment:
+                  ALLOW_EMPTY_PASSWORD: "yes"
+            expose:
+                  - 6379
+            ports:
+                  - 6379:6379
+            # command: "--port 6379"
+            volumes:
+                  - ~/databases/redis:/data
+                  - ~/databases/redis:/var/lib/redis
+                  - ~/databases/redis:/usr/local/etc/redis/redis.conf

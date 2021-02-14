@@ -22,19 +22,26 @@ type publishers struct {
 }
 
 func (this *publishers) IsUserExist(userId uint64) bool {
-	subject := configs.NatsConfigs.Subjects.IsUserExist_REQUEST
-	data := &natsPb.IsUserExist_REQUESTRequest{
-		UserId: userId,
-	}
-	byteData, _ := proto.Marshal(data)
+	subject := configs.Nats.Subjects.IsUserExist_REQUEST
+	dbug := this.lgr.DebugPKG("IsUserExist")
 
 	{
+		byteData, _ := proto.Marshal(&natsPb.IsUserExist_REQUESTRequest{
+			UserId: userId,
+		})
 
-		msg, _ := nc.Request(subject, byteData, configs.HellgateConfigs.Timeout)
+		msg, err := nc.Request(subject, byteData, configs.HellgateConfigs.Timeout)
+		if err != nil {
+			dbug("nc.Request error")(err)
+			return false
+		}
+
 		response := &natsPb.IsUserExist_REQUESTResponse{}
-		proto.Unmarshal(msg.Data, response)
-
-		this.lgr.Log("res: ", response.Exist)
+		err = proto.Unmarshal(msg.Data, response)
+		if err != nil {
+			dbug("proto.Unmarshal error")(err)
+			return false
+		}
 
 		return response.Exist
 	}

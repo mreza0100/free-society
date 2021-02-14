@@ -26,7 +26,7 @@ func (this *DAOS) NewPost(title, body string, userId uint64) (uint64, error) {
 	return result.Id, nil
 }
 
-func (this *DAOS) GetPost(postIds []uint64) ([]*pb.GetPostResponseInner, error) {
+func (this *DAOS) GetPost(postIds []uint64) ([]*pb.Post, error) {
 	query := `SELECT * FROM posts WHERE `
 	params := make([]interface{}, 0, len(postIds))
 
@@ -42,10 +42,10 @@ func (this *DAOS) GetPost(postIds []uint64) ([]*pb.GetPostResponseInner, error) 
 	tx := DB.Raw(query, params...)
 
 	if tx.Error != nil {
-		return []*pb.GetPostResponseInner{}, tx.Error
+		return []*pb.Post{}, tx.Error
 	}
 
-	result := make([]*pb.GetPostResponseInner, 0, len(postIds))
+	result := make([]*pb.Post, 0, len(postIds))
 	tx.Scan(&result)
 
 	return result, nil
@@ -80,7 +80,7 @@ func (this *DAOS) DeleteUserPosts(userId uint64) error {
 
 	if tx.RowsAffected == 0 {
 		this.Lgr.Debug.CyanLog("tx.RowsAffected: ", tx.RowsAffected)
-		this.Lgr.Debug.YellowLog("user dont have any posts")
+		this.Lgr.Debug.InfoLog("user dont have any posts")
 		return errors.New("user dont have any posts")
 	}
 

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package feed;
+
+option go_package = "/feed";
+
+
+service FeedService {
+	rpc GetFeed(GetFeedRequest) returns (GetFeedResponse);
+}
+
+// GetFeed
+message GetFeedRequest {
+	uint64 userId = 1;
+	uint64 offset = 2;
+	uint64 limit  = 3;
+}
+message GetFeedResponse {
+	repeated uint64 postIds = 2;
+}
+//

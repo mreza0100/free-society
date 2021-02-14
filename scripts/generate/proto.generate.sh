@@ -11,7 +11,7 @@ function generate {
 		./*.proto
 }
 
-protos=("user" "post" "relation" "nats")
+protos=("user" "post" "relation" "feed" "security" "nats")
 
 
 for t in ${protos[@]};

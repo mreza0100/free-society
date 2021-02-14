@@ -10,10 +10,13 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang/protobuf v1.4.3
 	github.com/mreza0100/golog v0.0.0-20210127200816-11d3354e8a97
 	github.com/nats-io/nats-server/v2 v2.1.9 // indirect
 	github.com/nats-io/nats.go v1.10.0
+	github.com/onsi/ginkgo v1.15.0 // indirect
+	github.com/onsi/gomega v1.10.5 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0

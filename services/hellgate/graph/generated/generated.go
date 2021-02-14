@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		GetFeed func(childComplexity int, offset int, limit int) int
 		GetPost func(childComplexity int, input models.GetPostInput) int
 		GetUser func(childComplexity int, id int) int
 	}
@@ -72,7 +73,7 @@ type ComplexityRoot struct {
 		ID func(childComplexity int) int
 	}
 
-	GetPostRes struct {
+	Post struct {
 		Body    func(childComplexity int) int
 		ID      func(childComplexity int) int
 		OwnerID func(childComplexity int) int
@@ -81,10 +82,10 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	CreateUser(ctx context.Context, input models.CreateUserInput) (*models.CreateUserRes, error)
-	DeleteUser(ctx context.Context) (bool, error)
 	Follow(ctx context.Context, following int) (bool, error)
 	Unfollow(ctx context.Context, following int) (bool, error)
+	CreateUser(ctx context.Context, input models.CreateUserInput) (*models.CreateUserRes, error)
+	DeleteUser(ctx context.Context) (bool, error)
 	CreatePost(ctx context.Context, input models.CreatePostInput) (int, error)
 	DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error)
 	Login(ctx context.Context, email string, password string) (bool, error)
@@ -92,7 +93,8 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetUser(ctx context.Context, id int) (*models.User, error)
-	GetPost(ctx context.Context, input models.GetPostInput) ([]*models.GetPostRes, error)
+	GetPost(ctx context.Context, input models.GetPostInput) ([]*models.Post, error)
+	GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error)
 }
 
 type executableSchema struct {
@@ -196,6 +198,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Unfollow(childComplexity, args["following"].(int)), true
 
+	case "Query.getFeed":
+		if e.complexity.Query.GetFeed == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getFeed_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetFeed(childComplexity, args["offset"].(int), args["limit"].(int)), true
+
 	case "Query.getPost":
 		if e.complexity.Query.GetPost == nil {
 			break
@@ -255,33 +269,33 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateUserRes.ID(childComplexity), true
 
-	case "getPostRes.body":
-		if e.complexity.GetPostRes.Body == nil {
+	case "post.body":
+		if e.complexity.Post.Body == nil {
 			break
 		}
 
-		return e.complexity.GetPostRes.Body(childComplexity), true
+		return e.complexity.Post.Body(childComplexity), true
 
-	case "getPostRes.id":
-		if e.complexity.GetPostRes.ID == nil {
+	case "post.id":
+		if e.complexity.Post.ID == nil {
 			break
 		}
 
-		return e.complexity.GetPostRes.ID(childComplexity), true
+		return e.complexity.Post.ID(childComplexity), true
 
-	case "getPostRes.ownerId":
-		if e.complexity.GetPostRes.OwnerID == nil {
+	case "post.ownerId":
+		if e.complexity.Post.OwnerID == nil {
 			break
 		}
 
-		return e.complexity.GetPostRes.OwnerID(childComplexity), true
+		return e.complexity.Post.OwnerID(childComplexity), true
 
-	case "getPostRes.title":
-		if e.complexity.GetPostRes.Title == nil {
+	case "post.title":
+		if e.complexity.Post.Title == nil {
 			break
 		}
 
-		return e.complexity.GetPostRes.Title(childComplexity), true
+		return e.complexity.Post.Title(childComplexity), true
 
 	}
 	return 0, false
@@ -354,20 +368,32 @@ var sources = []*ast.Source{
 
 type Query {
 	getUser(id: Int!): User
-	getPost(input: getPostInput!): [getPostRes!]!
+	getPost(input: getPostInput!): [post!]!
+
+	# feed
+	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 type Mutation {
+	# relations
+	follow(following: Int!): Boolean! @private
+	unfollow(following: Int!): Boolean! @private
+
 	# user
 	createUser(input: createUserInput!): createUserRes!
 	deleteUser: Boolean! @private
-	follow(following: Int!): Boolean! @private
-	unfollow(following: Int!): Boolean! @private
 
 	# post
 	createPost(input: createPostInput!): Int! @private
 	deletePost(input: deletePostInput!): Boolean! @private
 	login(email: String!, password: String!): Boolean!
 	logout: Boolean! @private
+}
+
+type post {
+	title: String!
+	body: String!
+	id: Int!
+	ownerId: Int!
 }
 
 # create post
@@ -382,12 +408,6 @@ input deletePostInput {
 # get post
 input getPostInput {
 	postIds: [Int!]
-}
-type getPostRes {
-	title: String!
-	body: String!
-	id: Int!
-	ownerId: Int!
 }
 
 type User {
@@ -531,6 +551,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
+func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["offset"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["offset"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query_getPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -598,103 +642,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
-
-func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_createUser_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateUser(rctx, args["input"].(models.CreateUserInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*models.CreateUserRes)
-	fc.Result = res
-	return ec.marshalNcreateUserRes2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserRes(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().DeleteUser(rctx)
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Private == nil {
-				return nil, errors.New("directive private is not implemented")
-			}
-			return ec.directives.Private(ctx, nil, directive0)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(bool); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(bool)
-	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
-}
 
 func (ec *executionContext) _Mutation_follow(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
@@ -785,6 +732,103 @@ func (ec *executionContext) _Mutation_unfollow(ctx context.Context, field graphq
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Mutation().Unfollow(rctx, args["following"].(int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Private == nil {
+				return nil, errors.New("directive private is not implemented")
+			}
+			return ec.directives.Private(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createUser_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateUser(rctx, args["input"].(models.CreateUserInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.CreateUserRes)
+	fc.Result = res
+	return ec.marshalNcreateUserRes2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserRes(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteUser(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -1117,9 +1161,71 @@ func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.GetPostRes)
+	res := resTmp.([]*models.Post)
 	fc.Result = res
-	return ec.marshalNgetPostRes2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostResᚄ(ctx, field.Selections, res)
+	return ec.marshalNpost2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getFeed_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetFeed(rctx, args["offset"].(int), args["limit"].(int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Private == nil {
+				return nil, errors.New("directive private is not implemented")
+			}
+			return ec.directives.Private(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.Post); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*microServiceBoilerplate/services/hellgate/graph/model.Post`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.Post)
+	fc.Result = res
+	return ec.marshalNpost2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2448,7 +2554,7 @@ func (ec *executionContext) _createUserRes_id(ctx context.Context, field graphql
 	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _getPostRes_title(ctx context.Context, field graphql.CollectedField, obj *models.GetPostRes) (ret graphql.Marshaler) {
+func (ec *executionContext) _post_title(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2456,7 +2562,7 @@ func (ec *executionContext) _getPostRes_title(ctx context.Context, field graphql
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "getPostRes",
+		Object:     "post",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -2483,7 +2589,7 @@ func (ec *executionContext) _getPostRes_title(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _getPostRes_body(ctx context.Context, field graphql.CollectedField, obj *models.GetPostRes) (ret graphql.Marshaler) {
+func (ec *executionContext) _post_body(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2491,7 +2597,7 @@ func (ec *executionContext) _getPostRes_body(ctx context.Context, field graphql.
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "getPostRes",
+		Object:     "post",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -2518,7 +2624,7 @@ func (ec *executionContext) _getPostRes_body(ctx context.Context, field graphql.
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _getPostRes_id(ctx context.Context, field graphql.CollectedField, obj *models.GetPostRes) (ret graphql.Marshaler) {
+func (ec *executionContext) _post_id(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2526,7 +2632,7 @@ func (ec *executionContext) _getPostRes_id(ctx context.Context, field graphql.Co
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "getPostRes",
+		Object:     "post",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -2553,7 +2659,7 @@ func (ec *executionContext) _getPostRes_id(ctx context.Context, field graphql.Co
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _getPostRes_ownerId(ctx context.Context, field graphql.CollectedField, obj *models.GetPostRes) (ret graphql.Marshaler) {
+func (ec *executionContext) _post_ownerId(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2561,7 +2667,7 @@ func (ec *executionContext) _getPostRes_ownerId(ctx context.Context, field graph
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "getPostRes",
+		Object:     "post",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -2727,16 +2833,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "createUser":
-			out.Values[i] = ec._Mutation_createUser(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "deleteUser":
-			out.Values[i] = ec._Mutation_deleteUser(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "follow":
 			out.Values[i] = ec._Mutation_follow(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -2744,6 +2840,16 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "unfollow":
 			out.Values[i] = ec._Mutation_unfollow(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createUser":
+			out.Values[i] = ec._Mutation_createUser(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteUser":
+			out.Values[i] = ec._Mutation_deleteUser(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2813,6 +2919,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getPost(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getFeed":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getFeed(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3140,34 +3260,34 @@ func (ec *executionContext) _createUserRes(ctx context.Context, sel ast.Selectio
 	return out
 }
 
-var getPostResImplementors = []string{"getPostRes"}
+var postImplementors = []string{"post"}
 
-func (ec *executionContext) _getPostRes(ctx context.Context, sel ast.SelectionSet, obj *models.GetPostRes) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, getPostResImplementors)
+func (ec *executionContext) _post(ctx context.Context, sel ast.SelectionSet, obj *models.Post) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, postImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("getPostRes")
+			out.Values[i] = graphql.MarshalString("post")
 		case "title":
-			out.Values[i] = ec._getPostRes_title(ctx, field, obj)
+			out.Values[i] = ec._post_title(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "body":
-			out.Values[i] = ec._getPostRes_body(ctx, field, obj)
+			out.Values[i] = ec._post_body(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "id":
-			out.Values[i] = ec._getPostRes_id(ctx, field, obj)
+			out.Values[i] = ec._post_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "ownerId":
-			out.Values[i] = ec._getPostRes_ownerId(ctx, field, obj)
+			out.Values[i] = ec._post_ownerId(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3494,7 +3614,7 @@ func (ec *executionContext) unmarshalNgetPostInput2microServiceBoilerplateᚋser
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNgetPostRes2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostResᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.GetPostRes) graphql.Marshaler {
+func (ec *executionContext) marshalNpost2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Post) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3518,7 +3638,7 @@ func (ec *executionContext) marshalNgetPostRes2ᚕᚖmicroServiceBoilerplateᚋs
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNgetPostRes2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostRes(ctx, sel, v[i])
+			ret[i] = ec.marshalNpost2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPost(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3531,14 +3651,14 @@ func (ec *executionContext) marshalNgetPostRes2ᚕᚖmicroServiceBoilerplateᚋs
 	return ret
 }
 
-func (ec *executionContext) marshalNgetPostRes2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐGetPostRes(ctx context.Context, sel ast.SelectionSet, v *models.GetPostRes) graphql.Marshaler {
+func (ec *executionContext) marshalNpost2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *models.Post) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._getPostRes(ctx, sel, v)
+	return ec._post(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

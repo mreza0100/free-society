@@ -1,25 +1,18 @@
 package domain
 
 import (
-	"errors"
 	pb "microServiceBoilerplate/proto/generated/post"
 	"microServiceBoilerplate/services/post/db"
+	"microServiceBoilerplate/services/post/types"
 
 	"github.com/mreza0100/golog"
 )
-
-type Sevice interface {
-	NewPost(title, body string, userId uint64) (uint64, error)
-	GetPost(postIds []uint64) ([]*pb.GetPostResponseInner, error)
-	DeletePost(postId, userId uint64) error
-	DeleteUserPosts(userId uint64) error
-}
 
 type ServiceOptions struct {
 	Lgr *golog.Core
 }
 
-func NewService(opts ServiceOptions) Sevice {
+func NewService(opts ServiceOptions) types.Sevice {
 	daos := &db.DAOS{
 		Lgr: opts.Lgr.With("In DAOS: "),
 	}
@@ -43,9 +36,9 @@ func (this *service) DeletePost(postId, userId uint64) error {
 	return this.daos.DeletePost(postId, userId)
 }
 
-func (this *service) GetPost(postIds []uint64) ([]*pb.GetPostResponseInner, error) {
+func (this *service) GetPost(postIds []uint64) ([]*pb.Post, error) {
 	if len(postIds) == 0 {
-		return []*pb.GetPostResponseInner{}, errors.New("0 len in postIds")
+		return []*pb.Post{}, nil
 	}
 	return this.daos.GetPost(postIds)
 

@@ -6,6 +6,4 @@ import (
 
 type Handlers interface {
 	pb.RelationServiceServer
-
-	// other handlers...
 }

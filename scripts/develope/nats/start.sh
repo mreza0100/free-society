@@ -8,6 +8,6 @@ cd ../../..
 root=$(pwd)
 
 
-cd $root/nats/docker
+cd $root/services/hellgate/docker
 
 sudo docker-compose up $1
