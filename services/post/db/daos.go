@@ -15,7 +15,7 @@ func (this *DAOS) NewPost(title, body string, userId uint64) (uint64, error) {
 	const query = `INSERT INTO posts (title, body, owner_id) VALUES (?, ?, ?) RETURNING id`
 	params := []interface{}{title, body, userId}
 
-	tx := DB.Raw(query, params...)
+	tx := db.Raw(query, params...)
 	if tx.Error != nil {
 		return 0, tx.Error
 	}
@@ -39,7 +39,7 @@ func (this *DAOS) GetPost(postIds []uint64) ([]*pb.Post, error) {
 		query = query[:len(query)-3]
 	}
 
-	tx := DB.Raw(query, params...)
+	tx := db.Raw(query, params...)
 
 	if tx.Error != nil {
 		return []*pb.Post{}, tx.Error
@@ -55,7 +55,7 @@ func (this *DAOS) DeletePost(postId, userId uint64) error {
 	const query = `DELETE FROM posts WHERE id=? AND owner_id=?`
 	params := []interface{}{postId, userId}
 
-	tx := DB.Exec(query, params...)
+	tx := db.Exec(query, params...)
 
 	if tx.Error != nil {
 		return tx.Error
@@ -72,7 +72,7 @@ func (this *DAOS) DeleteUserPosts(userId uint64) error {
 	const query = `DELETE FROM posts WHERE owner_id=?`
 	params := []interface{}{userId}
 
-	tx := DB.Exec(query, params...)
+	tx := db.Exec(query, params...)
 
 	if tx.Error != nil {
 		return tx.Error

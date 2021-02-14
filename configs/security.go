@@ -9,13 +9,16 @@ func init() {
 		redisPort = 6380
 	)
 	SecurityConfigs = &serviceConfigs{
-		Addr:         "localhost:" + str(port),
-		StrPort:      str(port),
-		Port:         port,
-		DBPort:       dbPort,
+		Addr:    "localhost:" + str(port),
+		Timeout: stdConnectionTimeout,
+
+		StrPort: str(port),
+		Port:    port,
+
+		DBPort:    dbPort,
+		StrDBPort: str(dbPort),
+
 		RedisPort:    redisPort,
 		StrRedisPort: str(redisPort),
-		StrDBPort:    str(dbPort),
-		Timeout:      stdConnectionTimeout,
 	}
 }

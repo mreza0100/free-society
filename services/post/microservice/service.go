@@ -1,6 +1,7 @@
 package microservice
 
 import (
+	"microServiceBoilerplate/services/post/db"
 	"microServiceBoilerplate/services/post/domain"
 	"microServiceBoilerplate/services/post/handlers"
 	postNats "microServiceBoilerplate/services/post/nats"
@@ -13,6 +14,8 @@ func NewPostService(lgr *golog.Core) types.Handlers {
 	services := domain.NewService(domain.ServiceOptions{
 		Lgr: lgr,
 	})
+
+	db.ConnectDB(lgr)
 	postNats.InitialNatsSubs(services, lgr)
 
 	return handlers.NewHandlers(&handlers.HandlersOptns{

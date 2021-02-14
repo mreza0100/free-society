@@ -3,7 +3,10 @@
 package security
 
 import (
+	context "context"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -11,51 +14,124 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// RelationServiceClient is the client API for RelationService service.
+// SecurityServiceClient is the client API for SecurityService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type RelationServiceClient interface {
+type SecurityServiceClient interface {
+	NewUser(ctx context.Context, in *NewUserRequest, opts ...grpc.CallOption) (*NewUserResponse, error)
+	Login(ctx context.Context, in *LogInRequest, opts ...grpc.CallOption) (*LogInResponse, error)
 }
 
-type relationServiceClient struct {
+type securityServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewRelationServiceClient(cc grpc.ClientConnInterface) RelationServiceClient {
-	return &relationServiceClient{cc}
+func NewSecurityServiceClient(cc grpc.ClientConnInterface) SecurityServiceClient {
+	return &securityServiceClient{cc}
 }
 
-// RelationServiceServer is the server API for RelationService service.
-// All implementations must embed UnimplementedRelationServiceServer
+func (c *securityServiceClient) NewUser(ctx context.Context, in *NewUserRequest, opts ...grpc.CallOption) (*NewUserResponse, error) {
+	out := new(NewUserResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/NewUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *securityServiceClient) Login(ctx context.Context, in *LogInRequest, opts ...grpc.CallOption) (*LogInResponse, error) {
+	out := new(LogInResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/Login", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SecurityServiceServer is the server API for SecurityService service.
+// All implementations must embed UnimplementedSecurityServiceServer
 // for forward compatibility
-type RelationServiceServer interface {
-	mustEmbedUnimplementedRelationServiceServer()
+type SecurityServiceServer interface {
+	NewUser(context.Context, *NewUserRequest) (*NewUserResponse, error)
+	Login(context.Context, *LogInRequest) (*LogInResponse, error)
+	mustEmbedUnimplementedSecurityServiceServer()
 }
 
-// UnimplementedRelationServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedRelationServiceServer struct {
+// UnimplementedSecurityServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedSecurityServiceServer struct {
 }
 
-func (UnimplementedRelationServiceServer) mustEmbedUnimplementedRelationServiceServer() {}
+func (UnimplementedSecurityServiceServer) NewUser(context.Context, *NewUserRequest) (*NewUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NewUser not implemented")
+}
+func (UnimplementedSecurityServiceServer) Login(context.Context, *LogInRequest) (*LogInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedSecurityServiceServer) mustEmbedUnimplementedSecurityServiceServer() {}
 
-// UnsafeRelationServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to RelationServiceServer will
+// UnsafeSecurityServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SecurityServiceServer will
 // result in compilation errors.
-type UnsafeRelationServiceServer interface {
-	mustEmbedUnimplementedRelationServiceServer()
+type UnsafeSecurityServiceServer interface {
+	mustEmbedUnimplementedSecurityServiceServer()
 }
 
-func RegisterRelationServiceServer(s grpc.ServiceRegistrar, srv RelationServiceServer) {
-	s.RegisterService(&RelationService_ServiceDesc, srv)
+func RegisterSecurityServiceServer(s grpc.ServiceRegistrar, srv SecurityServiceServer) {
+	s.RegisterService(&SecurityService_ServiceDesc, srv)
 }
 
-// RelationService_ServiceDesc is the grpc.ServiceDesc for RelationService service.
+func _SecurityService_NewUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).NewUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/NewUser",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).NewUser(ctx, req.(*NewUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SecurityService_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).Login(ctx, req.(*LogInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// SecurityService_ServiceDesc is the grpc.ServiceDesc for SecurityService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var RelationService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "security.RelationService",
-	HandlerType: (*RelationServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "security.proto",
+var SecurityService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "security.SecurityService",
+	HandlerType: (*SecurityServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "NewUser",
+			Handler:    _SecurityService_NewUser_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _SecurityService_Login_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "security.proto",
 }

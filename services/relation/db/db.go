@@ -6,6 +6,7 @@ import (
 	"microServiceBoilerplate/configs"
 	models "microServiceBoilerplate/services/relation/models"
 
+	"github.com/mreza0100/golog"
 	postgres "gorm.io/driver/postgres"
 	gorm "gorm.io/gorm"
 	schema "gorm.io/gorm/schema"
@@ -20,15 +21,10 @@ func getDSN() string {
 		host   = " host=localhost "
 		user   = " user=postgres "
 		dbname = " dbname=postgres "
-		port   = " port=" + configs.RelationConfigs.StrDBPort + " "
+		port   = " port=" + configs.RelationConfigs.StrDBPort
 	)
 
 	return host + user + dbname + port
-}
-
-func init() {
-	db = connectDB()
-	fmt.Println("Relation service: ", "✅ db is connected")
 }
 
 func getConfigs() (gormConfigs *gorm.Config, driverConfigs gorm.Dialector) {
@@ -45,20 +41,19 @@ func getConfigs() (gormConfigs *gorm.Config, driverConfigs gorm.Dialector) {
 	return
 }
 
-func connectDB() *gorm.DB {
+func ConnectDB(lgr *golog.Core) {
 	gormConfigs, driverConfigs := getConfigs()
 
-	db, err := gorm.Open(driverConfigs, gormConfigs)
+	var err error
+	db, err = gorm.Open(driverConfigs, gormConfigs)
 	if err != nil {
 		panic("failed to connect database")
 	}
-
-	migrations(db)
-
-	return db
+	lgr.SuccessLog("Connected to DB")
+	migrations()
 }
 
-func migrations(db *gorm.DB) {
+func migrations() {
 	if err := db.AutoMigrate(&models.Followers{}); err != nil {
 		fmt.Println(err)
 		fmt.Println("\n\n\n\n\n\n\n\n ")

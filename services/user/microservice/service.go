@@ -1,6 +1,7 @@
 package microservice
 
 import (
+	"microServiceBoilerplate/services/user/db"
 	"microServiceBoilerplate/services/user/domain"
 	"microServiceBoilerplate/services/user/handlers"
 	userNats "microServiceBoilerplate/services/user/nats"
@@ -14,6 +15,7 @@ func NewUserService(lgr *golog.Core) types.Handlers {
 		Lgr: lgr,
 	})
 
+	db.ConnectDB(lgr)
 	userNats.InitialNatsSubs(services, lgr)
 
 	return handlers.NewHandlers(handlers.NewHandlersOpts{

@@ -1,19 +1,19 @@
 package db
 
 import (
-	"fmt"
-
+	fmt "fmt"
 	"microServiceBoilerplate/configs"
-	"microServiceBoilerplate/services/post/models"
 
+	"github.com/go-redis/redis"
 	"github.com/mreza0100/golog"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
+	postgres "gorm.io/driver/postgres"
+	gorm "gorm.io/gorm"
+	schema "gorm.io/gorm/schema"
 )
 
 var (
-	db *gorm.DB
+	psDB    *gorm.DB
+	redisDB *redis.Client
 )
 
 func getDSN() string {
@@ -21,9 +21,8 @@ func getDSN() string {
 		host   = " host=localhost "
 		user   = " user=postgres "
 		dbname = " dbname=postgres "
-		port   = " port=" + configs.PostConfigs.StrDBPort + " "
+		port   = " port=" + configs.UserConfigs.StrDBPort
 	)
-
 	return host + user + dbname + port
 }
 
@@ -35,29 +34,38 @@ func getConfigs() (gormConfigs *gorm.Config, driverConfigs gorm.Dialector) {
 	gormConfigs = &gorm.Config{
 		NamingStrategy:         schema.NamingStrategy{},
 		SkipDefaultTransaction: true,
+		// PrepareStmt:            false,
 	}
 
 	return
 }
 
-func ConnectDB(lgr *golog.Core) {
+func ConnectPS(lgr *golog.Core) {
 	gormConfigs, driverConfigs := getConfigs()
 
 	var err error
-	db, err = gorm.Open(driverConfigs, gormConfigs)
+	psDB, err = gorm.Open(driverConfigs, gormConfigs)
 	if err != nil {
 		panic("failed to connect database")
 	}
+	lgr.SuccessLog("Connected to ps db")
 
-	lgr.SuccessLog("Connected to db")
-
-	migrations()
-}
-
-func migrations() {
-	if err := db.AutoMigrate(&models.Post{}); err != nil {
+	if err := psDB.AutoMigrate(); err != nil {
 		fmt.Println(err)
 		fmt.Println("\n\n\n\n\n\n\n\n ")
 		panic("db migration failed")
 	}
+}
+
+func ConnecRedis(lgr *golog.Core) {
+	redisDB = redis.NewClient(&redis.Options{
+		Addr:     "localhost:" + configs.FeedConfigs.StrDBPort,
+		Password: "",
+		DB:       0,
+
+		OnConnect: func(c *redis.Conn) error {
+			lgr.GreenLog("redis is connected successfuly")
+			return nil
+		},
+	})
 }

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package security;
+
+option go_package = "/security";
+
+
+service SecurityService {
+      rpc NewUser(NewUserRequest) returns (NewUserResponse);
+      rpc Login(LogInRequest) returns (LogInResponse);
+}
+
+// NewUser
+message NewUserRequest {
+      uint64 userId   = 1;
+      string password = 2;
+}
+message NewUserResponse {
+      string token    = 1;
+}
+
+message LogInRequest {
+      uint64 email    = 1;
+      string password = 2;
+}
+message LogInResponse {
+      string token    = 1;
+}

@@ -3,33 +3,33 @@ package db
 import (
 	fmt "fmt"
 
+	"microServiceBoilerplate/configs"
 	models "microServiceBoilerplate/services/user/models"
 
+	"github.com/mreza0100/golog"
 	postgres "gorm.io/driver/postgres"
 	gorm "gorm.io/gorm"
 	schema "gorm.io/gorm/schema"
 )
 
 var (
-	DB *gorm.DB
+	db *gorm.DB
 )
 
-const (
-	host   = " host=localhost "
-	user   = " user=postgres "
-	dbname = " dbname=postgres "
-	port   = " port=5433 "
-	dsn    = host + user + dbname + port
-)
+func getDSN() string {
+	var (
+		host   = " host=localhost "
+		user   = " user=postgres "
+		dbname = " dbname=postgres "
+		port   = " port=" + configs.UserConfigs.StrDBPort
+	)
+	return host + user + dbname + port
 
-func init() {
-	DB = connectDB()
-	fmt.Println("User service: ", "✅ db is connected")
 }
 
 func getConfigs() (gormConfigs *gorm.Config, driverConfigs gorm.Dialector) {
 	driverConfigs = postgres.New(postgres.Config{
-		DSN: dsn,
+		DSN: getDSN(),
 	})
 
 	gormConfigs = &gorm.Config{
@@ -41,20 +41,21 @@ func getConfigs() (gormConfigs *gorm.Config, driverConfigs gorm.Dialector) {
 	return
 }
 
-func connectDB() *gorm.DB {
+func ConnectDB(lgr *golog.Core) {
 	gormConfigs, driverConfigs := getConfigs()
 
-	db, err := gorm.Open(driverConfigs, gormConfigs)
+	var err error
+	db, err = gorm.Open(driverConfigs, gormConfigs)
 	if err != nil {
 		panic("failed to connect database")
 	}
 
-	migrations(db)
+	lgr.SuccessLog("Connected to DB")
 
-	return db
+	migrations()
 }
 
-func migrations(db *gorm.DB) {
+func migrations() {
 	if err := db.AutoMigrate(&models.User{}); err != nil {
 		fmt.Println(err)
 		fmt.Println("\n\n\n\n\n\n\n\n ")

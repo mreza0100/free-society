@@ -19,7 +19,7 @@ func (this *DAOS) NewUser(user *models.User) (uint64, error) {
 	const query = `INSERT INTO users (name, gender, email, password) VALUES (?, ?, ?, ?) RETURNING id`
 	params := []interface{}{user.Name, user.Gender, user.Email, user.Password}
 
-	tx := DB.Raw(query, params...)
+	tx := db.Raw(query, params...)
 	if tx.Error != nil {
 		return 0, tx.Error
 	}
@@ -35,7 +35,7 @@ func (this *DAOS) GetUser(id uint64) (*pb.GetUserResponse, error) {
 	params := []interface{}{id}
 
 	user := &pb.GetUserResponse{}
-	tx := DB.Raw(query, params...).Scan(user)
+	tx := db.Raw(query, params...).Scan(user)
 
 	if tx.RowsAffected != 1 {
 		return nil, errors.New("Not found")
@@ -49,7 +49,7 @@ func (this *DAOS) DeleteUser(id uint64) error {
 	const query = `DELETE FROM users WHERE id=?`
 	params := []interface{}{id}
 
-	tx := DB.Exec(query, params...)
+	tx := db.Exec(query, params...)
 
 	if tx.RowsAffected == 0 {
 		return status.Errorf(codes.NotFound, fmt.Sprintf("Not found %v", id))
@@ -61,7 +61,7 @@ func (this *DAOS) GetUserByEmail(email string) (*models.User, error) {
 	const query = `SELECT * FROM users WHERE email=?`
 	params := []interface{}{email}
 
-	tx := DB.Raw(query, params...)
+	tx := db.Raw(query, params...)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -75,7 +75,7 @@ func (this *DAOS) IsUserExist(userId uint64) bool {
 	const query = `SELECT EXISTS(SELECT 1 FROM users WHERE id=?)`
 	params := []interface{}{userId}
 
-	tx := DB.Raw(query, params...)
+	tx := db.Raw(query, params...)
 	if tx.Error != nil {
 		return false
 	}
