@@ -1,7 +1,6 @@
 package connections
 
 import (
-	"fmt"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/feed"
 
@@ -12,10 +11,9 @@ import (
 func FeedSrvConn(lgr *golog.Core) pb.FeedServiceClient {
 	conn, err := grpc.Dial(configs.FeedConfigs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.PostConfigs.Timeout))
 	if err != nil {
-		fmt.Println("Cant connect to feed service")
-		panic(err)
+		lgr.Fatal("Cant connect to feed service", err)
 	}
 
-	lgr.GreenLog("✅ Connected to feed service :)")
+	lgr.SuccessLog("Connected to feed service :)")
 	return pb.NewFeedServiceClient(conn)
 }

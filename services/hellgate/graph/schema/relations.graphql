@@ -1,0 +1,4 @@
+extend type Mutation {
+	follow(following: Int!): Boolean! @private
+	unfollow(following: Int!): Boolean! @private
+}

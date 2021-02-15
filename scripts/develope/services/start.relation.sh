@@ -8,7 +8,7 @@ cd ../../..
 root=$(pwd)
 
 
+source $root/scripts/develope/env.sh
 
-export MODE=dev
 
 go run $root/services/relation/server

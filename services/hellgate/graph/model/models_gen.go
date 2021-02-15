@@ -21,10 +21,6 @@ type CreateUserInput struct {
 	Password string `json:"password"`
 }
 
-type CreateUserRes struct {
-	ID *int `json:"id"`
-}
-
 type DeletePostInput struct {
 	PostID int `json:"postId"`
 }

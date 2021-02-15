@@ -3,66 +3,7 @@ schema {
 	mutation: Mutation
 }
 
-type Query {
-	getUser(id: Int!): User
-	getPost(input: getPostInput!): [post!]!
-
-	# feed
-	getFeed(offset: Int!, limit: Int!): [post!]! @private
-}
-type Mutation {
-	# relations
-	follow(following: Int!): Boolean! @private
-	unfollow(following: Int!): Boolean! @private
-
-	# user
-	createUser(input: createUserInput!): createUserRes!
-	deleteUser: Boolean! @private
-
-	# post
-	createPost(input: createPostInput!): Int! @private
-	deletePost(input: deletePostInput!): Boolean! @private
-	login(email: String!, password: String!): Boolean!
-	logout: Boolean! @private
-}
-
-type post {
-	title: String!
-	body: String!
-	id: Int!
-	ownerId: Int!
-}
-
-# create post
-input createPostInput {
-	title: String!
-	body: String!
-}
-# delete post
-input deletePostInput {
-	postId: Int!
-}
-# get post
-input getPostInput {
-	postIds: [Int!]
-}
-
-type User {
-	id: Int!
-	name: String!
-	email: String!
-	gender: String!
-}
-
-# create user
-input createUserInput {
-	name: String!
-	email: String!
-	gender: String!
-	password: String!
-}
-type createUserRes {
-	id: Int
-}
+type Query
+type Mutation
 
 directive @private on FIELD_DEFINITION

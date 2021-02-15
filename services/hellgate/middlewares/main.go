@@ -12,7 +12,7 @@ func SetWritter() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var w http.ResponseWriter = ctx.Writer
 
-		utils.SetValGinCtx(ctx, security.WriterKeyCtx, &w)
+		utils.SetValGinCtx(ctx, security.WRITE_KEY_CTX, &w)
 
 		ctx.Next()
 	}
@@ -20,7 +20,7 @@ func SetWritter() gin.HandlerFunc {
 
 func SetRequest() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		utils.SetValGinCtx(ctx, security.RequestKeyCtx, ctx.Request)
+		utils.SetValGinCtx(ctx, security.REQUEST_KEY_CTX, ctx.Request)
 
 		ctx.Next()
 	}

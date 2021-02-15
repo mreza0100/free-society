@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"microServiceBoilerplate/configs"
 	"microServiceBoilerplate/services/hellgate/graph/generated"
 	"microServiceBoilerplate/services/hellgate/graph/resolvers"
@@ -30,8 +29,9 @@ func main() {
 	graphqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(*resolvers.New(resolvers.NewOpts{
 		Lgr: lgr,
 
-		FeedConn:     connections.FeedSrvConn(lgr),
+		SecurityConn: connections.SecuritySrvConn(lgr),
 		RelationConn: connections.RelationSrvConn(lgr),
+		FeedConn:     connections.FeedSrvConn(lgr),
 		UserConn:     connections.UserSrvConn(lgr),
 		PostConn:     connections.PostSrvConn(lgr),
 	})))
@@ -45,14 +45,6 @@ func main() {
 
 	ginServer.Use(middlewares.SetWritter())
 	ginServer.Use(middlewares.SetRequest())
-
-	ginServer.Use(func(ctx *gin.Context) {
-		set := ctx.SetCookie
-		newCtx := context.WithValue(ctx.Request.Context(), "mamad", set)
-
-		ctx.Request = ctx.Request.WithContext(newCtx)
-		ctx.Next()
-	})
 
 	ginServer.POST("/", func(ctx *gin.Context) {
 		graphqlServer.ServeHTTP(ctx.Writer, ctx.Request)

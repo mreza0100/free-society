@@ -33,8 +33,6 @@ func (this *subscribers) GetFollowers_REQUEST() {
 		nc.Subscribe(subject, func(msg *nats.Msg) {
 			request := natsPb.GetFollowers_REQUESTRequest{}
 
-			this.lgr.GreenLog("get request in sub")
-
 			err := proto.Unmarshal(msg.Data, &request)
 			if err != nil {
 				dbug("cant Unmarshal request")(err)

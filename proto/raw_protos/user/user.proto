@@ -10,23 +10,15 @@ service UserService {
       rpc NewUser(NewUserRequest) returns (NewUserResponse);
       rpc GetUser(GetUserRequest) returns (GetUserResponse);
       rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
-      rpc Validation(validationRequest) returns (validationResponse);
 }
 
-// validation
-message validationRequest {
-      string email    = 1;
-      string password = 2;
-}
-message validationResponse {
-      uint64 id = 1;
-}
 
 
 
 // get User
 message GetUserRequest {
-      uint64 id = 1;
+      uint64 id    = 1;
+      string email = 2;      
 }
 message GetUserResponse {
       uint64 id     = 1;
@@ -48,7 +40,6 @@ message NewUserRequest {
       string name     = 1;
       string email    = 2;
       string gender   = 3;
-      string password = 4;
 }
 message NewUserResponse { uint64 id = 1; }
 //

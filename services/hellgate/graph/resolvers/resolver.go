@@ -4,6 +4,7 @@ import (
 	pbFeed "microServiceBoilerplate/proto/generated/feed"
 	pbPost "microServiceBoilerplate/proto/generated/post"
 	pbRelation "microServiceBoilerplate/proto/generated/relation"
+	pbSecurity "microServiceBoilerplate/proto/generated/security"
 	pbUser "microServiceBoilerplate/proto/generated/user"
 
 	"microServiceBoilerplate/services/hellgate/graph/generated"
@@ -19,6 +20,7 @@ type Resolver struct {
 	feedConn     pbFeed.FeedServiceClient
 	userConn     pbUser.UserServiceClient
 	postConn     pbPost.PostServiceClient
+	SecurityConn pbSecurity.SecurityServiceClient
 	relationConn pbRelation.RelationServiceClient
 }
 
@@ -28,6 +30,7 @@ type NewOpts struct {
 	FeedConn     pbFeed.FeedServiceClient
 	UserConn     pbUser.UserServiceClient
 	PostConn     pbPost.PostServiceClient
+	SecurityConn pbSecurity.SecurityServiceClient
 	RelationConn pbRelation.RelationServiceClient
 }
 
@@ -36,13 +39,15 @@ func New(opts NewOpts) *gqlGenerated.Config {
 		Lgr: opts.Lgr,
 
 		feedConn:     opts.FeedConn,
-		relationConn: opts.RelationConn,
 		userConn:     opts.UserConn,
 		postConn:     opts.PostConn,
+		SecurityConn: opts.SecurityConn,
+		relationConn: opts.RelationConn,
 	}
 
 	directives := generated.DirectiveRoot{
-		Private: security.PrivateRoute,
+		// I need Security connection in my middleware
+		Private: security.PrivateRoute(opts.SecurityConn),
 	}
 
 	return &gqlGenerated.Config{

@@ -13,19 +13,11 @@ resolver:
       layout: follow-schema
       dir: graph/resolvers
       package: resolvers
+      filename_template: "{name}.resolvers.go"
+      type: Resolver
 
 autobind:
       - "microServiceBoilerplate/services/hellgate/graph/model"
 
+# TODO: path to grpc models
 models:
-      ID:
-            model:
-                  - github.com/99designs/gqlgen/graphql.ID
-                  - github.com/99designs/gqlgen/graphql.Int
-                  - github.com/99designs/gqlgen/graphql.Int64
-                  - github.com/99designs/gqlgen/graphql.Int32
-      Int:
-            model:
-                  - github.com/99designs/gqlgen/graphql.Int
-                  - github.com/99designs/gqlgen/graphql.Int64
-                  - github.com/99designs/gqlgen/graphql.Int32

@@ -8,11 +8,7 @@ cd ../../..
 root=$(pwd)
 
 
+source $root/scripts/develope/env.sh
 
-
-
-export GIN_MODE=debug
-export MODE=dev
-export SECRET_KEY="ap:OUWE#@#9iwjd@u3wj20i2erakwjdfAOJGF_@!I"
 
 go run $root/services/hellgate/server

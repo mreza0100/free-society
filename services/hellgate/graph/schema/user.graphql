@@ -1,0 +1,22 @@
+extend type Query {
+	getUser(id: Int!): User
+}
+
+extend type Mutation {
+	createUser(input: createUserInput!): Int!
+	deleteUser: Boolean! @private
+}
+
+type User {
+	id: Int!
+	name: String!
+	email: String!
+	gender: String!
+}
+
+input createUserInput {
+	name: String!
+	email: String!
+	gender: String!
+	password: String!
+}

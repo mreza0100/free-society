@@ -26,12 +26,12 @@ func initLogger() *golog.Core {
 func main() {
 	var (
 		lgr        = initLogger()
-		service    = microservice.NewUserService(lgr)
+		service    = microservice.NewSecurityService(lgr)
 		grpcServer = grpc.NewServer()
 	)
 	pb.RegisterSecurityServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", ":"+configs.UserConfigs.StrPort)
+	lis, err := net.Listen("tcp", ":"+configs.SecurityConfigs.StrPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

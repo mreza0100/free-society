@@ -1,0 +1,27 @@
+extend type Query {
+	getPost(input: getPostInput!): [post!]!
+	getFeed(offset: Int!, limit: Int!): [post!]! @private
+}
+
+extend type Mutation {
+	createPost(input: createPostInput!): Int! @private
+	deletePost(input: deletePostInput!): Boolean! @private
+}
+
+type post {
+	title: String!
+	body: String!
+	id: Int!
+	ownerId: Int!
+}
+
+input createPostInput {
+	title: String!
+	body: String!
+}
+input deletePostInput {
+	postId: Int!
+}
+input getPostInput {
+	postIds: [Int!]
+}

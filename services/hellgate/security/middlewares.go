@@ -3,20 +3,38 @@ package security
 import (
 	"context"
 	"errors"
+	"microServiceBoilerplate/proto/generated/security"
 
 	"github.com/99designs/gqlgen/graphql"
 )
 
-func PrivateRoute(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
-	r := GetRequest(ctx)
+func PrivateRoute(securityConn security.SecurityServiceClient) func(context.Context, interface{}, graphql.Resolver) (interface{}, error) {
+	return func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
+		var (
+			token  string
+			userId uint64
+		)
 
-	userId, err := extractUserId(r)
-	if err != nil {
-		DeleteToken(ctx)
-		return nil, errors.New("not login | why? : " + err.Error())
+		{
+			req := GetRequest(ctx)
+			auth, err := req.Cookie(COOKIE_NAME)
+			if err != nil {
+				return nil, errors.New("U are not logged in")
+			}
+			token = auth.Value
+		}
+
+		{
+			response, err := securityConn.GetUserId(ctx, &security.GetUserIdRequest{
+				Token: token,
+			})
+			if err != nil {
+				DeleteToken(ctx)
+				return nil, errors.New("U are not logged in")
+			}
+			userId = response.UserId
+		}
+
+		return next(context.WithValue(ctx, USER_ID_KEY_CTX, userId))
 	}
-
-	ctx = context.WithValue(ctx, UserIdKeyCtx, userId)
-
-	return next(ctx)
 }

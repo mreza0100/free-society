@@ -3,14 +3,14 @@ package userNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/user/types"
+	"microServiceBoilerplate/services/user/instanses"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 )
 
-func InitialNatsSubs(srv types.Sevice, lgr *golog.Core) {
+func InitialNatsSubs(srv instanses.Sevice, lgr *golog.Core) {
 	s := subscribers{
 		srv: srv,
 		lgr: lgr.With("In subscribers => "),
@@ -21,7 +21,7 @@ func InitialNatsSubs(srv types.Sevice, lgr *golog.Core) {
 }
 
 type subscribers struct {
-	srv types.Sevice
+	srv instanses.Sevice
 	lgr *golog.Core
 }
 

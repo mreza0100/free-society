@@ -2,40 +2,34 @@ package security
 
 import (
 	"context"
-	"errors"
 	"log"
 	"net/http"
 	"time"
 )
 
 const (
-	WriterKeyCtx  = "writter"
-	RequestKeyCtx = "request"
-	UserIdKeyCtx  = "user_id"
-	CookieName    = "auth"
+	WRITE_KEY_CTX      = "writter"
+	REQUEST_KEY_CTX    = "request"
+	USER_ID_KEY_CTX    = "user_id"
+	COOKIE_NAME        = "auth"
+	COOKIE_EXPIRE_TIME = time.Hour * 24 * 7
 )
 
-func SetToken(ctx context.Context, userId uint64) error {
-	token, err := CreateToken(userId)
-	if err != nil {
-		return err
-	}
-
+func SetToken(ctx context.Context, token string) {
 	http.SetCookie(*GetWriter(ctx), &http.Cookie{
-		Name:     CookieName,
+		Name:     COOKIE_NAME,
 		Value:    token,
 		HttpOnly: true,
 		Path:     "/",
-		Expires:  time.Now().Add(token_expire),
+		Expires:  time.Now().Add(COOKIE_EXPIRE_TIME),
 		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
 	})
-	return nil
 }
 
 func DeleteToken(ctx context.Context) {
 	http.SetCookie(*GetWriter(ctx), &http.Cookie{
-		Name:     CookieName,
+		Name:     COOKIE_NAME,
 		Value:    "",
 		HttpOnly: true,
 		Path:     "/",
@@ -46,27 +40,21 @@ func DeleteToken(ctx context.Context) {
 	})
 }
 
-func extractUserId(req *http.Request) (uint64, error) {
-	c, err := req.Cookie(CookieName)
-	if err != nil {
-		return 0, errors.New("There is no token in cookies")
-	}
+func GetCookie(ctx context.Context) string {
+	req := GetRequest(ctx)
 
-	userId, err := ParseToken(c.Value)
-	if err != nil {
-		return 0, err
-	}
-	return userId, nil
+	c, _ := req.Cookie(COOKIE_NAME)
+	return c.Value
 }
 
 func GetWriter(ctx context.Context) *http.ResponseWriter {
-	return ctx.Value(WriterKeyCtx).(*http.ResponseWriter)
+	return ctx.Value(WRITE_KEY_CTX).(*http.ResponseWriter)
 }
 func GetRequest(ctx context.Context) *http.Request {
-	return ctx.Value(RequestKeyCtx).(*http.Request)
+	return ctx.Value(REQUEST_KEY_CTX).(*http.Request)
 }
 func GetUserId(ctx context.Context) uint64 {
-	data, ok := ctx.Value(UserIdKeyCtx).(uint64)
+	data, ok := ctx.Value(USER_ID_KEY_CTX).(uint64)
 	if !ok {
 		log.Fatal("in GetUserId: ", "ok was false")
 	}

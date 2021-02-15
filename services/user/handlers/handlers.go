@@ -3,26 +3,27 @@ package handlers
 import (
 	"context"
 	pb "microServiceBoilerplate/proto/generated/user"
-	"microServiceBoilerplate/services/user/types"
+
+	"microServiceBoilerplate/services/user/instanses"
 
 	"github.com/mreza0100/golog"
 )
 
 type handlers struct {
-	srv        types.Sevice
+	srv        instanses.Sevice
 	lgr        *golog.Core
-	publishers types.Publishers
+	publishers instanses.Publishers
 
 	pb.UnimplementedUserServiceServer
 }
 
 type NewHandlersOpts struct {
-	Srv        types.Sevice
+	Srv        instanses.Sevice
 	Lgr        *golog.Core
-	Publishers types.Publishers
+	Publishers instanses.Publishers
 }
 
-func NewHandlers(opts NewHandlersOpts) types.Handlers {
+func NewHandlers(opts NewHandlersOpts) instanses.Handlers {
 	return &handlers{
 		srv:        opts.Srv,
 		lgr:        opts.Lgr.With("In handlers: "),
@@ -39,7 +40,7 @@ func (s *handlers) NewUser(ctx context.Context, in *pb.NewUserRequest) (*pb.NewU
 }
 
 func (s *handlers) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	return s.srv.GetUser(in.Id)
+	return s.srv.GetUser(in.Id, in.Email)
 }
 
 func (s *handlers) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {
@@ -61,12 +62,4 @@ func (s *handlers) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*p
 	return &pb.DeleteUserResponse{
 		Ok: true,
 	}, nil
-}
-
-func (this *handlers) Validation(ctx context.Context, in *pb.ValidationRequest) (*pb.ValidationResponse, error) {
-	userId, err := this.srv.Validation(in.Email, in.Password)
-
-	return &pb.ValidationResponse{
-		Id: userId,
-	}, err
 }

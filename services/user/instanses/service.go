@@ -1,4 +1,4 @@
-package types
+package instanses
 
 import (
 	pb "microServiceBoilerplate/proto/generated/user"
@@ -6,9 +6,8 @@ import (
 
 type Sevice interface {
 	NewUser(in *pb.NewUserRequest) (uint64, error)
-	GetUser(id uint64) (*pb.GetUserResponse, error)
+	GetUser(id uint64, email string) (*pb.GetUserResponse, error)
 	DeleteUser(id uint64) error
-	Validation(email, password string) (uint64, error)
 
 	IsUserExist(userId uint64) bool
 }

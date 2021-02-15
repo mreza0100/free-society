@@ -30,10 +30,28 @@ type handlers struct {
 	pb.UnimplementedSecurityServiceServer
 }
 
-func (h *handlers) NewUser(ctx context.Context, in *pb.NewUserRequest) (*pb.NewUserResponse, error) {
-	return &pb.NewUserResponse{}, nil
+func (h *handlers) NewUser(_ context.Context, in *pb.NewUserRequest) (*pb.NewUserResponse, error) {
+	result, err := h.srv.NewUser(in.UserId, in.Device, in.Password)
+
+	return &pb.NewUserResponse{
+		Token: result,
+	}, err
 }
 
-func (h *handlers) Login(context.Context, *pb.LogInRequest) (*pb.LogInResponse, error) {
-	return &pb.LogInResponse{}, nil
+func (h *handlers) Login(_ context.Context, in *pb.LogInRequest) (*pb.LogInResponse, error) {
+	token, err := h.srv.Login(in.UserId, "", in.Password)
+
+	return &pb.LogInResponse{
+		Token: token,
+	}, err
+}
+func (h *handlers) Logout(_ context.Context, in *pb.LogoutInRequest) (*pb.LogoutInResponse, error) {
+	return nil, h.srv.Logout(in.Token)
+}
+func (h *handlers) GetUserId(_ context.Context, in *pb.GetUserIdRequest) (*pb.GetUserIdResponse, error) {
+	userId, err := h.srv.GetUserId(in.Token)
+
+	return &pb.GetUserIdResponse{
+		UserId: userId,
+	}, err
 }

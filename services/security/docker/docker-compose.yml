@@ -12,8 +12,9 @@ services:
                   - 5436:5436
             command: -p 5436
             volumes:
-                  - ~/databases/security:/var/lib/postgresql/data      
-      security_service_postgres:
+                  - ~/databases/security:/var/lib/postgresql/data
+
+      security_service_redis:
             image: redis:latest
             restart: always
             environment:
@@ -27,5 +28,3 @@ services:
                   - ~/databases/redis:/data
                   - ~/databases/redis:/var/lib/redis
                   - ~/databases/redis:/usr/local/etc/redis/redis.conf
-
-                  

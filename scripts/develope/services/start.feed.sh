@@ -8,7 +8,6 @@ cd ../../..
 root=$(pwd)
 
 
-
-export MODE=dev
+source $root/scripts/develope/env.sh
 
 go run $root/services/feed/server

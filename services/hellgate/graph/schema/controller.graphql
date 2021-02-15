@@ -1,0 +1,4 @@
+extend type Mutation {
+	login(email: String!, password: String!): Boolean!
+	logout: Boolean! @private
+}

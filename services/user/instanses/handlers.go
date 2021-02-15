@@ -1,4 +1,4 @@
-package types
+package instanses
 
 import (
 	pb "microServiceBoilerplate/proto/generated/user"

@@ -3,11 +3,13 @@ package db
 import (
 	fmt "fmt"
 	"microServiceBoilerplate/configs"
+	models "microServiceBoilerplate/services/security/models"
 
 	"github.com/go-redis/redis"
 	"github.com/mreza0100/golog"
 	postgres "gorm.io/driver/postgres"
 	gorm "gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	schema "gorm.io/gorm/schema"
 )
 
@@ -21,7 +23,7 @@ func getDSN() string {
 		host   = " host=localhost "
 		user   = " user=postgres "
 		dbname = " dbname=postgres "
-		port   = " port=" + configs.UserConfigs.StrDBPort
+		port   = " port=" + configs.SecurityConfigs.StrDBPort
 	)
 	return host + user + dbname + port
 }
@@ -35,6 +37,7 @@ func getConfigs() (gormConfigs *gorm.Config, driverConfigs gorm.Dialector) {
 		NamingStrategy:         schema.NamingStrategy{},
 		SkipDefaultTransaction: true,
 		// PrepareStmt:            false,
+		Logger: logger.Default,
 	}
 
 	return
@@ -50,7 +53,7 @@ func ConnectPS(lgr *golog.Core) {
 	}
 	lgr.SuccessLog("Connected to ps db")
 
-	if err := psDB.AutoMigrate(); err != nil {
+	if err := psDB.AutoMigrate(&models.Password{}, &models.Session{}); err != nil {
 		fmt.Println(err)
 		fmt.Println("\n\n\n\n\n\n\n\n ")
 		panic("db migration failed")
@@ -59,7 +62,7 @@ func ConnectPS(lgr *golog.Core) {
 
 func ConnecRedis(lgr *golog.Core) {
 	redisDB = redis.NewClient(&redis.Options{
-		Addr:     "localhost:" + configs.FeedConfigs.StrDBPort,
+		Addr:     fmt.Sprintf("localhost:%v", configs.SecurityConfigs.RedisPort),
 		Password: "",
 		DB:       0,
 

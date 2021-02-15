@@ -3,13 +3,13 @@ package userNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/user/types"
+	"microServiceBoilerplate/services/user/instanses"
 
 	"github.com/mreza0100/golog"
 	"google.golang.org/protobuf/proto"
 )
 
-func NewPublishers(lgr *golog.Core) types.Publishers {
+func NewPublishers(lgr *golog.Core) instanses.Publishers {
 	publishers := publishersT{
 		lgr: lgr.With("In publishers: "),
 	}

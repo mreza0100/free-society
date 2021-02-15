@@ -1,68 +1,74 @@
 package domain
 
 import (
-	"errors"
 	pb "microServiceBoilerplate/proto/generated/user"
-	"microServiceBoilerplate/services/user/db"
 	"microServiceBoilerplate/services/user/models"
-	"microServiceBoilerplate/services/user/types"
-	"microServiceBoilerplate/utils/security"
+	"microServiceBoilerplate/services/user/repository"
+
+	"microServiceBoilerplate/services/user/instanses"
 
 	"github.com/mreza0100/golog"
 )
 
-type ServiceOptions struct {
+type ServiceOpts struct {
 	Lgr *golog.Core
 }
 
-func NewService(opts ServiceOptions) types.Sevice {
-	daos := db.DAOS{
-		Lgr: opts.Lgr.With("in DAOS: "),
-	}
-
+func NewService(opts ServiceOpts) instanses.Sevice {
 	return &service{
-		DAOS: daos,
-		Lgr:  opts.Lgr.With("In domain: "),
+		repo: repository.NewRepo(opts.Lgr),
+		lgr:  opts.Lgr.With("In domain -> "),
 	}
 }
 
 type service struct {
-	DAOS db.DAOS
-	Lgr  *golog.Core
+	repo *instanses.Repository
+	lgr  *golog.Core
 }
 
-func (this *service) NewUser(in *pb.NewUserRequest) (uint64, error) {
+func (s *service) NewUser(in *pb.NewUserRequest) (uint64, error) {
 	user := models.User{
-		Name:     in.Name,
-		Gender:   in.Gender,
-		Email:    in.Email,
-		Password: security.HashIt(in.Password),
+		Name:   in.Name,
+		Gender: in.Gender,
+		Email:  in.Email,
 	}
 
-	return this.DAOS.NewUser(&user)
+	return s.repo.Write.NewUser(&user)
 }
 
-func (this *service) GetUser(id uint64) (*pb.GetUserResponse, error) {
-	return this.DAOS.GetUser(id)
-}
+func (s *service) GetUser(id uint64, email string) (*pb.GetUserResponse, error) {
+	var (
+		user           *models.User
+		err            error
+		getQueryWithId = id != 0
+	)
 
-func (this *service) DeleteUser(id uint64) error {
-	return this.DAOS.DeleteUser(id)
-}
-
-func (this *service) Validation(email, password string) (uint64, error) {
-	user, err := this.DAOS.GetUserByEmail(email)
-	if err != nil {
-		return 0, errors.New("Password or email is wrong")
+	{
+		if getQueryWithId {
+			user, err = s.repo.Read.GetUserById(id)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			user, err = s.repo.Read.GetUserByEmail(email)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
-	if !security.HashCompare(user.Password, password) {
-		return 0, errors.New("Password or email is wrong")
-	}
-
-	return user.ID, nil
+	return &pb.GetUserResponse{
+		Id:     user.ID,
+		Name:   user.Name,
+		Email:  user.Email,
+		Gender: user.Gender,
+	}, nil
 }
 
-func (this *service) IsUserExist(userId uint64) bool {
-	return this.DAOS.IsUserExist(userId)
+func (s *service) DeleteUser(id uint64) error {
+	return s.repo.Write.DeleteUser(id)
+}
+
+func (s *service) IsUserExist(userId uint64) bool {
+	return s.repo.Read.IsUserExist(userId)
 }

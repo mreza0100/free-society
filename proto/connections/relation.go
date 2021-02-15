@@ -1,7 +1,6 @@
 package connections
 
 import (
-	"fmt"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/relation"
 
@@ -12,9 +11,8 @@ import (
 func RelationSrvConn(lgr *golog.Core) pb.RelationServiceClient {
 	conn, err := grpc.Dial(configs.RelationConfigs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.RelationConfigs.Timeout))
 	if err != nil {
-		fmt.Println("Cant connect to user service")
-		panic(err)
+		lgr.Fatal("Cant connect to user service", err)
 	}
-	lgr.GreenLog("✅ Connected to relation service :)")
+	lgr.SuccessLog("Connected to relation service :)")
 	return pb.NewRelationServiceClient(conn)
 }

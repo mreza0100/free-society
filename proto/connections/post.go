@@ -1,7 +1,6 @@
 package connections
 
 import (
-	"fmt"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/post"
 
@@ -12,10 +11,9 @@ import (
 func PostSrvConn(lgr *golog.Core) pb.PostServiceClient {
 	conn, err := grpc.Dial(configs.PostConfigs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.PostConfigs.Timeout))
 	if err != nil {
-		fmt.Println("Cant connect to post service")
-		panic(err)
+		lgr.Fatal("Cant connect to post service", err)
 	}
 
-	lgr.GreenLog("✅ Connected to post service :)")
+	lgr.SuccessLog("Connected to post service :)")
 	return pb.NewPostServiceClient(conn)
 }

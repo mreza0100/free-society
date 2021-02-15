@@ -8,21 +8,37 @@ option go_package = "/security";
 service SecurityService {
       rpc NewUser(NewUserRequest) returns (NewUserResponse);
       rpc Login(LogInRequest) returns (LogInResponse);
+      rpc Logout(LogoutInRequest) returns (LogoutInResponse);
+      rpc GetUserId(GetUserIdRequest) returns (GetUserIdResponse);
 }
 
 // NewUser
 message NewUserRequest {
       uint64 userId   = 1;
       string password = 2;
+      string device   = 3;
 }
 message NewUserResponse {
       string token    = 1;
 }
-
+// login
 message LogInRequest {
-      uint64 email    = 1;
+      uint64 userId    = 1;
       string password = 2;
 }
 message LogInResponse {
       string token    = 1;
+      string device   = 3;
+}
+// Logout
+message LogoutInRequest {
+      string token = 1;
+}
+message LogoutInResponse {}
+// get user id
+message GetUserIdRequest {
+      string token = 1;
+}
+message GetUserIdResponse {
+      uint64 userId = 1;
 }

@@ -10,8 +10,8 @@ import (
 	"github.com/mreza0100/golog"
 )
 
-func NewUserService(lgr *golog.Core) types.Handlers {
-	services := domain.NewService(domain.ServiceOptions{
+func NewSecurityService(lgr *golog.Core) types.Handlers {
+	services := domain.NewService(domain.ServiceOpts{
 		Lgr: lgr,
 	})
 

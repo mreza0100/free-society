@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type SecurityServiceClient interface {
 	NewUser(ctx context.Context, in *NewUserRequest, opts ...grpc.CallOption) (*NewUserResponse, error)
 	Login(ctx context.Context, in *LogInRequest, opts ...grpc.CallOption) (*LogInResponse, error)
+	Logout(ctx context.Context, in *LogoutInRequest, opts ...grpc.CallOption) (*LogoutInResponse, error)
+	GetUserId(ctx context.Context, in *GetUserIdRequest, opts ...grpc.CallOption) (*GetUserIdResponse, error)
 }
 
 type securityServiceClient struct {
@@ -48,12 +50,32 @@ func (c *securityServiceClient) Login(ctx context.Context, in *LogInRequest, opt
 	return out, nil
 }
 
+func (c *securityServiceClient) Logout(ctx context.Context, in *LogoutInRequest, opts ...grpc.CallOption) (*LogoutInResponse, error) {
+	out := new(LogoutInResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/Logout", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *securityServiceClient) GetUserId(ctx context.Context, in *GetUserIdRequest, opts ...grpc.CallOption) (*GetUserIdResponse, error) {
+	out := new(GetUserIdResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/GetUserId", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SecurityServiceServer is the server API for SecurityService service.
 // All implementations must embed UnimplementedSecurityServiceServer
 // for forward compatibility
 type SecurityServiceServer interface {
 	NewUser(context.Context, *NewUserRequest) (*NewUserResponse, error)
 	Login(context.Context, *LogInRequest) (*LogInResponse, error)
+	Logout(context.Context, *LogoutInRequest) (*LogoutInResponse, error)
+	GetUserId(context.Context, *GetUserIdRequest) (*GetUserIdResponse, error)
 	mustEmbedUnimplementedSecurityServiceServer()
 }
 
@@ -66,6 +88,12 @@ func (UnimplementedSecurityServiceServer) NewUser(context.Context, *NewUserReque
 }
 func (UnimplementedSecurityServiceServer) Login(context.Context, *LogInRequest) (*LogInResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+func (UnimplementedSecurityServiceServer) Logout(context.Context, *LogoutInRequest) (*LogoutInResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedSecurityServiceServer) GetUserId(context.Context, *GetUserIdRequest) (*GetUserIdResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserId not implemented")
 }
 func (UnimplementedSecurityServiceServer) mustEmbedUnimplementedSecurityServiceServer() {}
 
@@ -116,6 +144,42 @@ func _SecurityService_Login_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecurityService_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogoutInRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/Logout",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).Logout(ctx, req.(*LogoutInRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SecurityService_GetUserId_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).GetUserId(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/GetUserId",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).GetUserId(ctx, req.(*GetUserIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SecurityService_ServiceDesc is the grpc.ServiceDesc for SecurityService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -130,6 +194,14 @@ var SecurityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Login",
 			Handler:    _SecurityService_Login_Handler,
+		},
+		{
+			MethodName: "Logout",
+			Handler:    _SecurityService_Logout_Handler,
+		},
+		{
+			MethodName: "GetUserId",
+			Handler:    _SecurityService_GetUserId_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
