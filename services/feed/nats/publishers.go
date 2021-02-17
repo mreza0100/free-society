@@ -3,53 +3,66 @@ package feedNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/feed/types"
+	"microServiceBoilerplate/services/feed/instances"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/mreza0100/golog"
+	"github.com/nats-io/nats.go"
 )
 
-func NewPublishers(lgr *golog.Core) types.Publishers {
+func newPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {
 	return &publishers{
-		lgr: lgr.With("In publishers: "),
+		lgr: lgr.With("In publishers->"),
+		nc:  nc,
 	}
 }
 
 type publishers struct {
 	lgr *golog.Core
+	nc  *nats.Conn
 }
 
 func (this *publishers) GetFollowers(userId uint64) ([]uint64, error) {
 	subject := configs.Nats.Subjects.GetFollowers
 
 	{
-		data := &natsPb.GetFollowers_REQUESTRequest{
-			UserId: userId,
+		var (
+			byteRequest  []byte
+			byteResponse []byte
+			followers    []uint64
+			err          error
+		)
+		{
+			byteRequest, err = proto.Marshal(&natsPb.GetFollowers_REQUESTRequest{
+				UserId: userId,
+			})
+			if err != nil {
+				this.lgr.RedLog("In GetFollowers proto.Marshal error")
+				this.lgr.RedLog("Error: ", err)
+				return nil, err
+			}
+		}
+		{
+			response, err := this.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			if err != nil {
+				this.lgr.RedLog("In GetFollowers this.nc.Request error")
+				this.lgr.RedLog("Error: ", err)
+				return nil, err
+			}
+			byteResponse = response.Data
+		}
+		{
+			response := &natsPb.GetFollowers_REQUESTResponse{}
+			err = proto.Unmarshal(byteResponse, response)
+			if err != nil {
+				this.lgr.RedLog("In GetFollowers proto.Unmarshal error")
+				this.lgr.RedLog("Error: ", err)
+				return nil, err
+			}
+			followers = response.Followers
 		}
 
-		byteData, err := proto.Marshal(data)
-		if err != nil {
-			this.lgr.RedLog("In GetFollowers proto.Marshal error")
-			this.lgr.RedLog("Error: ", err)
-			return nil, err
-		}
-		response, err := nc.Request(subject, byteData, configs.Nats.Timeout)
-		if err != nil {
-			this.lgr.RedLog("In GetFollowers nc.Request error")
-			this.lgr.RedLog("Error: ", err)
-			return nil, err
-		}
-
-		followers := &natsPb.GetFollowers_REQUESTResponse{}
-
-		err = proto.Unmarshal(response.Data, followers)
-		if err != nil {
-			this.lgr.RedLog("In GetFollowers proto.Unmarshal error")
-			this.lgr.RedLog("Error: ", err)
-			return nil, err
-		}
-
-		return followers.Followers, nil
+		return followers, nil
 	}
 }
 
@@ -67,9 +80,9 @@ func (this *publishers) GetPosts(postIds []uint64) ([]*natsPb.Post, error) {
 			return nil, err
 		}
 
-		response, err := nc.Request(subject, byteReq, configs.Nats.Timeout)
+		response, err := this.nc.Request(subject, byteReq, configs.Nats.Timeout)
 		if err != nil {
-			this.lgr.RedLog("In GetPosts nc.Request error")
+			this.lgr.RedLog("In GetPosts this.nc.Request error")
 			this.lgr.RedLog("Error: ", err)
 			return nil, err
 		}

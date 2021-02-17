@@ -1,30 +1,34 @@
 package microservice
 
 import (
-	"microServiceBoilerplate/services/security/db"
 	"microServiceBoilerplate/services/security/domain"
 	"microServiceBoilerplate/services/security/handlers"
+	"microServiceBoilerplate/services/security/instances"
 	securityNats "microServiceBoilerplate/services/security/nats"
-	"microServiceBoilerplate/services/security/types"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewSecurityService(lgr *golog.Core) types.Handlers {
-	services := domain.NewService(domain.ServiceOpts{
-		Lgr: lgr,
-	})
+func NewSecurityService(lgr *golog.Core) instances.Handlers {
+	var (
+		services   instances.Sevice
+		publishers instances.Publishers
+	)
 
 	{
-		db.ConnectPS(lgr)
-		db.ConnecRedis(lgr)
-	}
+		services = domain.New(domain.ServiceOpts{
+			Lgr: lgr,
+		})
 
-	securityNats.InitialNatsSubs(services, lgr)
+		publishers = securityNats.New(&securityNats.NewOpts{
+			Lgr: lgr,
+			Srv: services,
+		})
+	}
 
 	return handlers.NewHandlers(handlers.NewHandlersOpts{
 		Lgr:        lgr,
 		Srv:        services,
-		Publishers: securityNats.NewPublishers(lgr),
+		Publishers: publishers,
 	})
 }

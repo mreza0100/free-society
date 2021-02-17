@@ -8,11 +8,9 @@ func init() {
 		dbPort = 5435
 	)
 	RelationConfigs = &serviceConfigs{
-		Addr:      "localhost:" + str(port),
-		StrPort:   str(port),
-		Port:      port,
-		DBPort:    dbPort,
-		StrDBPort: str(dbPort),
-		Timeout:   stdConnectionTimeout,
+		Addr:    "localhost:" + str(port),
+		Port:    port,
+		DBPort:  dbPort,
+		Timeout: stdConnectionTimeout,
 	}
 }

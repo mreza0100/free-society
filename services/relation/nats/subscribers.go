@@ -3,54 +3,106 @@ package relationNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/relation/types"
+	"microServiceBoilerplate/services/relation/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 )
 
-func InitialNatsSubs(srv types.Sevice, lgr *golog.Core) {
+type initSubsOpts struct {
+	lgr *golog.Core
+	srv instances.Sevice
+	nc  *nats.Conn
+}
+
+func initSubs(opts *initSubsOpts) {
 	s := subscribers{
-		srv: srv,
-		lgr: lgr.With("In subscribers: "),
+		srv: opts.srv,
+		nc:  opts.nc,
+		lgr: opts.lgr.With("In subscribers->"),
 	}
-	lgr.GreenLog("✅ subscribers has been attached to nats")
+	opts.lgr.SuccessLog("subscribers has been attached to nats")
 
 	s.GetFollowers_REQUEST()
 }
 
 type subscribers struct {
-	srv types.Sevice
+	srv instances.Sevice
 	lgr *golog.Core
+	nc  *nats.Conn
 }
 
-func (this *subscribers) GetFollowers_REQUEST() {
+func (s *subscribers) GetFollowers_REQUEST() {
 	subject := configs.Nats.Subjects.GetFollowers
-	dbug := this.lgr.DebugPKG("GetFollowers_REQUEST")
+	dbug, sussecc := s.lgr.DebugPKG("GetFollowers_REQUEST", false)
 
 	{
-		nc.Subscribe(subject, func(msg *nats.Msg) {
-			request := natsPb.GetFollowers_REQUESTRequest{}
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				userId    uint64
+				response  []byte
+				followers []uint64
+				err       error
+			)
 
-			err := proto.Unmarshal(msg.Data, &request)
-			if err != nil {
-				dbug("cant Unmarshal request")(err)
-				return
+			{
+				request := &natsPb.GetFollowers_REQUESTRequest{}
+				err = proto.Unmarshal(msg.Data, request)
+				if dbug("cant Unmarshal request")(err) != nil {
+					return
+				}
+				userId = request.GetUserId()
 			}
 
-			followers := this.srv.GetFollowers(request.UserId)
-
-			response := &natsPb.GetFollowers_REQUESTResponse{
-				Followers: followers,
+			{
+				followers = s.srv.GetFollowers(userId)
 			}
 
-			resByte, err := proto.Marshal(response)
-			if err != nil {
-				dbug("cant Marshal response")(err)
-				return
+			{
+				response, err = proto.Marshal(&natsPb.GetFollowers_REQUESTResponse{
+					Followers: followers,
+				})
+				if dbug("cant Marshal response")(err) != nil {
+					return
+				}
 			}
-			msg.Respond(resByte)
+			{
+				sussecc(response)
+				msg.Respond(response)
+			}
 		})
+	}
+}
+
+func (s *subscribers) DeleteUser() {
+	subject := configs.Nats.Subjects.DeleteUser
+	debug, sussecc := s.lgr.DebugPKG("DeleteUser", false)
+
+	{
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				userId uint64
+				err    error
+			)
+
+			{
+				request := &natsPb.UserDelete_EVENT{}
+				err = proto.Unmarshal(msg.Data, request)
+				if debug("proto.Unmarshal")(err) != nil {
+					return
+				}
+				userId = request.GetId()
+			}
+
+			{
+				sussecc(userId)
+				err = s.srv.DeleteAllRelations(userId)
+				if debug("s.srv.DeleteUser")(err) != nil {
+					return
+				}
+			}
+		})
+
 	}
 }

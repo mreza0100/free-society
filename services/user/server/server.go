@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/user"
@@ -31,7 +32,7 @@ func main() {
 	)
 	pb.RegisterUserServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", ":"+configs.UserConfigs.StrPort)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.UserConfigs.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

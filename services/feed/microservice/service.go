@@ -3,25 +3,33 @@ package microservice
 import (
 	"microServiceBoilerplate/services/feed/domain"
 	"microServiceBoilerplate/services/feed/handlers"
+	"microServiceBoilerplate/services/feed/instances"
 	feedNats "microServiceBoilerplate/services/feed/nats"
-	"microServiceBoilerplate/services/feed/types"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewFeedService(lgr *golog.Core) types.Handlers {
-	publishers := feedNats.NewPublishers(lgr)
+func NewFeedService(lgr *golog.Core) instances.Handlers {
+	var (
+		services   instances.Sevice
+		publishers instances.Publishers
+		initSubs   func(instances.Sevice)
+	)
 
-	services := domain.NewService(domain.NewSrvOpts{
+	publishers, initSubs = feedNats.New(&feedNats.NewOpts{
+		Lgr: lgr,
+	})
+
+	services = domain.New(&domain.NewOpts{
 		Lgr:        lgr,
 		Publishers: publishers,
 	})
 
-	feedNats.InitialNatsSubs(services, lgr)
+	defer initSubs(services)
 
-	return handlers.NewHandlers(&handlers.HandlersOpts{
-		Srv:        services,
+	return handlers.New(&handlers.NewOpts{
 		Lgr:        lgr,
+		Srv:        services,
 		Publishers: publishers,
 	})
 }

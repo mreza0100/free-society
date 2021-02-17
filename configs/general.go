@@ -12,10 +12,6 @@ type serviceConfigs struct {
 	Port      int
 	DBPort    int
 	RedisPort int
-
-	StrPort      string
-	StrRedisPort string
-	StrDBPort    string
 }
 
 const (

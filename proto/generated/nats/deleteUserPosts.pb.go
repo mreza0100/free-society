@@ -25,7 +25,7 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-type DeleteUserPosts_EVENT struct {
+type UserDelete_EVENT struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -33,8 +33,8 @@ type DeleteUserPosts_EVENT struct {
 	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 }
 
-func (x *DeleteUserPosts_EVENT) Reset() {
-	*x = DeleteUserPosts_EVENT{}
+func (x *UserDelete_EVENT) Reset() {
+	*x = UserDelete_EVENT{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_deleteUserPosts_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -42,13 +42,13 @@ func (x *DeleteUserPosts_EVENT) Reset() {
 	}
 }
 
-func (x *DeleteUserPosts_EVENT) String() string {
+func (x *UserDelete_EVENT) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteUserPosts_EVENT) ProtoMessage() {}
+func (*UserDelete_EVENT) ProtoMessage() {}
 
-func (x *DeleteUserPosts_EVENT) ProtoReflect() protoreflect.Message {
+func (x *UserDelete_EVENT) ProtoReflect() protoreflect.Message {
 	mi := &file_deleteUserPosts_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -60,12 +60,12 @@ func (x *DeleteUserPosts_EVENT) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteUserPosts_EVENT.ProtoReflect.Descriptor instead.
-func (*DeleteUserPosts_EVENT) Descriptor() ([]byte, []int) {
+// Deprecated: Use UserDelete_EVENT.ProtoReflect.Descriptor instead.
+func (*UserDelete_EVENT) Descriptor() ([]byte, []int) {
 	return file_deleteUserPosts_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *DeleteUserPosts_EVENT) GetId() uint64 {
+func (x *UserDelete_EVENT) GetId() uint64 {
 	if x != nil {
 		return x.Id
 	}
@@ -77,10 +77,10 @@ var File_deleteUserPosts_proto protoreflect.FileDescriptor
 var file_deleteUserPosts_proto_rawDesc = []byte{
 	0x0a, 0x15, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x50, 0x6f, 0x73, 0x74,
 	0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x06, 0x6e, 0x61, 0x74, 0x73, 0x50, 0x62, 0x22,
-	0x27, 0x0a, 0x15, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x55, 0x73, 0x65, 0x72, 0x50, 0x6f, 0x73,
-	0x74, 0x73, 0x5f, 0x45, 0x56, 0x45, 0x4e, 0x54, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x42, 0x09, 0x5a, 0x07, 0x2f, 0x6e, 0x61, 0x74,
-	0x73, 0x50, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x22, 0x0a, 0x10, 0x55, 0x73, 0x65, 0x72, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x5f, 0x45, 0x56,
+	0x45, 0x4e, 0x54, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52,
+	0x02, 0x69, 0x64, 0x42, 0x09, 0x5a, 0x07, 0x2f, 0x6e, 0x61, 0x74, 0x73, 0x50, 0x62, 0x62, 0x06,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -97,7 +97,7 @@ func file_deleteUserPosts_proto_rawDescGZIP() []byte {
 
 var file_deleteUserPosts_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 var file_deleteUserPosts_proto_goTypes = []interface{}{
-	(*DeleteUserPosts_EVENT)(nil), // 0: natsPb.DeleteUserPosts_EVENT
+	(*UserDelete_EVENT)(nil), // 0: natsPb.UserDelete_EVENT
 }
 var file_deleteUserPosts_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -114,7 +114,7 @@ func file_deleteUserPosts_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_deleteUserPosts_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteUserPosts_EVENT); i {
+			switch v := v.(*UserDelete_EVENT); i {
 			case 0:
 				return &v.state
 			case 1:

@@ -1,20 +1,66 @@
 package securityNats
 
 import (
-	"microServiceBoilerplate/services/security/types"
+	"microServiceBoilerplate/configs"
+	natsPb "microServiceBoilerplate/proto/generated/nats"
+	"microServiceBoilerplate/services/security/instances"
 
 	"github.com/mreza0100/golog"
+	"github.com/nats-io/nats.go"
+	"google.golang.org/protobuf/proto"
 )
 
-func InitialNatsSubs(srv types.Sevice, lgr *golog.Core) {
-	_ = subscribers{
-		srv: srv,
-		lgr: lgr.With("In subscribers => "),
+type initSubsOpts struct {
+	lgr *golog.Core
+	srv instances.Sevice
+	nc  *nats.Conn
+}
+
+func initSubs(opts *initSubsOpts) {
+	s := subscribers{
+		srv: opts.srv,
+		nc:  opts.nc,
+		lgr: opts.lgr.With("In subscribers->"),
 	}
-	lgr.GreenLog("✅ subscribers has been attached to nats")
+	defer opts.lgr.SuccessLog("subscribers has been attached to nats")
+
+	s.deleteDeletedUserSessions()
+
 }
 
 type subscribers struct {
-	srv types.Sevice
+	srv instances.Sevice
 	lgr *golog.Core
+	nc  *nats.Conn
+}
+
+func (s *subscribers) deleteDeletedUserSessions() {
+	subject := configs.Nats.Subjects.DeleteUser
+	dbug, success := s.lgr.DebugPKG("deleteDeletedUserSessions", false)
+
+	{
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				userId uint64
+				err    error
+			)
+
+			{
+				data := &natsPb.UserDelete_EVENT{}
+				err = proto.Unmarshal(msg.Data, data)
+				if dbug("proto.Unmarshal")(err) != nil {
+					return
+				}
+
+				userId = data.Id
+			}
+			{
+				err = s.srv.PurgeUser(userId)
+				if dbug("s.srv.PurgeUser")(err) != nil {
+					return
+				}
+			}
+			success()
+		})
+	}
 }

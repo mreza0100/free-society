@@ -12,13 +12,10 @@ func init() {
 		Addr:    "localhost:" + str(port),
 		Timeout: stdConnectionTimeout,
 
-		StrPort: str(port),
-		Port:    port,
+		Port: port,
 
-		DBPort:    dbPort,
-		StrDBPort: str(dbPort),
+		DBPort: dbPort,
 
-		RedisPort:    redisPort,
-		StrRedisPort: str(redisPort),
+		RedisPort: redisPort,
 	}
 }

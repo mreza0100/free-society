@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/feed"
@@ -31,11 +32,10 @@ func main() {
 	)
 	pb.RegisterFeedServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", ":"+configs.FeedConfigs.StrPort)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.FeedConfigs.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	lgr.GreenLog("port is open now")
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

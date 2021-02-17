@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"microServiceBoilerplate/configs"
 	"microServiceBoilerplate/services/hellgate/graph/generated"
 	"microServiceBoilerplate/services/hellgate/graph/resolvers"
@@ -51,5 +52,5 @@ func main() {
 	})
 
 	lgr.RedLog("🔥🔥🔥 Hellgate is open now 🔥🔥🔥")
-	ginServer.Run(":" + configs.HellgateConfigs.StrPort)
+	ginServer.Run(fmt.Sprintf(":%v", configs.HellgateConfigs.Port))
 }

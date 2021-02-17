@@ -3,20 +3,23 @@ package postNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/post/types"
+	"microServiceBoilerplate/services/post/instances"
 
 	"github.com/mreza0100/golog"
+	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 )
 
-func NewPublishers(lgr *golog.Core) types.Publishers {
+func newPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {
 	return &publishers{
-		lgr: lgr.With("In publishers: "),
+		lgr: lgr.With("In publishers->"),
+		nc:  nc,
 	}
 }
 
 type publishers struct {
 	lgr *golog.Core
+	nc  *nats.Conn
 }
 
 func (this *publishers) NewPost(userId, postId uint64) error {
@@ -34,7 +37,7 @@ func (this *publishers) NewPost(userId, postId uint64) error {
 			return err
 		}
 
-		err = nc.Publish(subject, msgByte)
+		err = this.nc.Publish(subject, msgByte)
 		if err != nil {
 			this.lgr.RedLog("in NewPost: can't publish msg")
 			this.lgr.RedLog("error: ", err)

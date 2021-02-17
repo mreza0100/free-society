@@ -3,41 +3,43 @@ package repository
 import (
 	"fmt"
 	"microServiceBoilerplate/configs"
-	"microServiceBoilerplate/services/user/instanses"
-	models "microServiceBoilerplate/services/user/models"
+	"microServiceBoilerplate/services/user/instances"
+	"microServiceBoilerplate/services/user/models"
 
 	"github.com/mreza0100/golog"
-	postgres "gorm.io/driver/postgres"
-	gorm "gorm.io/gorm"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	schema "gorm.io/gorm/schema"
+	"gorm.io/gorm/schema"
 )
 
-func NewRepo(lgr *golog.Core) *instanses.Repository {
+func NewRepo(lgr *golog.Core) *instances.Repository {
 	var (
-		db        *gorm.DB
-		readCQRS  *read
-		writeCQRS *write
+		db     *gorm.DB
+		readQ  *read
+		writeQ *write
 	)
 
 	{
 		db = getConnection(lgr)
-		lgr = lgr.With("In Repository -> ")
+		lgr = lgr.With("In Repository ->")
 	}
 	{
-		readCQRS = &read{
-			lgr: lgr.With("In Read -> "),
+		readQ = &read{
+			lgr: lgr.With("In Read ->"),
 			db:  db,
 		}
-		writeCQRS = &write{
-			lgr: lgr.With("In Read -> "),
+		writeQ = &write{
+			lgr: lgr.With("In Read ->"),
 			db:  db,
 		}
+		readQ.write = writeQ
+		writeQ.read = readQ
 	}
 
-	return &instanses.Repository{
-		Read:  readCQRS,
-		Write: writeCQRS,
+	return &instances.Repository{
+		Read:  readQ,
+		Write: writeQ,
 	}
 }
 

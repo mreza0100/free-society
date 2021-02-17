@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/post"
@@ -31,7 +32,7 @@ func main() {
 	)
 	pb.RegisterPostServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", ":"+configs.PostConfigs.StrPort)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.PostConfigs.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

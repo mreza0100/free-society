@@ -5,6 +5,6 @@ package natsPb;
 option go_package = "/natsPb";
 
 
-message DeleteUserPosts_EVENT {
+message UserDelete_EVENT {
       uint64 id = 1;
 }

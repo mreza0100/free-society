@@ -5,24 +5,24 @@ import (
 	"microServiceBoilerplate/services/user/models"
 	"microServiceBoilerplate/services/user/repository"
 
-	"microServiceBoilerplate/services/user/instanses"
+	"microServiceBoilerplate/services/user/instances"
 
 	"github.com/mreza0100/golog"
 )
 
-type ServiceOpts struct {
+type NewOpts struct {
 	Lgr *golog.Core
 }
 
-func NewService(opts ServiceOpts) instanses.Sevice {
+func New(opts *NewOpts) instances.Sevice {
 	return &service{
 		repo: repository.NewRepo(opts.Lgr),
-		lgr:  opts.Lgr.With("In domain -> "),
+		lgr:  opts.Lgr.With("In domain->"),
 	}
 }
 
 type service struct {
-	repo *instanses.Repository
+	repo *instances.Repository
 	lgr  *golog.Core
 }
 
@@ -70,5 +70,5 @@ func (s *service) DeleteUser(id uint64) error {
 }
 
 func (s *service) IsUserExist(userId uint64) bool {
-	return s.repo.Read.IsUserExist(userId)
+	return s.repo.Read.IsUserExistById(userId)
 }

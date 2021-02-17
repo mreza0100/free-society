@@ -36,7 +36,6 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUs
 		if err != nil {
 			return 0, err
 		}
-		r.Lgr.InfoLog(securityRes.GetToken())
 		security.SetToken(ctx, securityRes.GetToken())
 	}
 

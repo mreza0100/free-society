@@ -4,7 +4,7 @@ clear
 
 
 
-psql --host localhost --user postgres --port 5436
+psql --host localhost --user postgres --port 5436 
 
 
 

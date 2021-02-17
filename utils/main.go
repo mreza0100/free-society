@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"google.golang.org/grpc/status"
 )
 
@@ -24,4 +25,11 @@ func GetGRPCMSG(pbErr error) error {
 func SetValGinCtx(ctx *gin.Context, name string, val interface{}) {
 	newCtx := context.WithValue(ctx.Request.Context(), name, val)
 	ctx.Request = ctx.Request.WithContext(newCtx)
+}
+
+func IsPong(response *redis.StatusCmd) bool {
+	if response.Err() != nil {
+		return false
+	}
+	return response.String() == "ping: PONG"
 }

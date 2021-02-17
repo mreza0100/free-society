@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/relation"
@@ -32,7 +33,7 @@ func main() {
 
 	pb.RegisterRelationServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", ":"+configs.RelationConfigs.StrPort)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.RelationConfigs.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

@@ -2,30 +2,26 @@ package domain
 
 import (
 	"errors"
-	"microServiceBoilerplate/services/relation/db"
-	"microServiceBoilerplate/services/relation/types"
+	"microServiceBoilerplate/services/relation/instances"
+	"microServiceBoilerplate/services/relation/repository"
 
 	"github.com/mreza0100/golog"
 )
 
-type ServiceOptions struct {
+type NewOpts struct {
 	Lgr *golog.Core
 }
 
-func NewService(opts ServiceOptions) types.Sevice {
-	daos := db.DAOS{
-		Lgr: opts.Lgr.With("in DAOS: "),
-	}
-
+func New(opts *NewOpts) instances.Sevice {
 	return &service{
-		DAOS: daos,
-		Lgr:  opts.Lgr.With("In domain: "),
+		lgr:  opts.Lgr.With("In domain->"),
+		repo: repository.NewRepo(opts.Lgr),
 	}
 }
 
 type service struct {
-	DAOS db.DAOS
-	Lgr  *golog.Core
+	lgr  *golog.Core
+	repo *instances.Repository
 }
 
 func (s *service) Follow(follower, following uint64) error {
@@ -33,12 +29,17 @@ func (s *service) Follow(follower, following uint64) error {
 		return errors.New("you cant follow your self")
 	}
 
-	return s.DAOS.SetFollower(follower, following)
+	return s.repo.Write.SetFollower(follower, following)
 }
 
 func (s *service) Unfollow(following, follower uint64) error {
-	return s.DAOS.RemoveFollower(following, follower)
+	return s.repo.Write.RemoveFollow(following, follower)
 }
-func (this *service) GetFollowers(userId uint64) []uint64 {
-	return this.DAOS.GetFollowers(userId)
+
+func (s *service) GetFollowers(userId uint64) []uint64 {
+	return s.repo.Read.GetFollowers(userId)
+}
+
+func (s *service) DeleteAllRelations(userId uint64) error {
+	return s.repo.Write.DeleteAllRelations(userId)
 }

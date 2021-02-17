@@ -9,6 +9,7 @@ import (
 	securityPb "microServiceBoilerplate/proto/generated/security"
 	"microServiceBoilerplate/proto/generated/user"
 	"microServiceBoilerplate/services/hellgate/security"
+	"microServiceBoilerplate/utils"
 )
 
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (bool, error) {
@@ -33,7 +34,7 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 			Password: password,
 		})
 		if err != nil {
-			return false, err
+			return false, utils.GetGRPCMSG(err)
 		}
 		token = securityRes.GetToken()
 	}

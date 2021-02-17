@@ -3,18 +3,18 @@ package handlers
 import (
 	"context"
 	pb "microServiceBoilerplate/proto/generated/feed"
-	"microServiceBoilerplate/services/feed/types"
+	"microServiceBoilerplate/services/feed/instances"
 
 	"github.com/mreza0100/golog"
 )
 
-type HandlersOpts struct {
-	Srv        types.Sevice
+type NewOpts struct {
+	Srv        instances.Sevice
 	Lgr        *golog.Core
-	Publishers types.Publishers
+	Publishers instances.Publishers
 }
 
-func NewHandlers(opts *HandlersOpts) types.Handlers {
+func New(opts *NewOpts) instances.Handlers {
 	return &handlers{
 		srv:        opts.Srv,
 		lgr:        opts.Lgr,
@@ -23,9 +23,9 @@ func NewHandlers(opts *HandlersOpts) types.Handlers {
 }
 
 type handlers struct {
-	srv        types.Sevice
+	srv        instances.Sevice
 	lgr        *golog.Core
-	publishers types.Publishers
+	publishers instances.Publishers
 
 	pb.UnimplementedFeedServiceServer
 }

@@ -1,26 +1,36 @@
 package microservice
 
 import (
-	"microServiceBoilerplate/services/post/db"
 	"microServiceBoilerplate/services/post/domain"
 	"microServiceBoilerplate/services/post/handlers"
+	"microServiceBoilerplate/services/post/instances"
 	postNats "microServiceBoilerplate/services/post/nats"
-	"microServiceBoilerplate/services/post/types"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewPostService(lgr *golog.Core) types.Handlers {
-	services := domain.NewService(domain.ServiceOptions{
-		Lgr: lgr,
-	})
+func NewPostService(lgr *golog.Core) instances.Handlers {
+	var (
+		services   instances.Sevice
+		publishers instances.Publishers
+	)
 
-	db.ConnectDB(lgr)
-	postNats.InitialNatsSubs(services, lgr)
+	{
+		services = domain.New(&domain.NewOpts{
+			Lgr: lgr,
+		})
+	}
 
-	return handlers.NewHandlers(&handlers.HandlersOptns{
+	{
+		publishers = postNats.New(&postNats.NewOpts{
+			Lgr: lgr,
+			Srv: services,
+		})
+	}
+
+	return handlers.New(&handlers.NewOpts{
 		Srv:        services,
+		Publishers: publishers,
 		Lgr:        lgr,
-		Publishers: postNats.NewPublishers(lgr),
 	})
 }

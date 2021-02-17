@@ -1,7 +1,6 @@
 package repository
 
 import (
-	fmt "fmt"
 	models "microServiceBoilerplate/services/user/models"
 
 	"github.com/mreza0100/golog"
@@ -11,34 +10,42 @@ import (
 )
 
 type write struct {
-	lgr *golog.Core
-	db  *gorm.DB
+	lgr  *golog.Core
+	db   *gorm.DB
+	read *read
 }
 
 func (w *write) NewUser(user *models.User) (uint64, error) {
-	const query = `INSERT INTO users (name, gender, email) VALUES (?, ?, ?) RETURNING id`
-	params := []interface{}{user.Name, user.Gender, user.Email}
-
-	tx := w.db.Raw(query, params...)
-	if tx.Error != nil {
-		return 0, tx.Error
+	{
+		if w.read.IsUserExistByEmail(user.Email) {
+			const err = "there is already a user with this email"
+			return 0, status.Error(codes.AlreadyExists, err)
+		}
 	}
+	{
+		const query = `INSERT INTO users (name, gender, email) VALUES (?, ?, ?) RETURNING id`
+		params := []interface{}{user.Name, user.Gender, user.Email}
 
-	userId := struct{ Id uint64 }{}
-	tx = tx.Scan(&userId)
+		tx := w.db.Raw(query, params...)
+		if tx.Error != nil {
+			return 0, tx.Error
+		}
 
-	return userId.Id, tx.Error
+		data := struct{ Id uint64 }{}
+		tx = tx.Scan(&data)
 
+		return data.Id, tx.Error
+	}
 }
 
-func (w *write) DeleteUser(id uint64) error {
+func (w *write) DeleteUser(userId uint64) error {
 	const query = `DELETE FROM users WHERE id=?`
-	params := []interface{}{id}
+	params := []interface{}{userId}
 
 	tx := w.db.Exec(query, params...)
 
 	if tx.RowsAffected == 0 {
-		return status.Errorf(codes.NotFound, fmt.Sprintf("Not found %v", id))
+		return status.Error(codes.NotFound, "cant find user")
 	}
 
 	return nil

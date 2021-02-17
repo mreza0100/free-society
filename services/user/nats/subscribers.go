@@ -3,55 +3,80 @@ package userNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/user/instanses"
+	"microServiceBoilerplate/services/user/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 )
 
-func InitialNatsSubs(srv instanses.Sevice, lgr *golog.Core) {
+type initSubsOpts struct {
+	lgr *golog.Core
+	srv instances.Sevice
+	nc  *nats.Conn
+}
+
+func initSubs(opts *initSubsOpts) {
 	s := subscribers{
-		srv: srv,
-		lgr: lgr.With("In subscribers => "),
+		srv: opts.srv,
+		lgr: opts.lgr.With("In subscribers ->"),
+		nc:  opts.nc,
 	}
-	lgr.GreenLog("✅ subscribers has been attached to nats")
+	opts.lgr.SuccessLog("subscribers has been attached to nats")
 
 	s.IsUserExist_REQUEST()
 }
 
 type subscribers struct {
-	srv instanses.Sevice
 	lgr *golog.Core
+	srv instances.Sevice
+	nc  *nats.Conn
 }
 
-func (this *subscribers) IsUserExist_REQUEST() {
+func (s *subscribers) IsUserExist_REQUEST() {
 	subject := configs.Nats.Subjects.IsUserExist_REQUEST
 
 	{
-		nc.Subscribe(subject, func(msg *nats.Msg) {
-			request := natsPb.IsUserExist_REQUESTRequest{}
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				request  *natsPb.IsUserExist_REQUESTRequest
+				response *natsPb.IsUserExist_REQUESTResponse
 
-			err := proto.Unmarshal(msg.Data, &request)
-			if err != nil {
-				this.lgr.RedLog("in Subscribe cant unMarshal request")
-				this.lgr.RedLog("Error: ", err)
-				return
+				isExist      bool
+				byteResponse []byte
+
+				err error
+			)
+			{
+				request = &natsPb.IsUserExist_REQUESTRequest{}
+				response = &natsPb.IsUserExist_REQUESTResponse{}
 			}
 
-			exist := this.srv.IsUserExist(request.UserId)
-
-			response := &natsPb.IsUserExist_REQUESTResponse{
-				Exist: exist,
+			{
+				if proto.Unmarshal(msg.Data, request) != nil {
+					s.lgr.RedLog("in Subscribe cant unMarshal request")
+					s.lgr.RedLog("Error: ", err)
+					return
+				}
 			}
 
-			resByte, err := proto.Marshal(response)
-			if err != nil {
-				this.lgr.RedLog("in GetFollowers_REQUEST cant Marshal response")
-				this.lgr.RedLog("Error: ", err)
-				return
+			{
+				isExist = s.srv.IsUserExist(request.UserId)
+				response = &natsPb.IsUserExist_REQUESTResponse{
+					Exist: isExist,
+				}
 			}
-			msg.Respond(resByte)
+
+			{
+				byteResponse, err = proto.Marshal(response)
+				if err != nil {
+					s.lgr.RedLog("in GetFollowers_REQUEST cant Marshal response")
+					s.lgr.RedLog("Error: ", err)
+					return
+				}
+			}
+
+			msg.Respond(byteResponse)
 		})
 	}
 }

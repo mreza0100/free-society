@@ -10,7 +10,6 @@ func init() {
 	)
 	HellgateConfigs = serviceConfigs{
 		Addr:    "localhost:" + strconv.Itoa(port),
-		StrPort: strconv.Itoa(port),
 		Port:    port,
 		Timeout: stdConnectionTimeout,
 	}

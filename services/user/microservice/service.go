@@ -3,23 +3,34 @@ package microservice
 import (
 	"microServiceBoilerplate/services/user/domain"
 	"microServiceBoilerplate/services/user/handlers"
+	"microServiceBoilerplate/services/user/instances"
 	userNats "microServiceBoilerplate/services/user/nats"
-
-	"microServiceBoilerplate/services/user/instanses"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewUserService(lgr *golog.Core) instanses.Handlers {
-	services := domain.NewService(domain.ServiceOpts{
-		Lgr: lgr,
-	})
+func NewUserService(lgr *golog.Core) instances.Handlers {
+	var (
+		publishers instances.Publishers
+		services   instances.Sevice
+	)
 
-	userNats.InitialNatsSubs(services, lgr)
+	{
+		services = domain.New(&domain.NewOpts{
+			Lgr: lgr,
+		})
+	}
 
-	return handlers.NewHandlers(handlers.NewHandlersOpts{
-		Srv:        services,
+	{
+		publishers = userNats.NewPublishers(&userNats.NewOpts{
+			Lgr: lgr,
+			Srv: services,
+		})
+	}
+
+	return handlers.NewHandlers(&handlers.NewHandlersOpts{
 		Lgr:        lgr,
-		Publishers: userNats.NewPublishers(lgr),
+		Srv:        services,
+		Publishers: publishers,
 	})
 }

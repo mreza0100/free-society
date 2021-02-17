@@ -2,8 +2,9 @@ package domain
 
 import (
 	"errors"
-	"microServiceBoilerplate/services/security/db"
-	"microServiceBoilerplate/services/security/types"
+	"microServiceBoilerplate/services/security/instances"
+	"microServiceBoilerplate/services/security/repository/postgres"
+	"microServiceBoilerplate/services/security/repository/redis"
 	"microServiceBoilerplate/services/security/utils"
 	"microServiceBoilerplate/utils/security"
 
@@ -14,54 +15,45 @@ type ServiceOpts struct {
 	Lgr *golog.Core
 }
 
-func NewService(opts ServiceOpts) types.Sevice {
-	psDAOS := &db.PS_DAOS{
-		Lgr: opts.Lgr.With("in Postgres DAOS: "),
-	}
-	redisDAOS := &db.RedisDAOS{
-		Lgr: opts.Lgr.With("in Redis DAOS: "),
-	}
-
+func New(opts ServiceOpts) instances.Sevice {
 	return &service{
-		PS_DAOS:   psDAOS,
-		redisDAOS: redisDAOS,
-		Lgr:       opts.Lgr.With("In domain: "),
+		lgr:          opts.Lgr.With("In domain->"),
+		redisRepo:    redis.New(opts.Lgr),
+		postgresRepo: postgres.New(opts.Lgr),
 	}
 }
 
 type service struct {
-	redisDAOS *db.RedisDAOS
-	PS_DAOS   *db.PS_DAOS
-	Lgr       *golog.Core
+	redisRepo    *instances.Repo_Redis
+	postgresRepo *instances.Repo_Postgres
+	lgr          *golog.Core
 }
 
 func (s *service) NewUser(userId uint64, device, password string) (token string, err error) {
-	debug := s.Lgr.DebugPKG("NewUser")
+	debug, sussecc := s.lgr.DebugPKG("NewUser", false)
 
 	{
 		hashPass := security.HashIt(password)
-		err = s.PS_DAOS.NewUser(userId, hashPass)
-		debug("after s.PS_DAOS.NewUser")(err)
-		if err != nil {
+		err = s.postgresRepo.Write.NewUser(userId, hashPass)
+		if debug("after s.postgresRepo..NewUser")(err) != nil {
 			return "", err
 		}
 	}
 	{
 		token = utils.CreateToken()
-		_, err = s.PS_DAOS.NewSession(userId, device, token)
-		debug("after s.PS_DAOS.NewSession")(err)
-		if err != nil {
+		_, err = s.postgresRepo.Write.NewSession(userId, device, token)
+		if debug("after s.postgresRepo..NewSession")(err) != nil {
 			return "", err
 		}
 	}
 	{
-		err = s.redisDAOS.NewSession(token, userId)
-		debug("after s.redisDAOS.NewSession")(err)
-		if err != nil {
+		err = s.redisRepo.Write.NewSession(token, userId)
+		if debug("after s.redisDAOS.NewSession")(err) != nil {
 			return "", err
 		}
 	}
 
+	sussecc(token)
 	return token, nil
 }
 
@@ -72,7 +64,7 @@ func (s *service) Login(userId uint64, device, password string) (string, error) 
 	)
 
 	{
-		hashPass, err := s.PS_DAOS.GetHashPass(userId)
+		hashPass, err := s.postgresRepo.Read.GetHashPass(userId)
 		if err != nil {
 			return "", errors.New("email or password is wrong")
 		}
@@ -84,13 +76,13 @@ func (s *service) Login(userId uint64, device, password string) (string, error) 
 		token = utils.CreateToken()
 	}
 	{
-		_, err = s.PS_DAOS.NewSession(userId, device, token)
+		_, err = s.postgresRepo.Write.NewSession(userId, device, token)
 		if err != nil {
 			return "", err
 		}
 	}
 	{
-		err = s.redisDAOS.NewSession(token, userId)
+		err = s.redisRepo.Write.NewSession(token, userId)
 		if err != nil {
 			return "", err
 		}
@@ -101,14 +93,48 @@ func (s *service) Login(userId uint64, device, password string) (string, error) 
 
 func (s *service) Logout(token string) (err error) {
 	{
-		err = s.redisDAOS.DeleteSession(token)
+		err = s.redisRepo.Write.DeleteSession(token)
 	}
 	{
-		err = s.PS_DAOS.DeleteSessionByToken(token)
+		err = s.postgresRepo.Write.DeleteSessionByToken(token)
 	}
 	return err
 }
 
 func (s *service) GetUserId(token string) (uint64, error) {
-	return s.redisDAOS.GetSession(token)
+	return s.redisRepo.Read.GetSession(token)
+}
+
+func (s *service) PurgeUser(userId uint64) error {
+	var (
+		tokens []string
+		chErr  = make(chan error, 4)
+	)
+
+	{
+		tokens = s.postgresRepo.Read.GetUserToken(userId)
+	}
+	{
+		go func(ch chan error) {
+			ch <- s.postgresRepo.Write.DeleteUserSessions(userId)
+		}(chErr)
+	}
+	{
+		go func(ch chan error) {
+			ch <- s.redisRepo.Write.DeleteSession(tokens...)
+		}(chErr)
+	}
+	{
+		go func(ch chan error) {
+			ch <- s.postgresRepo.Write.DeletePassword(userId)
+		}(chErr)
+	}
+
+	for i := 0; i < 4; i++ {
+		if err := <-chErr; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

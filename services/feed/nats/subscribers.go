@@ -3,44 +3,81 @@ package feedNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/feed/types"
+	"microServiceBoilerplate/services/feed/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 )
 
-func InitialNatsSubs(h types.Sevice, lgr *golog.Core) {
-	subs := subscribers{
-		srv: h,
-		lgr: lgr,
+type initSubsOpts struct {
+	lgr *golog.Core
+	srv instances.Sevice
+	nc  *nats.Conn
+}
+
+func initSubs(opts *initSubsOpts) {
+	s := subscribers{
+		srv: opts.srv,
+		lgr: opts.lgr.With("In subscribers->"),
+		nc:  opts.nc,
 	}
+	opts.lgr.SuccessLog("subscribers has been attached to nats")
 
-	lgr.GreenLog("✅ subscribers has been attached to nats")
-
-	subs.SetPost()
+	s.setPost()
+	s.deleteFeed()
 }
 
 type subscribers struct {
-	srv types.Sevice
 	lgr *golog.Core
+	srv instances.Sevice
+	nc  *nats.Conn
 }
 
-func (this *subscribers) SetPost() {
+func (s *subscribers) setPost() {
 	subject := configs.Nats.Subjects.NewPost
 
 	{
-		nc.Subscribe(subject, func(msg *nats.Msg) {
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
 			data := &natsPb.NewPost_EVENT{}
 
 			err := proto.Unmarshal(msg.Data, data)
 			if err != nil {
-				this.lgr.Debug.RedLog("proto.Unmarshal has been returning error")
-				this.lgr.Debug.RedLog("Error: ", err)
+				s.lgr.Debug.RedLog("proto.Unmarshal has been returning error")
+				s.lgr.Debug.RedLog("Error: ", err)
 			}
 
-			this.srv.SetPost(data.UserId, data.PostId)
+			s.srv.SetPost(data.UserId, data.PostId)
 		})
 
+	}
+}
+
+func (s *subscribers) deleteFeed() {
+	subject := configs.Nats.Subjects.DeleteUser
+	dbug, success := s.lgr.DebugPKG("deleteFeed", false)
+
+	{
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				userId uint64
+				err    error
+			)
+
+			{
+				data := &natsPb.UserDelete_EVENT{}
+				err = proto.Unmarshal(msg.Data, data)
+				if dbug("proto.Unmarshal")(err) != nil {
+					return
+				}
+				userId = data.Id
+			}
+
+			{
+				err = s.srv.DeleteFeed(userId)
+				dbug("s.srv.DeleteFeed")(err)
+				success(userId)
+			}
+		})
 	}
 }

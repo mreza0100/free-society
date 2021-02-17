@@ -4,43 +4,42 @@ import (
 	"context"
 	"errors"
 	pb "microServiceBoilerplate/proto/generated/relation"
-	"microServiceBoilerplate/services/relation/types"
+	"microServiceBoilerplate/services/relation/instances"
 
 	"github.com/mreza0100/golog"
 )
 
-type NewHandlersOpts struct {
-	Srv        types.Sevice
+type NewOpts struct {
+	Srv        instances.Sevice
 	Lgr        *golog.Core
-	Publishers types.Publishers
+	Publishers instances.Publishers
 }
 
-func NewHandlers(opts NewHandlersOpts) types.Handlers {
+func New(opts *NewOpts) instances.Handlers {
 	return &handlers{
 		srv:        opts.Srv,
-		lgr:        opts.Lgr.With("In handlers: "),
+		lgr:        opts.Lgr.With("In handlers->"),
 		Publishers: opts.Publishers,
 	}
 }
 
 type handlers struct {
-	srv        types.Sevice
+	srv        instances.Sevice
 	lgr        *golog.Core
-	Publishers types.Publishers
+	Publishers instances.Publishers
 
 	pb.UnimplementedRelationServiceServer
 }
 
 func (h *handlers) Follow(_ context.Context, in *pb.FollowRequest) (*pb.FollowResponse, error) {
-	isExist := h.Publishers.IsUserExist(in.Following)
-
-	if !isExist {
-		return &pb.FollowResponse{}, errors.New("user not exist")
+	{
+		isExist := h.Publishers.IsUserExist(in.Following)
+		if !isExist {
+			return &pb.FollowResponse{}, errors.New("user not exist")
+		}
 	}
 
-	err := h.srv.Follow(in.Follower, in.Following)
-
-	return &pb.FollowResponse{}, err
+	return &pb.FollowResponse{}, h.srv.Follow(in.Follower, in.Following)
 }
 
 func (h *handlers) Unfollow(_ context.Context, in *pb.UnfollowRequest) (*pb.UnfollowResponse, error) {

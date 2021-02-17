@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"microServiceBoilerplate/configs"
 	pb "microServiceBoilerplate/proto/generated/security"
@@ -31,7 +32,7 @@ func main() {
 	)
 	pb.RegisterSecurityServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", ":"+configs.SecurityConfigs.StrPort)
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.SecurityConfigs.Port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

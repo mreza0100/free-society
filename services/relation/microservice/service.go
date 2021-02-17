@@ -1,26 +1,40 @@
 package microservice
 
 import (
-	"microServiceBoilerplate/services/relation/db"
 	"microServiceBoilerplate/services/relation/domain"
 	"microServiceBoilerplate/services/relation/handlers"
+	"microServiceBoilerplate/services/relation/instances"
 	relationNats "microServiceBoilerplate/services/relation/nats"
-	"microServiceBoilerplate/services/relation/types"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewRelationService(lgr *golog.Core) types.Handlers {
-	services := domain.NewService(domain.ServiceOptions{
-		Lgr: lgr,
-	})
+func NewRelationService(lgr *golog.Core) instances.Handlers {
+	var (
+		services   instances.Sevice
+		publishers instances.Publishers
+		initor     func(srv instances.Sevice)
+	)
 
-	db.ConnectDB(lgr)
-	relationNats.InitialNatsSubs(services, lgr)
+	{
+		publishers, initor = relationNats.New(&relationNats.NewOpts{
+			Lgr: lgr,
+		})
+	}
 
-	return handlers.NewHandlers(handlers.NewHandlersOpts{
+	{
+		services = domain.New(&domain.NewOpts{
+			Lgr: lgr,
+		})
+	}
+
+	{
+		initor(services)
+	}
+
+	return handlers.New(&handlers.NewOpts{
 		Srv:        services,
+		Publishers: publishers,
 		Lgr:        lgr,
-		Publishers: relationNats.NewPublishers(lgr),
 	})
 }

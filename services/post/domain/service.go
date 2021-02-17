@@ -2,47 +2,43 @@ package domain
 
 import (
 	pb "microServiceBoilerplate/proto/generated/post"
-	"microServiceBoilerplate/services/post/db"
-	"microServiceBoilerplate/services/post/types"
+	"microServiceBoilerplate/services/post/instances"
+	"microServiceBoilerplate/services/post/repository"
 
 	"github.com/mreza0100/golog"
 )
 
-type ServiceOptions struct {
+type NewOpts struct {
 	Lgr *golog.Core
 }
 
-func NewService(opts ServiceOptions) types.Sevice {
-	daos := &db.DAOS{
-		Lgr: opts.Lgr.With("In DAOS: "),
-	}
-
+func New(opts *NewOpts) instances.Sevice {
 	return &service{
-		daos: daos,
-		lgr:  opts.Lgr.With("In domain: "),
+		lgr:  opts.Lgr.With("In domain ->"),
+		repo: repository.NewRepo(opts.Lgr),
 	}
 }
 
 type service struct {
-	daos *db.DAOS
 	lgr  *golog.Core
+	repo *instances.Repository
 }
 
 func (this *service) NewPost(title, body string, userId uint64) (uint64, error) {
-	return this.daos.NewPost(title, body, userId)
+	return this.repo.Write.NewPost(title, body, userId)
 }
 
 func (this *service) DeletePost(postId, userId uint64) error {
-	return this.daos.DeletePost(postId, userId)
+	return this.repo.Write.DeletePost(postId, userId)
 }
 
 func (this *service) GetPost(postIds []uint64) ([]*pb.Post, error) {
 	if len(postIds) == 0 {
 		return []*pb.Post{}, nil
 	}
-	return this.daos.GetPost(postIds)
+	return this.repo.Read.GetPost(postIds)
 
 }
 func (this *service) DeleteUserPosts(userId uint64) error {
-	return this.daos.DeleteUserPosts(userId)
+	return this.repo.Write.DeleteUserPosts(userId)
 }
