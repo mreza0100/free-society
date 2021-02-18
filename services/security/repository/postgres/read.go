@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"microServiceBoilerplate/services/security/models"
+
 	"github.com/mreza0100/golog"
 	"gorm.io/gorm"
 )
@@ -41,14 +43,29 @@ func (r *read) GetUserIdByToken(token string) (uint64, error) {
 	return data.UserId, nil
 }
 
-func (w *read) GetUserToken(userId uint64) []string {
+func (r *read) GetUserToken(userId uint64) []string {
 	const query = `SELECT token FROM sessions WHERE user_id=?`
 	params := []interface{}{userId}
 
-	tx := w.db.Raw(query, params...)
+	tx := r.db.Raw(query, params...)
 
 	data := make([]string, 0)
 	tx.Scan(&data)
 
 	return data
+}
+
+func (r *read) GetSessions(userId uint64) ([]*models.Session, error) {
+	const query = `SELECT * FROM sessions WHERE user_id=?`
+	params := []interface{}{userId}
+
+	tx := r.db.Raw(query, params...)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	data := make([]*models.Session, 0)
+	tx = tx.Scan(&data)
+
+	return data, tx.Error
 }

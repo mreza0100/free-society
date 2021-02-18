@@ -4,6 +4,7 @@ import (
 	"context"
 	pb "microServiceBoilerplate/proto/generated/security"
 	"microServiceBoilerplate/services/security/instances"
+	"microServiceBoilerplate/services/security/models"
 
 	"github.com/mreza0100/golog"
 )
@@ -58,13 +59,12 @@ func (h *handlers) Login(_ context.Context, in *pb.LogInRequest) (*pb.LogInRespo
 	)
 
 	{
-		token, err = h.srv.Login(in.UserId, "", in.Password)
+		token, err = h.srv.Login(in.UserId, in.Device, in.Password)
 	}
 
 	{
 		result = &pb.LogInResponse{
-			Token:  token,
-			Device: "",
+			Token: token,
 		}
 	}
 	return result, err
@@ -90,4 +90,38 @@ func (h *handlers) GetUserId(_ context.Context, in *pb.GetUserIdRequest) (*pb.Ge
 	}
 
 	return result, err
+}
+
+func (h *handlers) GetSessions(_ context.Context, in *pb.GetSessionsRequest) (*pb.GetSessionsResponse, error) {
+	var (
+		result    []*models.Session
+		converted []*pb.Session
+		err       error
+	)
+
+	{
+		result, err = h.srv.GetSessions(in.UserId)
+		if err != nil {
+			return &pb.GetSessionsResponse{}, err
+		}
+	}
+
+	{
+		converted = make([]*pb.Session, len(result))
+		for idx, i := range result {
+			converted[idx] = &pb.Session{
+				SessionId: i.ID,
+				Device:    i.Device,
+				CreatedAt: uint64(i.CreatedAt.Unix()),
+			}
+		}
+	}
+
+	return &pb.GetSessionsResponse{
+		Sessions: converted,
+	}, err
+}
+
+func (h *handlers) DeleteSession(_ context.Context, in *pb.DeleteSessionRequest) (*pb.DeleteSessionResponse, error) {
+	return &pb.DeleteSessionResponse{}, h.srv.DeleteSession(in.SessionId)
 }

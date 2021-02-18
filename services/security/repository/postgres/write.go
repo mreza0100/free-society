@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"microServiceBoilerplate/services/security/models"
+
 	"github.com/mreza0100/golog"
 	gorm "gorm.io/gorm"
 )
@@ -51,13 +53,19 @@ func (w *write) DeleteSessionByToken(token string) error {
 	return nil
 }
 
-func (w *write) DeleteUserSessions(userId uint64) error {
-	const query = `DELETE FROM sessions WHERE user_id=?`
+func (w *write) DeleteUserSessions(userId uint64) ([]*models.Session, error) {
+	const query = `DELETE FROM sessions WHERE user_id=? RETURNING *`
 	params := []interface{}{userId}
 
-	tx := w.db.Exec(query, params...)
+	tx := w.db.Raw(query, params...)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
 
-	return tx.Error
+	data := []*models.Session{}
+	tx.Scan(&data)
+
+	return data, tx.Error
 }
 
 func (w *write) DeletePassword(userId uint64) error {
@@ -67,4 +75,19 @@ func (w *write) DeletePassword(userId uint64) error {
 	tx := w.db.Exec(qeury, params...)
 
 	return tx.Error
+}
+
+func (w *write) DeleteSessionById(sessionId uint64) (*models.Session, error) {
+	const qeury = `DELETE FROM sessions WHERE id=? RETURNING *`
+	params := []interface{}{sessionId}
+
+	tx := w.db.Raw(qeury, params...)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	data := &models.Session{}
+	tx.Scan(&data)
+
+	return data, tx.Error
 }

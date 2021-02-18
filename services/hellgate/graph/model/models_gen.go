@@ -35,3 +35,9 @@ type Post struct {
 	ID      int    `json:"id"`
 	OwnerID int    `json:"ownerId"`
 }
+
+type Session struct {
+	Device    string `json:"device"`
+	CreatedAt int    `json:"createdAt"`
+	SessionID int    `json:"sessionId"`
+}

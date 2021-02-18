@@ -8,6 +8,7 @@ import (
 	"errors"
 	securityPb "microServiceBoilerplate/proto/generated/security"
 	"microServiceBoilerplate/proto/generated/user"
+	models "microServiceBoilerplate/services/hellgate/graph/model"
 	"microServiceBoilerplate/services/hellgate/security"
 	"microServiceBoilerplate/utils"
 )
@@ -32,6 +33,7 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 		securityRes, err := r.SecurityConn.Login(ctx, &securityPb.LogInRequest{
 			UserId:   userId,
 			Password: password,
+			Device:   security.GetUserAgent(ctx),
 		})
 		if err != nil {
 			return false, utils.GetGRPCMSG(err)
@@ -45,13 +47,57 @@ func (r *mutationResolver) Login(ctx context.Context, email string, password str
 }
 
 func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
-	token := security.GetCookie(ctx)
+	token := security.GetToken(ctx)
 
 	r.SecurityConn.Logout(ctx, &securityPb.LogoutInRequest{
 		Token: token,
 	})
 
 	security.DeleteToken(ctx)
+
+	return true, nil
+}
+
+func (r *queryResolver) Sessions(ctx context.Context) ([]*models.Session, error) {
+	var (
+		userId    uint64
+		rawData   []*securityPb.Session
+		converted []*models.Session
+	)
+
+	{
+		userId = security.GetUserId(ctx)
+	}
+	{
+		response, err := r.SecurityConn.GetSessions(ctx, &securityPb.GetSessionsRequest{
+			UserId: userId,
+		})
+		if err != nil {
+			return nil, err
+		}
+		rawData = response.Sessions
+	}
+	{
+		converted = make([]*models.Session, len(rawData))
+		for idx, i := range rawData {
+			converted[idx] = &models.Session{
+				SessionID: int(i.SessionId),
+				CreatedAt: int(i.CreatedAt),
+				Device:    i.Device,
+			}
+		}
+	}
+
+	return converted, nil
+}
+
+func (r *mutationResolver) DeleteSession(ctx context.Context, sessionID int) (bool, error) {
+	_, err := r.SecurityConn.DeleteSession(ctx, &securityPb.DeleteSessionRequest{
+		SessionId: uint64(sessionID),
+	})
+	if err != nil {
+		return false, err
+	}
 
 	return true, nil
 }

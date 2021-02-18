@@ -40,7 +40,7 @@ func DeleteToken(ctx context.Context) {
 	})
 }
 
-func GetCookie(ctx context.Context) string {
+func GetToken(ctx context.Context) string {
 	req := GetRequest(ctx)
 
 	c, _ := req.Cookie(COOKIE_NAME)
@@ -60,4 +60,8 @@ func GetUserId(ctx context.Context) uint64 {
 	}
 
 	return data
+}
+
+func GetUserAgent(ctx context.Context) string {
+	return GetRequest(ctx).Header.Get("user-agent")
 }

@@ -46,20 +46,22 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		CreatePost func(childComplexity int, input models.CreatePostInput) int
-		CreateUser func(childComplexity int, input models.CreateUserInput) int
-		DeletePost func(childComplexity int, input models.DeletePostInput) int
-		DeleteUser func(childComplexity int) int
-		Follow     func(childComplexity int, following int) int
-		Login      func(childComplexity int, email string, password string) int
-		Logout     func(childComplexity int) int
-		Unfollow   func(childComplexity int, following int) int
+		CreatePost    func(childComplexity int, input models.CreatePostInput) int
+		CreateUser    func(childComplexity int, input models.CreateUserInput) int
+		DeletePost    func(childComplexity int, input models.DeletePostInput) int
+		DeleteSession func(childComplexity int, sessionID int) int
+		DeleteUser    func(childComplexity int) int
+		Follow        func(childComplexity int, following int) int
+		Login         func(childComplexity int, email string, password string) int
+		Logout        func(childComplexity int) int
+		Unfollow      func(childComplexity int, following int) int
 	}
 
 	Query struct {
-		GetFeed func(childComplexity int, offset int, limit int) int
-		GetPost func(childComplexity int, input models.GetPostInput) int
-		GetUser func(childComplexity int, id int) int
+		GetFeed  func(childComplexity int, offset int, limit int) int
+		GetPost  func(childComplexity int, input models.GetPostInput) int
+		GetUser  func(childComplexity int, id int) int
+		Sessions func(childComplexity int) int
 	}
 
 	User struct {
@@ -75,11 +77,18 @@ type ComplexityRoot struct {
 		OwnerID func(childComplexity int) int
 		Title   func(childComplexity int) int
 	}
+
+	Session struct {
+		CreatedAt func(childComplexity int) int
+		Device    func(childComplexity int) int
+		SessionID func(childComplexity int) int
+	}
 }
 
 type MutationResolver interface {
 	Login(ctx context.Context, email string, password string) (bool, error)
 	Logout(ctx context.Context) (bool, error)
+	DeleteSession(ctx context.Context, sessionID int) (bool, error)
 	CreatePost(ctx context.Context, input models.CreatePostInput) (int, error)
 	DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error)
 	Follow(ctx context.Context, following int) (bool, error)
@@ -88,6 +97,7 @@ type MutationResolver interface {
 	DeleteUser(ctx context.Context) (bool, error)
 }
 type QueryResolver interface {
+	Sessions(ctx context.Context) ([]*models.Session, error)
 	GetPost(ctx context.Context, input models.GetPostInput) ([]*models.Post, error)
 	GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error)
 	GetUser(ctx context.Context, id int) (*models.User, error)
@@ -143,6 +153,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeletePost(childComplexity, args["input"].(models.DeletePostInput)), true
+
+	case "Mutation.deleteSession":
+		if e.complexity.Mutation.DeleteSession == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteSession_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteSession(childComplexity, args["sessionId"].(int)), true
 
 	case "Mutation.deleteUser":
 		if e.complexity.Mutation.DeleteUser == nil {
@@ -230,6 +252,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetUser(childComplexity, args["id"].(int)), true
 
+	case "Query.sessions":
+		if e.complexity.Query.Sessions == nil {
+			break
+		}
+
+		return e.complexity.Query.Sessions(childComplexity), true
+
 	case "User.email":
 		if e.complexity.User.Email == nil {
 			break
@@ -285,6 +314,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Post.Title(childComplexity), true
+
+	case "session.createdAt":
+		if e.complexity.Session.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Session.CreatedAt(childComplexity), true
+
+	case "session.device":
+		if e.complexity.Session.Device == nil {
+			break
+		}
+
+		return e.complexity.Session.Device(childComplexity), true
+
+	case "session.sessionId":
+		if e.complexity.Session.SessionID == nil {
+			break
+		}
+
+		return e.complexity.Session.SessionID(childComplexity), true
 
 	}
 	return 0, false
@@ -350,9 +400,19 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/schema/controller.graphql", Input: `extend type Mutation {
+	{Name: "graph/schema/controller.graphql", Input: `extend type Query {
+	sessions: [session!]! @private
+}
+type session {
+	device: String!
+	createdAt: Int!
+	sessionId: Int!
+}
+
+extend type Mutation {
 	login(email: String!, password: String!): Boolean!
 	logout: Boolean! @private
+	deleteSession(sessionId: Int!): Boolean! @private
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/post.graphql", Input: `extend type Query {
@@ -470,6 +530,21 @@ func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, 
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteSession_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["sessionId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sessionId"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["sessionId"] = arg0
 	return args, nil
 }
 
@@ -696,6 +771,68 @@ func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Mutation().Logout(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Private == nil {
+				return nil, errors.New("directive private is not implemented")
+			}
+			return ec.directives.Private(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteSession(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteSession_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteSession(rctx, args["sessionId"].(int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -1074,6 +1211,61 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_sessions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().Sessions(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Private == nil {
+				return nil, errors.New("directive private is not implemented")
+			}
+			return ec.directives.Private(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.Session); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*microServiceBoilerplate/services/hellgate/graph/model.Session`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.Session)
+	fc.Result = res
+	return ec.marshalNsession2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐSessionᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2653,6 +2845,111 @@ func (ec *executionContext) _post_ownerId(ctx context.Context, field graphql.Col
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _session_device(ctx context.Context, field graphql.CollectedField, obj *models.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Device, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _session_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _session_sessionId(ctx context.Context, field graphql.CollectedField, obj *models.Session) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "session",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.SessionID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
@@ -2802,6 +3099,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "deleteSession":
+			out.Values[i] = ec._Mutation_deleteSession(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createPost":
 			out.Values[i] = ec._Mutation_createPost(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -2858,6 +3160,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "sessions":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_sessions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "getPost":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -3237,6 +3553,43 @@ func (ec *executionContext) _post(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
+var sessionImplementors = []string{"session"}
+
+func (ec *executionContext) _session(ctx context.Context, sel ast.SelectionSet, obj *models.Session) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, sessionImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("session")
+		case "device":
+			out.Values[i] = ec._session_device(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._session_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sessionId":
+			out.Values[i] = ec._session_sessionId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
@@ -3580,6 +3933,53 @@ func (ec *executionContext) marshalNpost2ᚖmicroServiceBoilerplateᚋservices�
 		return graphql.Null
 	}
 	return ec._post(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNsession2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐSessionᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Session) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNsession2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐSession(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNsession2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐSession(ctx context.Context, sel ast.SelectionSet, v *models.Session) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._session(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {

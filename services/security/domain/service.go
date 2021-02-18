@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"microServiceBoilerplate/services/security/instances"
+	"microServiceBoilerplate/services/security/models"
 	"microServiceBoilerplate/services/security/repository/postgres"
 	"microServiceBoilerplate/services/security/repository/redis"
 	"microServiceBoilerplate/services/security/utils"
@@ -112,12 +113,14 @@ func (s *service) PurgeUser(userId uint64) error {
 	)
 
 	{
-		tokens = s.postgresRepo.Read.GetUserToken(userId)
-	}
-	{
-		go func(ch chan error) {
-			ch <- s.postgresRepo.Write.DeleteUserSessions(userId)
-		}(chErr)
+		sessions, err := s.postgresRepo.Write.DeleteUserSessions(userId)
+		if err != nil {
+			return err
+		}
+		tokens = make([]string, len(sessions))
+		for idx, i := range sessions {
+			tokens[idx] = i.Token
+		}
 	}
 	{
 		go func(ch chan error) {
@@ -136,5 +139,30 @@ func (s *service) PurgeUser(userId uint64) error {
 		}
 	}
 
+	return nil
+}
+
+func (s *service) GetSessions(userId uint64) ([]*models.Session, error) {
+	return s.postgresRepo.Read.GetSessions(userId)
+}
+
+func (s *service) DeleteSession(sessionId uint64) (err error) {
+	var (
+		token string
+	)
+
+	{
+		session, err := s.postgresRepo.Write.DeleteSessionById(sessionId)
+		if err != nil {
+			return err
+		}
+		token = session.Token
+	}
+	{
+		err = s.redisRepo.Write.DeleteSession(token)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

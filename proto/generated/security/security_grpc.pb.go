@@ -22,6 +22,8 @@ type SecurityServiceClient interface {
 	Login(ctx context.Context, in *LogInRequest, opts ...grpc.CallOption) (*LogInResponse, error)
 	Logout(ctx context.Context, in *LogoutInRequest, opts ...grpc.CallOption) (*LogoutInResponse, error)
 	GetUserId(ctx context.Context, in *GetUserIdRequest, opts ...grpc.CallOption) (*GetUserIdResponse, error)
+	GetSessions(ctx context.Context, in *GetSessionsRequest, opts ...grpc.CallOption) (*GetSessionsResponse, error)
+	DeleteSession(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*DeleteSessionResponse, error)
 }
 
 type securityServiceClient struct {
@@ -68,6 +70,24 @@ func (c *securityServiceClient) GetUserId(ctx context.Context, in *GetUserIdRequ
 	return out, nil
 }
 
+func (c *securityServiceClient) GetSessions(ctx context.Context, in *GetSessionsRequest, opts ...grpc.CallOption) (*GetSessionsResponse, error) {
+	out := new(GetSessionsResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/GetSessions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *securityServiceClient) DeleteSession(ctx context.Context, in *DeleteSessionRequest, opts ...grpc.CallOption) (*DeleteSessionResponse, error) {
+	out := new(DeleteSessionResponse)
+	err := c.cc.Invoke(ctx, "/security.SecurityService/DeleteSession", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SecurityServiceServer is the server API for SecurityService service.
 // All implementations must embed UnimplementedSecurityServiceServer
 // for forward compatibility
@@ -76,6 +96,8 @@ type SecurityServiceServer interface {
 	Login(context.Context, *LogInRequest) (*LogInResponse, error)
 	Logout(context.Context, *LogoutInRequest) (*LogoutInResponse, error)
 	GetUserId(context.Context, *GetUserIdRequest) (*GetUserIdResponse, error)
+	GetSessions(context.Context, *GetSessionsRequest) (*GetSessionsResponse, error)
+	DeleteSession(context.Context, *DeleteSessionRequest) (*DeleteSessionResponse, error)
 	mustEmbedUnimplementedSecurityServiceServer()
 }
 
@@ -94,6 +116,12 @@ func (UnimplementedSecurityServiceServer) Logout(context.Context, *LogoutInReque
 }
 func (UnimplementedSecurityServiceServer) GetUserId(context.Context, *GetUserIdRequest) (*GetUserIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserId not implemented")
+}
+func (UnimplementedSecurityServiceServer) GetSessions(context.Context, *GetSessionsRequest) (*GetSessionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSessions not implemented")
+}
+func (UnimplementedSecurityServiceServer) DeleteSession(context.Context, *DeleteSessionRequest) (*DeleteSessionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSession not implemented")
 }
 func (UnimplementedSecurityServiceServer) mustEmbedUnimplementedSecurityServiceServer() {}
 
@@ -180,6 +208,42 @@ func _SecurityService_GetUserId_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SecurityService_GetSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSessionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).GetSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/GetSessions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).GetSessions(ctx, req.(*GetSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SecurityService_DeleteSession_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SecurityServiceServer).DeleteSession(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/security.SecurityService/DeleteSession",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SecurityServiceServer).DeleteSession(ctx, req.(*DeleteSessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SecurityService_ServiceDesc is the grpc.ServiceDesc for SecurityService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +266,14 @@ var SecurityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserId",
 			Handler:    _SecurityService_GetUserId_Handler,
+		},
+		{
+			MethodName: "GetSessions",
+			Handler:    _SecurityService_GetSessions_Handler,
+		},
+		{
+			MethodName: "DeleteSession",
+			Handler:    _SecurityService_DeleteSession_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

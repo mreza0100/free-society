@@ -10,6 +10,27 @@ service SecurityService {
       rpc Login(LogInRequest) returns (LogInResponse);
       rpc Logout(LogoutInRequest) returns (LogoutInResponse);
       rpc GetUserId(GetUserIdRequest) returns (GetUserIdResponse);
+      rpc GetSessions(GetSessionsRequest) returns (GetSessionsResponse);
+      rpc DeleteSession(DeleteSessionRequest) returns (DeleteSessionResponse);
+}
+
+// DeleteSession
+message DeleteSessionRequest {
+      uint64 sessionId = 1;
+}
+message DeleteSessionResponse {}
+
+// get session
+message GetSessionsRequest {
+      uint64 userId = 1;
+}
+message session {
+      uint64 sessionId = 1;
+      string device    = 2;
+      uint64 CreatedAt = 3;
+}
+message GetSessionsResponse {
+      repeated session sessions = 1;
 }
 
 // NewUser
@@ -24,11 +45,11 @@ message NewUserResponse {
 // login
 message LogInRequest {
       uint64 userId    = 1;
-      string password = 2;
+      string password  = 2;
+      string device    = 3;
 }
 message LogInResponse {
       string token    = 1;
-      string device   = 3;
 }
 // Logout
 message LogoutInRequest {

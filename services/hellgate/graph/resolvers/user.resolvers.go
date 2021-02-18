@@ -31,7 +31,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUs
 		securityRes, err := r.SecurityConn.NewUser(ctx, &securityPb.NewUserRequest{
 			UserId:   userRes.Id,
 			Password: input.Password,
-			Device:   "",
+			Device:   security.GetUserAgent(ctx),
 		})
 		if err != nil {
 			return 0, err

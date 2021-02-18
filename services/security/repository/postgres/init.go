@@ -22,15 +22,15 @@ func New(lgr *golog.Core) *instances.Repo_Postgres {
 
 	{
 		db = getConnection(lgr)
-		lgr = lgr.With("In Repository ->")
+		lgr = lgr.With("In Repository->")
 	}
 	{
 		readQ = &read{
-			lgr: lgr.With("In Read ->"),
+			lgr: lgr.With("In Read->"),
 			db:  db,
 		}
 		writeQ = &write{
-			lgr: lgr.With("In Read ->"),
+			lgr: lgr.With("In Write->"),
 			db:  db,
 		}
 	}
