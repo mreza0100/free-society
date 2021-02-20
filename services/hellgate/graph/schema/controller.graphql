@@ -1,14 +1,16 @@
 extend type Query {
 	sessions: [session!]! @private
 }
-type session {
-	device: String!
-	createdAt: Int!
-	sessionId: Int!
-}
 
 extend type Mutation {
 	login(email: String!, password: String!): Boolean!
 	logout: Boolean! @private
 	deleteSession(sessionId: Int!): Boolean! @private
+	changePassword(prevPassword: String!, newPassword: String!): Boolean! @private
+}
+
+type session {
+	device: String!
+	createdAt: Int!
+	sessionId: Int!
 }

@@ -15,6 +15,7 @@ type postgres_write interface {
 	DeleteUserSessions(userId uint64) ([]*models.Session, error)
 	DeletePassword(userId uint64) error
 	DeleteSessionById(sessionId uint64) (*models.Session, error)
+	ChangeHashPass(userId uint64, hashPass string) error
 }
 
 type Repo_Postgres struct {

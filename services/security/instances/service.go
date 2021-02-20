@@ -10,4 +10,5 @@ type Sevice interface {
 	PurgeUser(userId uint64) error
 	GetSessions(userId uint64) ([]*models.Session, error)
 	DeleteSession(sessionId uint64) error
+	ChangePassword(userId uint64, prevPassword, newPassword string) error
 }

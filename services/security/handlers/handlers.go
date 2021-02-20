@@ -125,3 +125,7 @@ func (h *handlers) GetSessions(_ context.Context, in *pb.GetSessionsRequest) (*p
 func (h *handlers) DeleteSession(_ context.Context, in *pb.DeleteSessionRequest) (*pb.DeleteSessionResponse, error) {
 	return &pb.DeleteSessionResponse{}, h.srv.DeleteSession(in.SessionId)
 }
+
+func (h *handlers) ChangePassword(_ context.Context, in *pb.ChangePasswordRequest) (*pb.ChangePasswordResponse, error) {
+	return &pb.ChangePasswordResponse{}, h.srv.ChangePassword(in.UserId, in.PrevPassword, in.NewPassword)
+}

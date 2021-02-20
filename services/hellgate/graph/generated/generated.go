@@ -46,15 +46,16 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		CreatePost    func(childComplexity int, input models.CreatePostInput) int
-		CreateUser    func(childComplexity int, input models.CreateUserInput) int
-		DeletePost    func(childComplexity int, input models.DeletePostInput) int
-		DeleteSession func(childComplexity int, sessionID int) int
-		DeleteUser    func(childComplexity int) int
-		Follow        func(childComplexity int, following int) int
-		Login         func(childComplexity int, email string, password string) int
-		Logout        func(childComplexity int) int
-		Unfollow      func(childComplexity int, following int) int
+		ChangePassword func(childComplexity int, prevPassword string, newPassword string) int
+		CreatePost     func(childComplexity int, input models.CreatePostInput) int
+		CreateUser     func(childComplexity int, input models.CreateUserInput) int
+		DeletePost     func(childComplexity int, input models.DeletePostInput) int
+		DeleteSession  func(childComplexity int, sessionID int) int
+		DeleteUser     func(childComplexity int) int
+		Follow         func(childComplexity int, following int) int
+		Login          func(childComplexity int, email string, password string) int
+		Logout         func(childComplexity int) int
+		Unfollow       func(childComplexity int, following int) int
 	}
 
 	Query struct {
@@ -89,6 +90,7 @@ type MutationResolver interface {
 	Login(ctx context.Context, email string, password string) (bool, error)
 	Logout(ctx context.Context) (bool, error)
 	DeleteSession(ctx context.Context, sessionID int) (bool, error)
+	ChangePassword(ctx context.Context, prevPassword string, newPassword string) (bool, error)
 	CreatePost(ctx context.Context, input models.CreatePostInput) (int, error)
 	DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error)
 	Follow(ctx context.Context, following int) (bool, error)
@@ -117,6 +119,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Mutation.changePassword":
+		if e.complexity.Mutation.ChangePassword == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_changePassword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ChangePassword(childComplexity, args["prevPassword"].(string), args["newPassword"].(string)), true
 
 	case "Mutation.createPost":
 		if e.complexity.Mutation.CreatePost == nil {
@@ -403,16 +417,18 @@ var sources = []*ast.Source{
 	{Name: "graph/schema/controller.graphql", Input: `extend type Query {
 	sessions: [session!]! @private
 }
-type session {
-	device: String!
-	createdAt: Int!
-	sessionId: Int!
-}
 
 extend type Mutation {
 	login(email: String!, password: String!): Boolean!
 	logout: Boolean! @private
 	deleteSession(sessionId: Int!): Boolean! @private
+	changePassword(prevPassword: String!, newPassword: String!): Boolean! @private
+}
+
+type session {
+	device: String!
+	createdAt: Int!
+	sessionId: Int!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/post.graphql", Input: `extend type Query {
@@ -487,6 +503,30 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_changePassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["prevPassword"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prevPassword"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["prevPassword"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["newPassword"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newPassword"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["newPassword"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -833,6 +873,68 @@ func (ec *executionContext) _Mutation_deleteSession(ctx context.Context, field g
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Mutation().DeleteSession(rctx, args["sessionId"].(int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Private == nil {
+				return nil, errors.New("directive private is not implemented")
+			}
+			return ec.directives.Private(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_changePassword(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_changePassword_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ChangePassword(rctx, args["prevPassword"].(string), args["newPassword"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -3101,6 +3203,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "deleteSession":
 			out.Values[i] = ec._Mutation_deleteSession(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "changePassword":
+			out.Values[i] = ec._Mutation_changePassword(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

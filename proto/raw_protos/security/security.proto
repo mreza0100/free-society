@@ -12,7 +12,15 @@ service SecurityService {
       rpc GetUserId(GetUserIdRequest) returns (GetUserIdResponse);
       rpc GetSessions(GetSessionsRequest) returns (GetSessionsResponse);
       rpc DeleteSession(DeleteSessionRequest) returns (DeleteSessionResponse);
+      rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
 }
+
+message ChangePasswordRequest {
+      string prevPassword = 1;
+      string newPassword  = 2;
+      uint64 userId       = 3;
+}
+message ChangePasswordResponse {}
 
 // DeleteSession
 message DeleteSessionRequest {

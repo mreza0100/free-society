@@ -166,3 +166,42 @@ func (s *service) DeleteSession(sessionId uint64) (err error) {
 	}
 	return nil
 }
+
+func (s *service) ChangePassword(userId uint64, prevPassword, newPassword string) (err error) {
+	var (
+		tokens []string
+	)
+
+	{
+		hashPass, err := s.postgresRepo.Read.GetHashPass(userId)
+		if err != nil {
+			return err
+		}
+
+		if !security.HashCompare(hashPass, prevPassword) {
+			return errors.New("password is wrong")
+		}
+	}
+
+	{
+		err = s.postgresRepo.Write.ChangeHashPass(userId, security.HashIt(newPassword))
+		if err != nil {
+			return err
+		}
+	}
+
+	{
+		var sessions []*models.Session
+		sessions, err = s.postgresRepo.Write.DeleteUserSessions(userId)
+		tokens = make([]string, len(sessions))
+		for idx, i := range sessions {
+			tokens[idx] = i.Token
+		}
+	}
+
+	{
+		err = s.redisRepo.Write.DeleteSession(tokens...)
+	}
+
+	return err
+}

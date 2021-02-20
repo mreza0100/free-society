@@ -58,6 +58,17 @@ func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
+func (r *mutationResolver) DeleteSession(ctx context.Context, sessionID int) (bool, error) {
+	_, err := r.SecurityConn.DeleteSession(ctx, &securityPb.DeleteSessionRequest{
+		SessionId: uint64(sessionID),
+	})
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func (r *queryResolver) Sessions(ctx context.Context) ([]*models.Session, error) {
 	var (
 		userId    uint64
@@ -91,13 +102,23 @@ func (r *queryResolver) Sessions(ctx context.Context) ([]*models.Session, error)
 	return converted, nil
 }
 
-func (r *mutationResolver) DeleteSession(ctx context.Context, sessionID int) (bool, error) {
-	_, err := r.SecurityConn.DeleteSession(ctx, &securityPb.DeleteSessionRequest{
-		SessionId: uint64(sessionID),
-	})
-	if err != nil {
-		return false, err
+func (r *mutationResolver) ChangePassword(ctx context.Context, prevPassword string, newPassword string) (bool, error) {
+	var (
+		userId uint64
+		err    error
+	)
+
+	{
+		userId = security.GetUserId(ctx)
 	}
 
-	return true, nil
+	{
+		_, err = r.SecurityConn.ChangePassword(ctx, &securityPb.ChangePasswordRequest{
+			PrevPassword: prevPassword,
+			NewPassword:  newPassword,
+			UserId:       userId,
+		})
+	}
+
+	return err == nil, err
 }

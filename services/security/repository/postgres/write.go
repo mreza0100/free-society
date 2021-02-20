@@ -91,3 +91,12 @@ func (w *write) DeleteSessionById(sessionId uint64) (*models.Session, error) {
 
 	return data, tx.Error
 }
+
+func (w *write) ChangeHashPass(userId uint64, newHashPass string) error {
+	const query = `UPDATE passwords SET password = ? WHERE user_id = ?`
+	params := []interface{}{newHashPass, userId}
+
+	tx := w.db.Exec(query, params...)
+
+	return tx.Error
+}
