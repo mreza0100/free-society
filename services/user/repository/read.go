@@ -72,3 +72,18 @@ func (r *read) IsUserExistByEmail(email string) bool {
 
 	return data.Exists
 }
+
+func (r *read) GetUsersByIds(userIds []uint64) ([]*models.User, error) {
+	const query = `SELECT * from users WHERE id IN(?)`
+	params := []interface{}{userIds}
+
+	tx := r.db.Raw(query, params...)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	users := make([]*models.User, 0)
+	tx.Scan(&users)
+
+	return users, nil
+}

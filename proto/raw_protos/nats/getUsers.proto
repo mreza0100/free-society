@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package natsPb;
+
+option go_package = "/natsPb";
+
+
+
+// Get Users
+message GetUsers_REQUEST_request {
+      repeated uint64 userIds = 1;
+}
+
+message user {
+   string name   = 1;
+   string email  = 2;
+   string gender = 3;
+   uint64 id     = 4;
+}
+
+message GetUsers_REQUEST_response {
+      map<uint64, user> usersData = 1;
+}

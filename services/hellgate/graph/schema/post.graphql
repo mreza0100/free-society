@@ -1,5 +1,5 @@
 extend type Query {
-	getPost(input: getPostInput!): [post!]!
+	getPost(input: [Int!]!): [post!]!
 	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 
@@ -13,6 +13,7 @@ type post {
 	body: String!
 	id: Int!
 	ownerId: Int!
+	user: User!
 }
 
 input createPostInput {
@@ -21,7 +22,4 @@ input createPostInput {
 }
 input deletePostInput {
 	postId: Int!
-}
-input getPostInput {
-	postIds: [Int!]
 }

@@ -3,6 +3,7 @@ package postNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
+	pb "microServiceBoilerplate/proto/generated/post"
 	"microServiceBoilerplate/services/post/instances"
 
 	"github.com/mreza0100/golog"
@@ -22,7 +23,7 @@ type publishers struct {
 	nc  *nats.Conn
 }
 
-func (this *publishers) NewPost(userId, postId uint64) error {
+func (p *publishers) NewPost(userId, postId uint64) error {
 	subject := configs.Nats.Subjects.NewPost
 
 	{
@@ -32,17 +33,68 @@ func (this *publishers) NewPost(userId, postId uint64) error {
 		}
 		msgByte, err := proto.Marshal(data)
 		if err != nil {
-			this.lgr.Debug.RedLog("proto.Marshal has been returning error")
-			this.lgr.Debug.RedLog("Error: ", err)
+			p.lgr.Debug.RedLog("proto.Marshal has been returning error")
+			p.lgr.Debug.RedLog("Error: ", err)
 			return err
 		}
 
-		err = this.nc.Publish(subject, msgByte)
+		err = p.nc.Publish(subject, msgByte)
 		if err != nil {
-			this.lgr.RedLog("in NewPost: can't publish msg")
-			this.lgr.RedLog("error: ", err)
+			p.lgr.RedLog("in NewPost: can't publish msg")
+			p.lgr.RedLog("error: ", err)
 			return err
 		}
 	}
 	return nil
+}
+
+func (p *publishers) GetUsers(userIds []uint64) (map[uint64]*pb.User, error) {
+	subject := configs.Nats.Subjects.GetUsersByIds
+	dbug, sussess := p.lgr.DebugPKG("GetProfiles", false)
+
+	{
+		var (
+			request  []byte
+			rawUsers *natsPb.GetUsers_REQUESTResponse
+			result   map[uint64]*pb.User
+
+			err error
+		)
+
+		{
+			rawUsers = &natsPb.GetUsers_REQUESTResponse{}
+		}
+		{
+			request, err = proto.Marshal(&natsPb.GetUsers_REQUESTRequest{
+				UserIds: userIds,
+			})
+			if dbug("proto.Marshal")(err) != nil {
+				return nil, err
+			}
+		}
+		{
+			var res *nats.Msg
+			res, err := p.nc.Request(subject, request, configs.Nats.Timeout)
+			if dbug("p.nc.Request")(err) != nil {
+				return nil, err
+			}
+			err = proto.Unmarshal(res.Data, rawUsers)
+			if dbug("proto.Unmarshal")(err) != nil {
+				return nil, err
+			}
+		}
+		{
+			result = make(map[uint64]*pb.User, len(rawUsers.UsersData))
+			for _, u := range rawUsers.UsersData {
+				result[u.Id] = &pb.User{
+					Name:   u.Name,
+					Email:  u.Email,
+					Id:     u.Id,
+					Gender: u.Gender,
+				}
+			}
+		}
+		sussess("profiles: ", result)
+		return result, nil
+	}
 }

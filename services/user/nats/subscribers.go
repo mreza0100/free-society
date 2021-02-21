@@ -19,12 +19,13 @@ type initSubsOpts struct {
 func initSubs(opts *initSubsOpts) {
 	s := subscribers{
 		srv: opts.srv,
-		lgr: opts.lgr.With("In subscribers ->"),
+		lgr: opts.lgr.With("In subscribers->"),
 		nc:  opts.nc,
 	}
 	opts.lgr.SuccessLog("subscribers has been attached to nats")
 
-	s.IsUserExist_REQUEST()
+	s.isUserExist_REQUEST()
+	s.getUsersByIds_REQUEST()
 }
 
 type subscribers struct {
@@ -33,8 +34,9 @@ type subscribers struct {
 	nc  *nats.Conn
 }
 
-func (s *subscribers) IsUserExist_REQUEST() {
+func (s *subscribers) isUserExist_REQUEST() {
 	subject := configs.Nats.Subjects.IsUserExist_REQUEST
+	dbug, sussess := s.lgr.DebugPKG("IsUserExist_REQUEST", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -53,9 +55,7 @@ func (s *subscribers) IsUserExist_REQUEST() {
 			}
 
 			{
-				if proto.Unmarshal(msg.Data, request) != nil {
-					s.lgr.RedLog("in Subscribe cant unMarshal request")
-					s.lgr.RedLog("Error: ", err)
+				if dbug("Unmarshal request")(proto.Unmarshal(msg.Data, request)) != nil {
 					return
 				}
 			}
@@ -69,14 +69,60 @@ func (s *subscribers) IsUserExist_REQUEST() {
 
 			{
 				byteResponse, err = proto.Marshal(response)
-				if err != nil {
-					s.lgr.RedLog("in GetFollowers_REQUEST cant Marshal response")
-					s.lgr.RedLog("Error: ", err)
+				if dbug("cant Marshal response")(err) != nil {
 					return
 				}
 			}
 
+			sussess()
 			msg.Respond(byteResponse)
+		})
+	}
+}
+
+func (s *subscribers) getUsersByIds_REQUEST() {
+	subject := configs.Nats.Subjects.GetUsersByIds
+	dbug, sussess := s.lgr.DebugPKG("getUsersByIds_REQUEST", false)
+
+	{
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				request  *natsPb.GetUsers_REQUESTRequest
+				response *natsPb.GetUsers_REQUESTResponse
+			)
+
+			{
+				request = &natsPb.GetUsers_REQUESTRequest{}
+				response = &natsPb.GetUsers_REQUESTResponse{}
+			}
+			{
+				if dbug("proto.Unmarshal")(proto.Unmarshal(msg.Data, request)) != nil {
+					return
+				}
+			}
+			{
+				users, err := s.srv.GetUsers(request.UserIds)
+				if dbug("s.srv.GetUsers")(err) != nil {
+					return
+				}
+				response.UsersData = make(map[uint64]*natsPb.User, len(request.UserIds))
+				for _, u := range users {
+					response.UsersData[u.ID] = &natsPb.User{
+						Name:   u.Name,
+						Email:  u.Email,
+						Id:     u.ID,
+						Gender: u.Gender,
+					}
+				}
+			}
+			{
+				byteResult, err := proto.Marshal(response)
+				if dbug("proto.Marshal")(err) != nil {
+					return
+				}
+				msg.Respond(byteResult)
+				sussess(response)
+			}
 		})
 	}
 }

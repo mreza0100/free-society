@@ -13,6 +13,7 @@ type SubjectsT struct {
 	IsUserExist_REQUEST string
 	GetFollowers        string
 	GetPosts            string
+	GetUsersByIds       string
 }
 
 type natsConfigsT struct {
@@ -70,5 +71,6 @@ func init() {
 		sbjs.IsUserExist_REQUEST = "user.is_exist"
 		sbjs.GetFollowers = "relation.get_followers"
 		sbjs.GetPosts = "posts.get"
+		sbjs.GetUsersByIds = "user.get_users"
 	}
 }

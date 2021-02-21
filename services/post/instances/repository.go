@@ -1,9 +1,9 @@
 package instances
 
-import pb "microServiceBoilerplate/proto/generated/post"
+import "microServiceBoilerplate/services/post/models"
 
 type read interface {
-	GetPost(postIds []uint64) ([]*pb.Post, error)
+	GetPost(postIds []uint64) ([]*models.Post, error)
 }
 
 type write interface {

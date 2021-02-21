@@ -42,52 +42,74 @@ func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePo
 	return err != nil, utils.GetGRPCMSG(err)
 }
 
-func (r *queryResolver) GetPost(ctx context.Context, input models.GetPostInput) ([]*models.Post, error) {
-	if len(input.PostIds) > 50 {
-		return []*models.Post{}, errors.New("too many ids")
-	}
+func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Post, error) {
+	var (
+		ids      []uint64
+		rawPosts []*post.Post
+		result   []*models.Post
+	)
 
-	ids := make([]uint64, len(input.PostIds))
 	{
-		for i := 0; i < len(input.PostIds); i++ {
-			ids[i] = uint64(input.PostIds[i])
+		if len(input) > 50 {
+			return []*models.Post{}, errors.New("too many ids")
 		}
 	}
-	response, err := r.postConn.GetPost(ctx, &post.GetPostRequest{
-		Ids: ids,
-	})
-	if err != nil {
-		return nil, utils.GetGRPCMSG(err)
-	}
-	result := make([]*models.Post, len(response.Posts))
 
 	{
-		for i := 0; i < len(response.Posts); i++ {
-			resVal := response.Posts[i]
-			result[i] = &models.Post{
-				Title:   resVal.Title,
-				Body:    resVal.Body,
-				OwnerID: int(resVal.OwnerId),
-				ID:      int(resVal.Id),
+		ids = make([]uint64, len(input))
+		{
+			for i := 0; i < len(input); i++ {
+				ids[i] = uint64(input[i])
 			}
 		}
 	}
+	{
+		response, err := r.postConn.GetPost(ctx, &post.GetPostRequest{
+			Ids: ids,
+		})
+		if err != nil {
+			return nil, utils.GetGRPCMSG(err)
+		}
+		rawPosts = response.Posts
+	}
+	{
+		result = make([]*models.Post, len(rawPosts))
+
+		for idx, p := range rawPosts {
+			result[idx] = &models.Post{
+				Title:   p.Title,
+				Body:    p.Body,
+				ID:      int(p.Id),
+				OwnerID: int(p.OwnerId),
+				User: &models.User{
+					ID:     int(p.User.Id),
+					Name:   p.User.Name,
+					Email:  p.User.Email,
+					Gender: p.User.Gender,
+				},
+			}
+		}
+	}
+
+	r.Lgr.InfoLog(*result[0].User)
 
 	return result, nil
 }
 
 func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error) {
+	var (
+		userId   uint64
+		postIds  []uint64
+		rawPosts []*post.Post
+		posts    []*models.Post
+	)
+
 	{
 		if limit > 50 {
 			return nil, errors.New("limit must be less then 50")
 		}
+		userId = security.GetUserId(ctx)
 	}
-
-	userId := security.GetUserId(ctx)
-	postIds := make([]uint64, 0)
-	posts := make([]*post.Post, 0)
-	convertedPosts := make([]*models.Post, 0)
-
 	{
 		response, err := r.feedConn.GetFeed(ctx, &feed.GetFeedRequest{
 			UserId: userId,
@@ -106,20 +128,26 @@ func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*
 		if err != nil {
 			return nil, err
 		}
-		posts = response.Posts
+		rawPosts = response.Posts
 	}
 
 	{
-		for _, p := range posts {
-			convertedPosts = append(convertedPosts,
-				&models.Post{
-					Title:   p.Title,
-					Body:    p.Body,
-					ID:      int(p.Id),
-					OwnerID: int(p.OwnerId),
-				})
+		posts = make([]*models.Post, len(rawPosts))
+		for idx, p := range rawPosts {
+			posts[idx] = &models.Post{
+				Title:   p.Title,
+				Body:    p.Body,
+				ID:      int(p.Id),
+				OwnerID: int(p.OwnerId),
+				User: &models.User{
+					ID:     int(p.User.Id),
+					Name:   p.User.Name,
+					Email:  p.User.Email,
+					Gender: p.User.Gender,
+				},
+			}
 		}
 	}
 
-	return convertedPosts, nil
+	return posts, nil
 }

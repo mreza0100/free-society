@@ -25,15 +25,12 @@ type DeletePostInput struct {
 	PostID int `json:"postId"`
 }
 
-type GetPostInput struct {
-	PostIds []int `json:"postIds"`
-}
-
 type Post struct {
 	Title   string `json:"title"`
 	Body    string `json:"body"`
 	ID      int    `json:"id"`
 	OwnerID int    `json:"ownerId"`
+	User    *User  `json:"user"`
 }
 
 type Session struct {

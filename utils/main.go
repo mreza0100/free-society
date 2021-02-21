@@ -33,3 +33,23 @@ func IsPong(response *redis.StatusCmd) bool {
 	}
 	return response.String() == "ping: PONG"
 }
+
+func UniqueIds(n []uint64) []uint64 {
+	var (
+		result []uint64
+		m      = make(map[uint64]interface{})
+	)
+
+	{
+		for _, i := range n {
+			m[i] = struct{}{}
+		}
+	}
+	{
+		result = make([]uint64, 0, len(m))
+		for val := range m {
+			result = append(result, val)
+		}
+	}
+	return result
+}
