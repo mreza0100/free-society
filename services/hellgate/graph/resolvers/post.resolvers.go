@@ -44,15 +44,17 @@ func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePo
 
 func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Post, error) {
 	var (
-		ids      []uint64
-		rawPosts []*post.Post
-		result   []*models.Post
+		ids         []uint64
+		requestorId uint64
+		rawPosts    []*post.Post
+		result      []*models.Post
 	)
 
 	{
 		if len(input) > 50 {
 			return []*models.Post{}, errors.New("too many ids")
 		}
+		requestorId, _ = security.GetOptionalId(ctx)
 	}
 
 	{
@@ -65,7 +67,8 @@ func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Pos
 	}
 	{
 		response, err := r.postConn.GetPost(ctx, &post.GetPostRequest{
-			Ids: ids,
+			Ids:         ids,
+			RequestorId: requestorId,
 		})
 		if err != nil {
 			return nil, utils.GetGRPCMSG(err)
@@ -77,10 +80,11 @@ func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Pos
 
 		for idx, p := range rawPosts {
 			result[idx] = &models.Post{
-				Title:   p.Title,
-				Body:    p.Body,
-				ID:      int(p.Id),
-				OwnerID: int(p.OwnerId),
+				Title:       p.Title,
+				Body:        p.Body,
+				ID:          int(p.Id),
+				OwnerID:     int(p.OwnerId),
+				IsFollowing: p.IsFollowing,
 				User: &models.User{
 					ID:     int(p.User.Id),
 					Name:   p.User.Name,
@@ -121,7 +125,8 @@ func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*
 	}
 	{
 		response, err := r.postConn.GetPost(ctx, &post.GetPostRequest{
-			Ids: postIds,
+			Ids:         postIds,
+			RequestorId: userId,
 		})
 		if err != nil {
 			return nil, err
@@ -133,10 +138,11 @@ func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*
 		posts = make([]*models.Post, len(rawPosts))
 		for idx, p := range rawPosts {
 			posts[idx] = &models.Post{
-				Title:   p.Title,
-				Body:    p.Body,
-				ID:      int(p.Id),
-				OwnerID: int(p.OwnerId),
+				Title:       p.Title,
+				Body:        p.Body,
+				ID:          int(p.Id),
+				OwnerID:     int(p.OwnerId),
+				IsFollowing: p.IsFollowing,
 				User: &models.User{
 					ID:     int(p.User.Id),
 					Name:   p.User.Name,

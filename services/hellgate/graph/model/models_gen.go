@@ -26,11 +26,12 @@ type DeletePostInput struct {
 }
 
 type Post struct {
-	Title   string `json:"title"`
-	Body    string `json:"body"`
-	ID      int    `json:"id"`
-	OwnerID int    `json:"ownerId"`
-	User    *User  `json:"user"`
+	Title       string `json:"title"`
+	Body        string `json:"body"`
+	ID          int    `json:"id"`
+	OwnerID     int    `json:"ownerId"`
+	IsFollowing bool   `json:"isFollowing"`
+	User        *User  `json:"user"`
 }
 
 type Session struct {

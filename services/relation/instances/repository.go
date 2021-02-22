@@ -2,6 +2,7 @@ package instances
 
 type read interface {
 	GetFollowers(userId uint64) []uint64
+	IsFollowingGroup(follower uint64, followings []uint64) (map[uint64]interface{}, error)
 }
 
 type write interface {

@@ -98,3 +98,48 @@ func (p *publishers) GetUsers(userIds []uint64) (map[uint64]*pb.User, error) {
 		return result, nil
 	}
 }
+
+func (p *publishers) IsFollowingGroup(userId uint64, followings []uint64) map[uint64]bool {
+	subject := configs.Nats.Subjects.IsFollowingGroup
+	dbug, sussess := p.lgr.DebugPKG("IsFollowings", false)
+
+	{
+		var (
+			response     *natsPb.IsFollowingGroup_REQUESTResponse
+			byteRequest  []byte
+			byteResponse []byte
+
+			err error
+		)
+
+		{
+			response = &natsPb.IsFollowingGroup_REQUESTResponse{}
+		}
+		{
+			byteRequest, err = proto.Marshal(&natsPb.IsFollowingGroup_REQUESTRequest{
+				Follower:   userId,
+				Followings: followings,
+			})
+			if dbug("proto.Marshal")(err) != nil {
+				return nil
+			}
+		}
+		{
+			res, err := p.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			if dbug("p.nc.Request")(err) != nil {
+				return nil
+			}
+			byteResponse = res.Data
+		}
+		{
+			err = proto.Unmarshal(byteResponse, response)
+			if dbug("proto.Unmarshal")(err) != nil {
+				return nil
+			}
+		}
+		{
+			sussess(response.Result)
+			return response.Result
+		}
+	}
+}

@@ -55,6 +55,7 @@ func (s *subscribers) DeleteUserPosts() {
 	}
 }
 
+// not used
 func (s *subscribers) GetPosts() {
 	subject := configs.Nats.Subjects.GetPosts
 
@@ -69,7 +70,7 @@ func (s *subscribers) GetPosts() {
 				return
 			}
 
-			result, err := s.srv.GetPost(data.PostIds)
+			result, err := s.srv.GetPost(0, data.PostIds)
 			if err != nil {
 				s.lgr.Debug.RedLog("In GetPosts: service error")
 				s.lgr.Debug.RedLog("Error: ", err)

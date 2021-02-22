@@ -22,7 +22,8 @@ message DeletePostResponse {}
 
 // get
 message GetPostRequest {
-      repeated uint64 ids = 1;
+      uint64 requestorId  = 1;
+      repeated uint64 ids = 2;
 }
 message User {
       string name   = 1;
@@ -31,11 +32,12 @@ message User {
       uint64 id     = 3;
 }
 message Post {
-      string title   = 1;
-      string body    = 2;
-      uint64 id      = 3;
-      uint64 ownerId = 4;
-      User   user    = 5;
+      string title     = 1;
+      string body      = 2;
+      uint64 id        = 3;
+      uint64 ownerId   = 4;
+      bool isFollowing = 5;
+      User   user      = 6;
 }
 message GetPostResponse {
       repeated Post posts = 1;

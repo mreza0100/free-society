@@ -24,7 +24,9 @@ func initSubs(opts *initSubsOpts) {
 	}
 	opts.lgr.SuccessLog("subscribers has been attached to nats")
 
-	s.GetFollowers_REQUEST()
+	// s.GetFollowers_REQUEST()
+	s.IsFollowingGroup()
+	// s.DeleteUser()
 }
 
 type subscribers struct {
@@ -33,7 +35,7 @@ type subscribers struct {
 	nc  *nats.Conn
 }
 
-func (s *subscribers) GetFollowers_REQUEST() {
+func (s *subscribers) GetFollowers() {
 	subject := configs.Nats.Subjects.GetFollowers
 	dbug, sussecc := s.lgr.DebugPKG("GetFollowers_REQUEST", false)
 
@@ -96,13 +98,56 @@ func (s *subscribers) DeleteUser() {
 			}
 
 			{
-				sussecc(userId)
 				err = s.srv.DeleteAllRelations(userId)
 				if debug("s.srv.DeleteUser")(err) != nil {
 					return
 				}
+				sussecc(userId)
 			}
 		})
 
+	}
+}
+
+func (s *subscribers) IsFollowingGroup() {
+	subject := configs.Nats.Subjects.IsFollowingGroup
+	dbug, sussess := s.lgr.DebugPKG("IsFollowingGroup", false)
+
+	{
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				request  *natsPb.IsFollowingGroup_REQUESTRequest
+				response *natsPb.IsFollowingGroup_REQUESTResponse
+
+				err error
+			)
+
+			{
+				request = &natsPb.IsFollowingGroup_REQUESTRequest{}
+				response = &natsPb.IsFollowingGroup_REQUESTResponse{}
+			}
+			{
+				err = proto.Unmarshal(msg.Data, request)
+				if dbug("proto.Unmarshal")(err) != nil {
+					return
+				}
+			}
+			{
+				result, err := s.srv.IsFollowing(request.Follower, request.Followings)
+				if dbug("s.srv.IsFollowing")(err) != nil {
+					return
+				}
+				response.Result = result
+			}
+			{
+				byteResponse, err := proto.Marshal(response)
+				if dbug("proto.Marshal")(err) != nil {
+					return
+				}
+
+				sussess(response.Result)
+				msg.Respond(byteResponse)
+			}
+		})
 	}
 }

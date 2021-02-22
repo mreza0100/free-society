@@ -9,6 +9,7 @@ import "getFollowers.proto";
 import "newPost.proto";
 import "isUserExist.proto";
 import "deleteUserPosts.proto";
+import "isFollowingGroup.proto";
 
 
 

@@ -61,6 +61,10 @@ func GetUserId(ctx context.Context) uint64 {
 
 	return data
 }
+func GetOptionalId(ctx context.Context) (uint64, bool) {
+	data, ok := ctx.Value(USER_ID_KEY_CTX).(uint64)
+	return data, ok
+}
 
 func GetUserAgent(ctx context.Context) string {
 	return GetRequest(ctx).Header.Get("user-agent")

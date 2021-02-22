@@ -53,3 +53,12 @@ func UniqueIds(n []uint64) []uint64 {
 	}
 	return result
 }
+
+func IsInclude(subject uint64, arr []uint64) bool {
+	for _, i := range arr {
+		if i == subject {
+			return true
+		}
+	}
+	return false
+}

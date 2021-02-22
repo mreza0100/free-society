@@ -7,3 +7,4 @@ type Query
 type Mutation
 
 directive @private on FIELD_DEFINITION
+directive @optional on FIELD_DEFINITION

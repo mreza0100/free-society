@@ -38,3 +38,34 @@ func PrivateRoute(securityConn security.SecurityServiceClient) func(context.Cont
 		return next(context.WithValue(ctx, USER_ID_KEY_CTX, userId))
 	}
 }
+
+func OptinalRoute(securityConn security.SecurityServiceClient) func(context.Context, interface{}, graphql.Resolver) (interface{}, error) {
+	return func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
+		var (
+			token  string
+			userId uint64
+		)
+
+		{
+			req := GetRequest(ctx)
+			auth, err := req.Cookie(COOKIE_NAME)
+			if err != nil {
+				return next(ctx)
+			}
+			token = auth.Value
+		}
+
+		{
+			response, err := securityConn.GetUserId(ctx, &security.GetUserIdRequest{
+				Token: token,
+			})
+			if err != nil {
+				DeleteToken(ctx)
+				return next(ctx)
+			}
+			userId = response.UserId
+		}
+
+		return next(context.WithValue(ctx, USER_ID_KEY_CTX, userId))
+	}
+}

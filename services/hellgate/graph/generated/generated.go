@@ -41,7 +41,8 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	Private func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	Optional func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	Private  func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -73,11 +74,12 @@ type ComplexityRoot struct {
 	}
 
 	Post struct {
-		Body    func(childComplexity int) int
-		ID      func(childComplexity int) int
-		OwnerID func(childComplexity int) int
-		Title   func(childComplexity int) int
-		User    func(childComplexity int) int
+		Body        func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsFollowing func(childComplexity int) int
+		OwnerID     func(childComplexity int) int
+		Title       func(childComplexity int) int
+		User        func(childComplexity int) int
 	}
 
 	Session struct {
@@ -316,6 +318,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.ID(childComplexity), true
 
+	case "post.isFollowing":
+		if e.complexity.Post.IsFollowing == nil {
+			break
+		}
+
+		return e.complexity.Post.IsFollowing(childComplexity), true
+
 	case "post.ownerId":
 		if e.complexity.Post.OwnerID == nil {
 			break
@@ -440,7 +449,7 @@ type session {
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/post.graphql", Input: `extend type Query {
-	getPost(input: [Int!]!): [post!]!
+	getPost(input: [Int!]!): [post!]! @optional
 	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 
@@ -454,6 +463,7 @@ type post {
 	body: String!
 	id: Int!
 	ownerId: Int!
+	isFollowing: Boolean!
 	user: User!
 }
 
@@ -479,6 +489,7 @@ type Query
 type Mutation
 
 directive @private on FIELD_DEFINITION
+directive @optional on FIELD_DEFINITION
 `, BuiltIn: false},
 	{Name: "graph/schema/user.graphql", Input: `extend type Query {
 	getUser(id: Int!): User
@@ -1400,8 +1411,28 @@ func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.Co
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetPost(rctx, args["input"].([]int))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetPost(rctx, args["input"].([]int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Optional == nil {
+				return nil, errors.New("directive optional is not implemented")
+			}
+			return ec.directives.Optional(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.Post); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*microServiceBoilerplate/services/hellgate/graph/model.Post`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2953,6 +2984,41 @@ func (ec *executionContext) _post_ownerId(ctx context.Context, field graphql.Col
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _post_isFollowing(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsFollowing, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _post_user(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3667,6 +3733,11 @@ func (ec *executionContext) _post(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "ownerId":
 			out.Values[i] = ec._post_ownerId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isFollowing":
+			out.Values[i] = ec._post_isFollowing(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

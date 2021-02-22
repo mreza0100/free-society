@@ -47,7 +47,8 @@ func New(opts NewOpts) *gqlGenerated.Config {
 
 	directives := generated.DirectiveRoot{
 		// I need Security connection in my middleware
-		Private: security.PrivateRoute(opts.SecurityConn),
+		Private:  security.PrivateRoute(opts.SecurityConn),
+		Optional: security.OptinalRoute(opts.SecurityConn),
 	}
 
 	return &gqlGenerated.Config{

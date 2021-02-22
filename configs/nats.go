@@ -7,20 +7,21 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type SubjectsT struct {
+type subjectsT struct {
 	NewPost             string
 	DeleteUser          string
 	IsUserExist_REQUEST string
 	GetFollowers        string
 	GetPosts            string
 	GetUsersByIds       string
+	IsFollowingGroup    string
 }
 
 type natsConfigsT struct {
 	Url            string
 	TotalWait      time.Duration
 	ReconnectDelay time.Duration
-	Subjects       *SubjectsT
+	Subjects       *subjectsT
 	Timeout        time.Duration
 }
 
@@ -55,7 +56,7 @@ func (this *natsConfigsT) GetDefaultNatsOpts(name string) []nats.Option {
 var Nats *natsConfigsT
 
 func init() {
-	sbjs := &SubjectsT{}
+	sbjs := &subjectsT{}
 
 	Nats = &natsConfigsT{
 		Url:            nats.DefaultURL,
@@ -72,5 +73,6 @@ func init() {
 		sbjs.GetFollowers = "relation.get_followers"
 		sbjs.GetPosts = "posts.get"
 		sbjs.GetUsersByIds = "user.get_users"
+		sbjs.IsFollowingGroup = "relation.is_following_group"
 	}
 }

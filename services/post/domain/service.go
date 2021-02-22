@@ -40,7 +40,7 @@ func (s *service) DeleteUserPosts(userId uint64) error {
 	return s.repo.Write.DeleteUserPosts(userId)
 }
 
-func (s *service) GetPost(postIds []uint64) ([]*pb.Post, error) {
+func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, error) {
 	var (
 		posts   []*pb.Post
 		users   map[uint64]*pb.User
@@ -51,7 +51,7 @@ func (s *service) GetPost(postIds []uint64) ([]*pb.Post, error) {
 
 	{
 		if len(postIds) == 0 {
-			return []*pb.Post{}, nil
+			return nil, nil
 		}
 	}
 	{
@@ -79,7 +79,15 @@ func (s *service) GetPost(postIds []uint64) ([]*pb.Post, error) {
 	{
 		users, err = s.publishers.GetUsers(userIds)
 		if err != nil {
-			return []*pb.Post{}, err
+			return nil, err
+		}
+	}
+	{
+		if requestorId != 0 {
+			isFollowingGroup := s.publishers.IsFollowingGroup(requestorId, userIds)
+			for _, p := range posts {
+				p.IsFollowing = isFollowingGroup[p.OwnerId]
+			}
 		}
 	}
 	{

@@ -1,5 +1,5 @@
 extend type Query {
-	getPost(input: [Int!]!): [post!]!
+	getPost(input: [Int!]!): [post!]! @optional
 	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 
@@ -13,6 +13,7 @@ type post {
 	body: String!
 	id: Int!
 	ownerId: Int!
+	isFollowing: Boolean!
 	user: User!
 }
 

@@ -44,7 +44,7 @@ func (h *handlers) DeletePost(_ context.Context, in *pb.DeletePostRequest) (*pb.
 }
 
 func (h *handlers) GetPost(_ context.Context, in *pb.GetPostRequest) (*pb.GetPostResponse, error) {
-	posts, err := h.srv.GetPost(in.Ids)
+	posts, err := h.srv.GetPost(in.RequestorId, in.Ids)
 
 	return &pb.GetPostResponse{Posts: posts}, err
 }

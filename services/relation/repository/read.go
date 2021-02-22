@@ -40,3 +40,35 @@ func (r *read) IsFollowing(follower, following uint64) bool {
 
 	return data.Exists
 }
+
+func (r *read) IsFollowingGroup(follower uint64, followings []uint64) (map[uint64]interface{}, error) {
+	const query = `SELECT following FROM followers WHERE follower=? AND following IN(?)`
+	params := []interface{}{follower, followings}
+
+	{
+		var (
+			rawResult []uint64
+			result    map[uint64]interface{}
+			tx        *gorm.DB
+		)
+
+		{
+			tx = r.db.Raw(query, params...)
+			if tx.Error != nil {
+				return nil, tx.Error
+			}
+		}
+		{
+			rawResult = make([]uint64, 0)
+			tx.Scan(&rawResult)
+		}
+		{
+			result = make(map[uint64]interface{}, len(rawResult))
+			for _, i := range rawResult {
+				result[i] = struct{}{}
+			}
+		}
+
+		return result, tx.Error
+	}
+}
