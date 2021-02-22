@@ -47,7 +47,7 @@ func New(lgr *golog.Core) *instances.Repository {
 
 func getConnection(lgr *golog.Core) *redis.Client {
 	connection := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("localhost:%v", configs.SecurityConfigs.RedisPort),
+		Addr:     fmt.Sprintf("localhost:%v", configs.FeedConfigs.RedisPort),
 		Password: "",
 		DB:       0,
 	})

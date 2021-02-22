@@ -12,14 +12,27 @@ type read struct {
 }
 
 func (r *read) GetFeed(userId, offset, limit uint64) ([]uint64, error) {
-	vals := r.db.LRange(r.helpers.parseId(userId), int64(offset), int64(limit))
-	if vals.Err() != nil {
-		r.lgr.Debug.RedLog("error in GetFeed: ", vals.Err())
-		return nil, vals.Err()
+	var (
+		start int64
+		stop  int64
+		ids   []uint64
+	)
+
+	{
+		start = int64(offset)
+		stop = int64(offset + limit)
+		ids = make([]uint64, int(limit))
 	}
 
-	ids := make([]uint64, 0)
-	vals.ScanSlice(&ids)
+	{
+		vals := r.db.LRange(r.helpers.parseId(userId), start, stop)
+		if vals.Err() != nil {
+			r.lgr.Debug.RedLog("error in GetFeed: ", vals.Err())
+			return nil, vals.Err()
+		}
+
+		vals.ScanSlice(&ids)
+	}
 
 	return ids, nil
 }

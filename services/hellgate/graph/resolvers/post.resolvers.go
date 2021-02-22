@@ -91,8 +91,6 @@ func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Pos
 		}
 	}
 
-	r.Lgr.InfoLog(*result[0].User)
-
 	return result, nil
 }
 
@@ -113,7 +111,7 @@ func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*
 	{
 		response, err := r.feedConn.GetFeed(ctx, &feed.GetFeedRequest{
 			UserId: userId,
-			Offset: 0,
+			Offset: uint64(offset),
 			Limit:  uint64(limit),
 		})
 		if err != nil {

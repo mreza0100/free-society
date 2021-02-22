@@ -12,8 +12,8 @@ type write struct {
 }
 
 func (w *write) SetPostOnFeeds(userId, postId uint64, followers []uint64) error {
-	for _, f := range followers {
-		w.db.LPush(w.helpers.parseId(f), postId)
+	for _, follower := range followers {
+		w.db.RPush(w.helpers.parseId(follower), postId)
 	}
 
 	return nil

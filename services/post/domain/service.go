@@ -5,7 +5,6 @@ import (
 	"microServiceBoilerplate/services/post/instances"
 	"microServiceBoilerplate/services/post/repository"
 	"microServiceBoilerplate/utils"
-	"time"
 
 	"github.com/mreza0100/golog"
 )
@@ -50,8 +49,6 @@ func (s *service) GetPost(postIds []uint64) ([]*pb.Post, error) {
 		err error
 	)
 
-	now := time.Now()
-
 	{
 		if len(postIds) == 0 {
 			return []*pb.Post{}, nil
@@ -90,8 +87,6 @@ func (s *service) GetPost(postIds []uint64) ([]*pb.Post, error) {
 			p.User = users[p.OwnerId]
 		}
 	}
-
-	s.lgr.InfoLog(time.Since(now))
 
 	return posts, err
 }
