@@ -50,7 +50,7 @@ func (p *publishers) NewPost(userId, postId uint64) error {
 
 func (p *publishers) GetUsers(userIds []uint64) (map[uint64]*pb.User, error) {
 	subject := configs.Nats.Subjects.GetUsersByIds
-	dbug, sussess := p.lgr.DebugPKG("GetProfiles", false)
+	dbug, success := p.lgr.DebugPKG("GetProfiles", false)
 
 	{
 		var (
@@ -94,14 +94,14 @@ func (p *publishers) GetUsers(userIds []uint64) (map[uint64]*pb.User, error) {
 				}
 			}
 		}
-		sussess("profiles: ", result)
+		success("profiles: ", result)
 		return result, nil
 	}
 }
 
 func (p *publishers) IsFollowingGroup(userId uint64, followings []uint64) map[uint64]bool {
 	subject := configs.Nats.Subjects.IsFollowingGroup
-	dbug, sussess := p.lgr.DebugPKG("IsFollowings", false)
+	dbug, success := p.lgr.DebugPKG("IsFollowings", false)
 
 	{
 		var (
@@ -138,7 +138,7 @@ func (p *publishers) IsFollowingGroup(userId uint64, followings []uint64) map[ui
 			}
 		}
 		{
-			sussess(response.Result)
+			success(response.Result)
 			return response.Result
 		}
 	}

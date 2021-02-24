@@ -24,9 +24,9 @@ func initSubs(opts *initSubsOpts) {
 	}
 	opts.lgr.SuccessLog("subscribers has been attached to nats")
 
-	// s.GetFollowers_REQUEST()
+	s.GetFollowers()
 	s.IsFollowingGroup()
-	// s.DeleteUser()
+	s.DeleteUser()
 }
 
 type subscribers struct {
@@ -111,7 +111,7 @@ func (s *subscribers) DeleteUser() {
 
 func (s *subscribers) IsFollowingGroup() {
 	subject := configs.Nats.Subjects.IsFollowingGroup
-	dbug, sussess := s.lgr.DebugPKG("IsFollowingGroup", false)
+	dbug, success := s.lgr.DebugPKG("IsFollowingGroup", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -145,7 +145,7 @@ func (s *subscribers) IsFollowingGroup() {
 					return
 				}
 
-				sussess(response.Result)
+				success(response.Result)
 				msg.Respond(byteResponse)
 			}
 		})

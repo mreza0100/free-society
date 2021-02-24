@@ -36,7 +36,7 @@ type subscribers struct {
 
 func (s *subscribers) isUserExist_REQUEST() {
 	subject := configs.Nats.Subjects.IsUserExist_REQUEST
-	dbug, sussess := s.lgr.DebugPKG("IsUserExist_REQUEST", false)
+	dbug, success := s.lgr.DebugPKG("IsUserExist_REQUEST", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -74,7 +74,7 @@ func (s *subscribers) isUserExist_REQUEST() {
 				}
 			}
 
-			sussess()
+			success()
 			msg.Respond(byteResponse)
 		})
 	}
@@ -82,7 +82,7 @@ func (s *subscribers) isUserExist_REQUEST() {
 
 func (s *subscribers) getUsersByIds_REQUEST() {
 	subject := configs.Nats.Subjects.GetUsersByIds
-	dbug, sussess := s.lgr.DebugPKG("getUsersByIds_REQUEST", false)
+	dbug, success := s.lgr.DebugPKG("getUsersByIds_REQUEST", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -121,7 +121,7 @@ func (s *subscribers) getUsersByIds_REQUEST() {
 					return
 				}
 				msg.Respond(byteResult)
-				sussess(response)
+				success(response)
 			}
 		})
 	}
