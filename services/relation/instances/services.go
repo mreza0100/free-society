@@ -11,6 +11,7 @@ type follow interface {
 
 type like interface {
 	Like(likerId, ownerId, postId uint64) error
+	UndoLike(likerId, postId uint64) error
 }
 
 type Sevice interface {

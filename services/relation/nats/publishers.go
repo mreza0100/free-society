@@ -24,6 +24,45 @@ type publishers struct {
 	nc  *nats.Conn
 }
 
+func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
+	subject := configs.Nats.Subjects.IsPostsExists
+	dbug, sussecc := p.lgr.DebugPKG("IsPostsExists", false)
+
+	{
+		var (
+			request      []byte
+			byteResponse []byte
+			response     *natsPb.IsPostsExists_REQUESTResponse
+
+			err error
+		)
+
+		{
+			request, err = proto.Marshal(&natsPb.IsPostsExists_REQUESTRequest{PostIds: postIds})
+			if dbug("proto.Marshal")(err) != nil {
+				return nil, err
+			}
+		}
+		{
+			response, err := p.nc.Request(subject, request, configs.Nats.Timeout)
+			if dbug("p.nc.Request")(err) != nil {
+				return nil, err
+			}
+			byteResponse = response.Data
+		}
+		{
+			response = &natsPb.IsPostsExists_REQUESTResponse{}
+			err = proto.Unmarshal(byteResponse, response)
+			if dbug("proto.Unmarshal")(err) != nil {
+				return nil, err
+			}
+		}
+
+		sussecc(response.Exists)
+		return response.Exists, err
+	}
+}
+
 func (p *publishers) IsUserExist(userId uint64) bool {
 	subject := configs.Nats.Subjects.IsUserExist_REQUEST
 	dbug, sussecc := p.lgr.DebugPKG("IsUserExist", false)

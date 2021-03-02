@@ -10,6 +10,7 @@ import "newPost.proto";
 import "isUserExist.proto";
 import "deleteUserPosts.proto";
 import "isFollowingGroup.proto";
+import "isPostsExists.proto";
 
 
 

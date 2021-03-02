@@ -8,6 +8,7 @@ import (
 	"errors"
 	"microServiceBoilerplate/proto/generated/feed"
 	"microServiceBoilerplate/proto/generated/post"
+	"microServiceBoilerplate/proto/generated/relation"
 	models "microServiceBoilerplate/services/hellgate/graph/model"
 	"microServiceBoilerplate/services/hellgate/security"
 	"microServiceBoilerplate/services/hellgate/validation"
@@ -27,8 +28,11 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePo
 		Body:   input.Body,
 		UserId: userId,
 	})
+	if err != nil {
+		return 0, utils.GetGRPCMSG(err)
+	}
 
-	return int(response.Id), utils.GetGRPCMSG(err)
+	return int(response.Id), nil
 }
 
 func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error) {
@@ -40,6 +44,29 @@ func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePo
 	})
 
 	return err != nil, utils.GetGRPCMSG(err)
+}
+
+func (r *mutationResolver) Like(ctx context.Context, postID int, ownerID int) (bool, error) {
+	userId := security.GetUserId(ctx)
+
+	_, err := r.relationConn.Like(ctx, &relation.LikeRequest{
+		LikerId: userId,
+		PostId:  uint64(postID),
+		OwnerId: uint64(ownerID),
+	})
+
+	return err == nil, nil
+}
+
+func (r *mutationResolver) UndoLike(ctx context.Context, postID int) (bool, error) {
+	userId := security.GetUserId(ctx)
+
+	_, err := r.relationConn.UndoLike(ctx, &relation.UndoLikeRequest{
+		LikerId: userId,
+		PostId:  uint64(postID),
+	})
+
+	return err == nil, nil
 }
 
 func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Post, error) {

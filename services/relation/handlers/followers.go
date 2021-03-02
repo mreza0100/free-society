@@ -4,23 +4,26 @@ import (
 	"context"
 	"errors"
 	pb "microServiceBoilerplate/proto/generated/relation"
+
+	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (h *handlers) Follow(_ context.Context, in *pb.FollowRequest) (*pb.FollowResponse, error) {
+func (h *handlers) Follow(_ context.Context, in *pb.FollowRequest) (*empty.Empty, error) {
 	{
 		isExist := h.publishers.IsUserExist(in.Following)
 		if !isExist {
-			return &pb.FollowResponse{}, errors.New("user not exist")
+			return &emptypb.Empty{}, errors.New("user not exist")
 		}
 	}
 
-	return &pb.FollowResponse{}, h.srv.Follow(in.Follower, in.Following)
+	return &emptypb.Empty{}, h.srv.Follow(in.Follower, in.Following)
 }
 
-func (h *handlers) Unfollow(_ context.Context, in *pb.UnfollowRequest) (*pb.UnfollowResponse, error) {
+func (h *handlers) Unfollow(_ context.Context, in *pb.UnfollowRequest) (*empty.Empty, error) {
 	err := h.srv.Unfollow(in.Follower, in.Following)
 
-	return &pb.UnfollowResponse{}, err
+	return &emptypb.Empty{}, err
 }
 
 func (this *handlers) GetFollowers(userId uint64) []uint64 {

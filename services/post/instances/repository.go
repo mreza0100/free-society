@@ -4,6 +4,7 @@ import "microServiceBoilerplate/services/post/models"
 
 type read interface {
 	GetPost(postIds []uint64) ([]*models.Post, error)
+	IsExists(postIds []uint64) ([]uint64, error)
 }
 
 type write interface {

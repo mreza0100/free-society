@@ -6,6 +6,9 @@ extend type Query {
 extend type Mutation {
 	createPost(input: createPostInput!): Int! @private
 	deletePost(input: deletePostInput!): Boolean! @private
+
+	like(postId: Int!, ownerId: Int!): Boolean! @private
+	undoLike(postId: Int!): Boolean! @private
 }
 
 type post {

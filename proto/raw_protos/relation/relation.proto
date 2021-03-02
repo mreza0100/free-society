@@ -3,20 +3,29 @@ syntax = "proto3";
 package relation;
 
 option go_package = "/relation";
-
+import "google/protobuf/empty.proto";
 
 service RelationService {
-      rpc Follow(FollowRequest) returns (FollowResponse);
-      rpc Unfollow(UnfollowRequest) returns (UnfollowResponse);
-      rpc Like(LikeRequest) returns (LikeResponse);
+      rpc Follow(FollowRequest) returns (google.protobuf.Empty);
+      rpc Unfollow(UnfollowRequest) returns (google.protobuf.Empty);
+
+      rpc Like(LikeRequest) returns (google.protobuf.Empty);
+      rpc UndoLike(UndoLikeRequest) returns (google.protobuf.Empty);
 }
+
+// UndoLike
+message UndoLikeRequest {
+      uint64 likerId = 1;
+      uint64 postId = 2;
+}
+//
+
 // Like
 message LikeRequest {
       uint64 likerId = 1;
       uint64 ownerId = 2;
       uint64 postId  = 3;
 }
-message LikeResponse {}
 //
 
 // Unfollow
@@ -24,7 +33,6 @@ message UnfollowRequest {
       uint64 following = 2;
       uint64 follower = 1;
 }
-message UnfollowResponse {}
 //
 
 // Follow
@@ -32,5 +40,4 @@ message FollowRequest {
       uint64 following = 2;
       uint64 follower = 1;
 }
-message FollowResponse {}
 //

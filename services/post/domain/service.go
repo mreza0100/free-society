@@ -98,3 +98,7 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 
 	return posts, err
 }
+
+func (s *service) IsPostsExists(postIds []uint64) ([]uint64, error) {
+	return s.repo.Read.IsExists(postIds)
+}

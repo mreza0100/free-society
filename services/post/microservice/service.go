@@ -16,18 +16,17 @@ func NewPostService(lgr *golog.Core) instances.Handlers {
 	)
 
 	{
+		services = domain.New(&domain.NewOpts{
+			Lgr:        lgr,
+			Publishers: publishers,
+		})
+	}
+	{
 		var initSubs func(instances.Sevice)
 		publishers, initSubs = postNats.New(&postNats.NewOpts{
 			Lgr: lgr,
 		})
 		initSubs(services)
-	}
-
-	{
-		services = domain.New(&domain.NewOpts{
-			Lgr:        lgr,
-			Publishers: publishers,
-		})
 	}
 
 	return handlers.New(&handlers.NewOpts{

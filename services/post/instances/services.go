@@ -9,4 +9,5 @@ type Sevice interface {
 	GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, error)
 	DeletePost(postId, userId uint64) error
 	DeleteUserPosts(userId uint64) error
+	IsPostsExists(postIds []uint64) ([]uint64, error)
 }

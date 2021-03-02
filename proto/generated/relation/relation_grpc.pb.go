@@ -4,6 +4,7 @@ package relation
 
 import (
 	context "context"
+	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -18,9 +19,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RelationServiceClient interface {
-	Follow(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*FollowResponse, error)
-	Unfollow(ctx context.Context, in *UnfollowRequest, opts ...grpc.CallOption) (*UnfollowResponse, error)
-	Like(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*LikeResponse, error)
+	Follow(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Unfollow(ctx context.Context, in *UnfollowRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	Like(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	UndoLike(ctx context.Context, in *UndoLikeRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 }
 
 type relationServiceClient struct {
@@ -31,8 +33,8 @@ func NewRelationServiceClient(cc grpc.ClientConnInterface) RelationServiceClient
 	return &relationServiceClient{cc}
 }
 
-func (c *relationServiceClient) Follow(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*FollowResponse, error) {
-	out := new(FollowResponse)
+func (c *relationServiceClient) Follow(ctx context.Context, in *FollowRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/relation.RelationService/Follow", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -40,8 +42,8 @@ func (c *relationServiceClient) Follow(ctx context.Context, in *FollowRequest, o
 	return out, nil
 }
 
-func (c *relationServiceClient) Unfollow(ctx context.Context, in *UnfollowRequest, opts ...grpc.CallOption) (*UnfollowResponse, error) {
-	out := new(UnfollowResponse)
+func (c *relationServiceClient) Unfollow(ctx context.Context, in *UnfollowRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/relation.RelationService/Unfollow", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -49,9 +51,18 @@ func (c *relationServiceClient) Unfollow(ctx context.Context, in *UnfollowReques
 	return out, nil
 }
 
-func (c *relationServiceClient) Like(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*LikeResponse, error) {
-	out := new(LikeResponse)
+func (c *relationServiceClient) Like(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
 	err := c.cc.Invoke(ctx, "/relation.RelationService/Like", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *relationServiceClient) UndoLike(ctx context.Context, in *UndoLikeRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/relation.RelationService/UndoLike", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +73,10 @@ func (c *relationServiceClient) Like(ctx context.Context, in *LikeRequest, opts 
 // All implementations must embed UnimplementedRelationServiceServer
 // for forward compatibility
 type RelationServiceServer interface {
-	Follow(context.Context, *FollowRequest) (*FollowResponse, error)
-	Unfollow(context.Context, *UnfollowRequest) (*UnfollowResponse, error)
-	Like(context.Context, *LikeRequest) (*LikeResponse, error)
+	Follow(context.Context, *FollowRequest) (*empty.Empty, error)
+	Unfollow(context.Context, *UnfollowRequest) (*empty.Empty, error)
+	Like(context.Context, *LikeRequest) (*empty.Empty, error)
+	UndoLike(context.Context, *UndoLikeRequest) (*empty.Empty, error)
 	mustEmbedUnimplementedRelationServiceServer()
 }
 
@@ -72,14 +84,17 @@ type RelationServiceServer interface {
 type UnimplementedRelationServiceServer struct {
 }
 
-func (UnimplementedRelationServiceServer) Follow(context.Context, *FollowRequest) (*FollowResponse, error) {
+func (UnimplementedRelationServiceServer) Follow(context.Context, *FollowRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Follow not implemented")
 }
-func (UnimplementedRelationServiceServer) Unfollow(context.Context, *UnfollowRequest) (*UnfollowResponse, error) {
+func (UnimplementedRelationServiceServer) Unfollow(context.Context, *UnfollowRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Unfollow not implemented")
 }
-func (UnimplementedRelationServiceServer) Like(context.Context, *LikeRequest) (*LikeResponse, error) {
+func (UnimplementedRelationServiceServer) Like(context.Context, *LikeRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Like not implemented")
+}
+func (UnimplementedRelationServiceServer) UndoLike(context.Context, *UndoLikeRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UndoLike not implemented")
 }
 func (UnimplementedRelationServiceServer) mustEmbedUnimplementedRelationServiceServer() {}
 
@@ -148,6 +163,24 @@ func _RelationService_Like_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RelationService_UndoLike_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UndoLikeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RelationServiceServer).UndoLike(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/relation.RelationService/UndoLike",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RelationServiceServer).UndoLike(ctx, req.(*UndoLikeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RelationService_ServiceDesc is the grpc.ServiceDesc for RelationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -166,6 +199,10 @@ var RelationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Like",
 			Handler:    _RelationService_Like_Handler,
+		},
+		{
+			MethodName: "UndoLike",
+			Handler:    _RelationService_UndoLike_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
