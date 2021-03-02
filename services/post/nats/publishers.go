@@ -4,19 +4,11 @@ import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
 	pb "microServiceBoilerplate/proto/generated/post"
-	"microServiceBoilerplate/services/post/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
 )
-
-func newPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {
-	return &publishers{
-		lgr: lgr.With("In publishers->"),
-		nc:  nc,
-	}
-}
 
 type publishers struct {
 	lgr *golog.Core

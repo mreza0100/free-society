@@ -10,26 +10,31 @@ import (
 
 const natName = "Post Service"
 
-type NewOpts struct {
-	Lgr *golog.Core
+func Connection(lgr *golog.Core) *nats.Conn {
+	return connections.GetConnection(lgr, natName)
 }
 
-func New(opts *NewOpts) (instances.Publishers, func(srv instances.Sevice)) {
-	var (
-		nc *nats.Conn
-	)
+type InitSubsOpts struct {
+	Lgr *golog.Core
+	Srv instances.Sevice
+	Nc  *nats.Conn
+}
 
-	{
-		nc = connections.GetConnection(opts.Lgr, natName)
+func InitSubs(opts *InitSubsOpts) {
+	s := subscribers{
+		srv: opts.Srv,
+		lgr: opts.Lgr.With("In subscribers->"),
+		nc:  opts.Nc,
 	}
+	opts.Lgr.SuccessLog("subscribers has been attached to nats")
 
-	initSubs := func(srv instances.Sevice) {
-		initSubs(&initSubsOpts{
-			lgr: opts.Lgr.With("In Subscribers->"),
-			srv: srv,
-			nc:  nc,
-		})
+	s.DeleteUserPosts()
+	s.IsExists()
+}
+
+func NewPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {
+	return &publishers{
+		lgr: lgr.With("In publishers->"),
+		nc:  nc,
 	}
-
-	return newPublishers(nc, opts.Lgr), initSubs
 }

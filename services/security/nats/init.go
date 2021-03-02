@@ -5,25 +5,38 @@ import (
 	"microServiceBoilerplate/services/security/instances"
 
 	"github.com/mreza0100/golog"
+	"github.com/nats-io/nats.go"
 )
 
 const natName = "Security Service"
 
-type NewOpts struct {
-	Lgr *golog.Core
-	Srv instances.Sevice
+func Connection(lgr *golog.Core) *nats.Conn {
+	return connections.GetConnection(lgr, natName)
 }
 
-func New(opts *NewOpts) instances.Publishers {
-	nc := connections.GetConnection(opts.Lgr, natName)
+type NewPublishersOpts struct {
+	Lgr *golog.Core
+	Nc  *nats.Conn
+}
 
-	{
-		initSubs(&initSubsOpts{
-			lgr: opts.Lgr,
-			srv: opts.Srv,
-			nc:  nc,
-		})
+func NewPublishers(opts *NewPublishersOpts) instances.Publishers {
+	return newPublishers(opts.Nc, opts.Lgr)
+}
+
+type InitSubsOpts struct {
+	Lgr *golog.Core
+	Srv instances.Sevice
+	Nc  *nats.Conn
+}
+
+func InitSubs(opts *InitSubsOpts) {
+	s := subscribers{
+		srv: opts.Srv,
+		nc:  opts.Nc,
+		lgr: opts.Lgr.With("In subscribers->"),
 	}
+	defer opts.Lgr.SuccessLog("subscribers has been attached to nats")
 
-	return newPublishers(nc, opts.Lgr)
+	s.deleteDeletedUserSessions()
+
 }

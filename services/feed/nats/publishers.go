@@ -3,19 +3,11 @@ package feedNats
 import (
 	"microServiceBoilerplate/configs"
 	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/feed/instances"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 )
-
-func newPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {
-	return &publishers{
-		lgr: lgr.With("In publishers->"),
-		nc:  nc,
-	}
-}
 
 type publishers struct {
 	lgr *golog.Core

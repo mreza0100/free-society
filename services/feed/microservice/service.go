@@ -10,26 +10,24 @@ import (
 )
 
 func NewFeedService(lgr *golog.Core) instances.Handlers {
-	var (
-		services   instances.Sevice
-		publishers instances.Publishers
-		initSubs   func(instances.Sevice)
-	)
+	nc := feedNats.Connection(lgr)
 
-	publishers, initSubs = feedNats.New(&feedNats.NewOpts{
-		Lgr: lgr,
-	})
+	publishers := feedNats.NewPublishers(nc, lgr)
 
-	services = domain.New(&domain.NewOpts{
+	service := domain.New(&domain.NewOpts{
 		Lgr:        lgr,
 		Publishers: publishers,
 	})
 
-	defer initSubs(services)
+	feedNats.InitSubs(&feedNats.InitSubsOpts{
+		Lgr: lgr,
+		Srv: service,
+		Nc:  nc,
+	})
 
 	return handlers.New(&handlers.NewOpts{
 		Lgr:        lgr,
-		Srv:        services,
+		Srv:        service,
 		Publishers: publishers,
 	})
 }

@@ -10,27 +10,19 @@ import (
 )
 
 func NewRelationService(lgr *golog.Core) instances.Handlers {
-	var (
-		services   instances.Sevice
-		publishers instances.Publishers
-		initor     func(srv instances.Sevice)
-	)
+	nc := relationNats.Connection(lgr)
 
-	{
-		publishers, initor = relationNats.New(&relationNats.NewOpts{
-			Lgr: lgr,
-		})
-	}
+	publishers := relationNats.NewPublishers(nc, lgr)
 
-	{
-		services = domain.New(&domain.NewOpts{
-			Lgr: lgr,
-		})
-	}
+	services := domain.New(&domain.NewOpts{
+		Lgr: lgr,
+	})
 
-	{
-		initor(services)
-	}
+	relationNats.InitSubs(&relationNats.InitSubsOpts{
+		Lgr: lgr,
+		Srv: services,
+		Nc:  nc,
+	})
 
 	return handlers.New(&handlers.NewOpts{
 		Srv:        services,

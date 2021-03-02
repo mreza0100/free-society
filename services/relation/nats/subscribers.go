@@ -10,25 +10,6 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type initSubsOpts struct {
-	lgr *golog.Core
-	srv instances.Sevice
-	nc  *nats.Conn
-}
-
-func initSubs(opts *initSubsOpts) {
-	s := subscribers{
-		srv: opts.srv,
-		nc:  opts.nc,
-		lgr: opts.lgr.With("In subscribers->"),
-	}
-	opts.lgr.SuccessLog("subscribers has been attached to nats")
-
-	s.GetFollowers()
-	s.IsFollowingGroup()
-	s.DeleteUser()
-}
-
 type subscribers struct {
 	srv instances.Sevice
 	lgr *golog.Core
