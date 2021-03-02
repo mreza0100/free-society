@@ -17,6 +17,7 @@ type publishers struct {
 func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
 	subject := configs.Nats.Subjects.IsPostsExists
 	dbug, sussecc := p.lgr.DebugPKG("IsPostsExists", false)
+	p.lgr.InfoLog(p.nc == nil)
 
 	{
 		var (
@@ -54,7 +55,7 @@ func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
 }
 
 func (p *publishers) IsUserExist(userId uint64) bool {
-	subject := configs.Nats.Subjects.IsUserExist_REQUEST
+	subject := configs.Nats.Subjects.IsUserExist
 	dbug, sussecc := p.lgr.DebugPKG("IsUserExist", false)
 
 	{
@@ -62,7 +63,7 @@ func (p *publishers) IsUserExist(userId uint64) bool {
 			UserId: userId,
 		})
 
-		msg, err := p.nc.Request(subject, byteData, configs.HellgateConfigs.Timeout)
+		msg, err := p.nc.Request(subject, byteData, configs.Nats.Timeout)
 		if dbug("nc.Request error")(err) != nil {
 			return false
 		}

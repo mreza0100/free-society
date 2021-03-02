@@ -17,7 +17,7 @@ type subscribers struct {
 }
 
 func (s *subscribers) isUserExist_REQUEST() {
-	subject := configs.Nats.Subjects.IsUserExist_REQUEST
+	subject := configs.Nats.Subjects.IsUserExist
 	dbug, success := s.lgr.DebugPKG("IsUserExist_REQUEST", false)
 
 	{

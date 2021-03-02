@@ -36,6 +36,8 @@ func InitSubs(opts *InitSubsOpts) {
 	s.GetFollowers()
 	s.IsFollowingGroup()
 	s.DeleteUser()
+	s.isLikedGroup()
+	s.countLikes()
 }
 func NewPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {
 	return &publishers{

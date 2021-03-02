@@ -101,6 +101,7 @@ func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Pos
 			return nil, utils.GetGRPCMSG(err)
 		}
 		rawPosts = response.Posts
+		r.Lgr.InfoLog(rawPosts)
 	}
 	{
 		result = make([]*models.Post, len(rawPosts))

@@ -12,6 +12,8 @@ type follow interface {
 type like interface {
 	Like(likerId, ownerId, postId uint64) error
 	UndoLike(likerId, postId uint64) error
+	IsLikedGroup(likerId uint64, postIds []uint64) ([]uint64, error)
+	CountLikes(postIds []uint64) (CountResult, error)
 }
 
 type Sevice interface {

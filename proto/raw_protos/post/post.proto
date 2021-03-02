@@ -32,12 +32,16 @@ message User {
       uint64 id     = 3;
 }
 message Post {
-      string title     = 1;
-      string body      = 2;
-      uint64 id        = 3;
-      uint64 ownerId   = 4;
-      bool isFollowing = 5;
-      User   user      = 6;
+      string title       = 1;
+      string body        = 2;
+      uint64 id          = 3;
+      
+      uint64 ownerId     = 4;
+      uint64 likes       = 5;
+
+      bool   isFollowing = 6;
+      bool   isLiked     = 7;
+      User   user        = 8;
 }
 message GetPostResponse {
       repeated Post posts = 1;

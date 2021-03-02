@@ -42,9 +42,10 @@ func (s *service) DeleteUserPosts(userId uint64) error {
 
 func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, error) {
 	var (
-		posts   []*pb.Post
-		users   map[uint64]*pb.User
-		userIds []uint64
+		posts     []*pb.Post
+		users     map[uint64]*pb.User
+		userIds   []uint64
+		likeCount map[uint64]uint64
 
 		err error
 	)
@@ -67,6 +68,25 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 				Body:    p.Body,
 				OwnerId: p.OwnerId,
 			}
+		}
+	}
+	{
+		likeCount, err = s.publishers.GetCounts(postIds)
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range posts {
+			p.Likes = likeCount[p.Id]
+		}
+	}
+	{
+		isLikedGroup, err := s.publishers.IsLikedGroup(postIds)
+		if err != nil {
+			return nil, err
+		}
+		for _, p := range posts {
+			_, isLiked := isLikedGroup[p.Id]
+			p.IsLiked = isLiked
 		}
 	}
 	{

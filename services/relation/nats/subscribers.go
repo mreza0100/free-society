@@ -5,6 +5,7 @@ import (
 	natsPb "microServiceBoilerplate/proto/generated/nats"
 	"microServiceBoilerplate/services/relation/instances"
 
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
@@ -128,6 +129,97 @@ func (s *subscribers) IsFollowingGroup() {
 
 				success(response.Result)
 				msg.Respond(byteResponse)
+			}
+		})
+	}
+}
+
+func (s *subscribers) isLikedGroup() {
+	subject := configs.Nats.Subjects.IsLikedGroup
+	dbug, success := s.lgr.DebugPKG("isLikedGroup", true)
+
+	{
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				request         *natsPb.IsLikedGroup_REQUESTRequest
+				convertedResult map[uint64]*empty.Empty
+			)
+
+			{
+				request = &natsPb.IsLikedGroup_REQUESTRequest{}
+				err := proto.Unmarshal(msg.Data, request)
+				if dbug("proto.Unmarshal")(err) != nil {
+					return
+				}
+			}
+			{
+				result, err := s.srv.IsLikedGroup(request.Liker, request.PostIds)
+				if dbug("s.srv.IsLikedGroup")(err) != nil {
+					return
+				}
+
+				convertedResult = make(map[uint64]*empty.Empty)
+				for _, id := range result {
+					convertedResult[id] = &empty.Empty{}
+				}
+			}
+			{
+				response, err := proto.Marshal(&natsPb.IsLikedGroup_REQUESTResponse{
+					Result: convertedResult,
+				})
+				if dbug("proto.Marshal")(err) != nil {
+					return
+				}
+
+				success(convertedResult)
+				msg.Respond(response)
+			}
+		})
+	}
+}
+
+func (s *subscribers) countLikes() {
+	subject := configs.Nats.Subjects.CountLikes
+	dbug, success := s.lgr.DebugPKG("countLikes", true)
+
+	{
+		s.nc.Subscribe(subject, func(msg *nats.Msg) {
+			var (
+				request         *natsPb.CountLikes_REQUESTRequest
+				counts          instances.CountResult
+				convertedCounts map[uint64]uint64
+
+				err error
+			)
+
+			{
+				request = &natsPb.CountLikes_REQUESTRequest{}
+				err = proto.Unmarshal(msg.Data, request)
+				if dbug("proto.Unmarshal")(err) != nil {
+					return
+				}
+			}
+			{
+				counts, err = s.srv.CountLikes(request.PostId)
+				if dbug("s.srv.CountLikes")(err) != nil {
+					return
+				}
+			}
+			{
+				convertedCounts = make(map[uint64]uint64)
+				for _, c := range counts {
+					convertedCounts[c.Post_id] = uint64(c.Count)
+				}
+			}
+			{
+				byteResult, err := proto.Marshal(&natsPb.CountLikes_REQUESTResponse{
+					Counts: convertedCounts,
+				})
+				if dbug("proto.Marshal")(err) != nil {
+					return
+				}
+				success(counts)
+				msg.Respond(byteResult)
 			}
 		})
 	}

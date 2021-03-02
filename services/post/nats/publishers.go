@@ -8,6 +8,7 @@ import (
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type publishers struct {
@@ -132,6 +133,84 @@ func (p *publishers) IsFollowingGroup(userId uint64, followings []uint64) map[ui
 		{
 			success(response.Result)
 			return response.Result
+		}
+	}
+}
+
+func (p *publishers) GetCounts(postIds []uint64) (map[uint64]uint64, error) {
+	subject := configs.Nats.Subjects.CountLikes
+	dbug, success := p.lgr.DebugPKG("GetCounts", true)
+
+	{
+		var (
+			byteRequest  []byte
+			byteresponse []byte
+
+			err error
+		)
+
+		{
+			byteRequest, err = proto.Marshal(&natsPb.CountLikes_REQUESTRequest{
+				PostId: postIds,
+			})
+			if dbug("proto.Marshal")(err) != nil {
+				return nil, err
+			}
+		}
+		{
+			res, err := p.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			if dbug("p.nc.Request")(err) != nil {
+				return nil, err
+			}
+			byteresponse = res.Data
+		}
+		{
+			response := &natsPb.CountLikes_REQUESTResponse{}
+			err = proto.Unmarshal(byteresponse, response)
+			if dbug("proto.Unmarshal")(err) != nil {
+				return nil, err
+			}
+			success(response.Counts)
+			return response.Counts, nil
+		}
+	}
+}
+
+func (p *publishers) IsLikedGroup(postIds []uint64) (map[uint64]*emptypb.Empty, error) {
+	subject := configs.Nats.Subjects.IsLikedGroup
+	dbug, sussess := p.lgr.DebugPKG("IsLikedGroup", true)
+
+	{
+		var (
+			byteRequest  []byte
+			byteResponse []byte
+
+			err error
+		)
+
+		{
+			byteRequest, err = proto.Marshal(&natsPb.IsLikedGroup_REQUESTRequest{
+				PostIds: postIds,
+			})
+			if dbug("proto.Marshal")(err) != nil {
+				return nil, err
+			}
+		}
+		{
+			res, err := p.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			if dbug("p.nc.Request")(err) != nil {
+				return nil, err
+			}
+			byteResponse = res.Data
+		}
+		{
+			response := &natsPb.IsLikedGroup_REQUESTResponse{}
+			err = proto.Unmarshal(byteResponse, response)
+			if dbug("proto.Unmarshal")(err) != nil {
+				return nil, err
+			}
+			sussess(response.Result)
+			return response.Result, nil
 		}
 	}
 }

@@ -22,6 +22,7 @@ func NewPostService(lgr *golog.Core) instances.Handlers {
 	postNats.InitSubs(&postNats.InitSubsOpts{
 		Lgr: lgr,
 		Srv: services,
+		Nc:  nc,
 	})
 
 	return handlers.New(&handlers.NewOpts{
