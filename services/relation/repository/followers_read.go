@@ -5,13 +5,12 @@ import (
 	gorm "gorm.io/gorm"
 )
 
-type read struct {
-	lgr   *golog.Core
-	db    *gorm.DB
-	write *write
+type followers_read struct {
+	lgr *golog.Core
+	db  *gorm.DB
 }
 
-func (r *read) GetFollowers(userId uint64) []uint64 {
+func (r *followers_read) GetFollowers(userId uint64) []uint64 {
 	const query = `SELECT follower from followers WHERE following=?`
 	params := []interface{}{userId}
 
@@ -23,7 +22,7 @@ func (r *read) GetFollowers(userId uint64) []uint64 {
 	return data
 }
 
-func (r *read) IsFollowing(follower, following uint64) bool {
+func (r *followers_read) IsFollowing(follower, following uint64) bool {
 	const query = `SELECT EXISTS(SELECT 1 FROM followers WHERE following=? AND follower=?)`
 	params := []interface{}{following, follower}
 
@@ -41,7 +40,7 @@ func (r *read) IsFollowing(follower, following uint64) bool {
 	return data.Exists
 }
 
-func (r *read) IsFollowingGroup(follower uint64, followings []uint64) (map[uint64]interface{}, error) {
+func (r *followers_read) IsFollowingGroup(follower uint64, followings []uint64) (map[uint64]interface{}, error) {
 	const query = `SELECT following FROM followers WHERE follower=? AND following IN(?)`
 	params := []interface{}{follower, followings}
 

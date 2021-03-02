@@ -1,6 +1,15 @@
 #!/bin/bash 
 clear
-root=$GOPATH/src/microServiceBoilerplate
+
+
+
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+cd $dir
+cd ../..
+root=$(pwd)
+
 generated=$root/proto/generated
 raw_protos=$root/proto/raw_protos
 
@@ -26,4 +35,4 @@ done
 
 
 
-echo "Successfuly generated"
+echo "done"

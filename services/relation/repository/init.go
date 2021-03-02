@@ -15,31 +15,46 @@ import (
 
 func NewRepo(lgr *golog.Core) *instances.Repository {
 	var (
-		db     *gorm.DB
-		readQ  *read
-		writeQ *write
+		db *gorm.DB
+
+		f_read  *followers_read
+		f_write *followers_write
+
+		l_read  *likes_read
+		l_write *likes_write
 	)
 
 	{
 		db = getConnection(lgr)
-		lgr = lgr.With("In Repository ->")
+		lgr = lgr.With("In Repository->")
 	}
 	{
-		readQ = &read{
-			lgr: lgr.With("In Read ->"),
+		f_read = &followers_read{
+			lgr: lgr.With("In followers Read->"),
 			db:  db,
 		}
-		writeQ = &write{
-			lgr: lgr.With("In Write ->"),
+		f_write = &followers_write{
+			lgr: lgr.With("In followers Write->"),
 			db:  db,
 		}
-		readQ.write = writeQ
-		writeQ.read = readQ
+	}
+	{
+		l_read = &likes_read{
+			lgr: lgr.With("In likes Read->"),
+			db:  db,
+		}
+		l_write = &likes_write{
+			lgr: lgr.With("In likes Write->"),
+			db:  db,
+		}
 	}
 
 	return &instances.Repository{
-		Read:  readQ,
-		Write: writeQ,
+		Followers_read:  f_read,
+		Followers_write: f_write,
+
+		Likes_read:  l_read,
+		Likes_write: l_write,
 	}
 }
 
@@ -71,7 +86,7 @@ func getConnection(lgr *golog.Core) *gorm.DB {
 		}
 	}
 	{
-		if err := db.AutoMigrate(&models.Followers{}); err != nil {
+		if err := db.AutoMigrate(&models.Followers{}, &models.Like{}); err != nil {
 			lgr.Fatal(err)
 		}
 	}

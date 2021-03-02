@@ -8,7 +8,16 @@ option go_package = "/relation";
 service RelationService {
       rpc Follow(FollowRequest) returns (FollowResponse);
       rpc Unfollow(UnfollowRequest) returns (UnfollowResponse);
+      rpc Like(LikeRequest) returns (LikeResponse);
 }
+// Like
+message LikeRequest {
+      uint64 likerId = 1;
+      uint64 ownerId = 2;
+      uint64 postId  = 3;
+}
+message LikeResponse {}
+//
 
 // Unfollow
 message UnfollowRequest {

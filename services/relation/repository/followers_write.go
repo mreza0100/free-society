@@ -7,35 +7,27 @@ import (
 	gorm "gorm.io/gorm"
 )
 
-type write struct {
-	lgr  *golog.Core
-	db   *gorm.DB
-	read *read
+type followers_write struct {
+	lgr *golog.Core
+	db  *gorm.DB
 }
 
-func (w *write) SetFollower(follower, following uint64) error {
+func (w *followers_write) SetFollower(follower, following uint64) error {
+	const query = `INSERT INTO followers (follower, following) VALUES (?, ?)`
+	params := []interface{}{follower, following}
+
+	tx := w.db.Exec(query, params...)
+
 	{
-		if w.read.IsFollowing(follower, following) {
-			return status.Error(codes.AlreadyExists, "already following")
+		if tx.Error != nil {
+			w.lgr.Debug.RedLog(tx.Error.Error())
 		}
 	}
-	{
-		const query = `INSERT INTO followers (follower, following) VALUES (?, ?)`
-		params := []interface{}{follower, following}
 
-		tx := w.db.Exec(query, params...)
-
-		{
-			if tx.Error != nil {
-				w.lgr.Debug.RedLog(tx.Error.Error())
-			}
-		}
-
-		return tx.Error
-	}
+	return tx.Error
 }
 
-func (w *write) RemoveFollow(follower, following uint64) error {
+func (w *followers_write) RemoveFollow(follower, following uint64) error {
 	const query = `DELETE FROM followers WHERE follower=? AND following=?`
 	params := []interface{}{follower, following}
 
@@ -54,7 +46,7 @@ func (w *write) RemoveFollow(follower, following uint64) error {
 	}
 }
 
-func (w *write) DeleteAllRelations(userId uint64) error {
+func (w *followers_write) DeleteAllRelations(userId uint64) error {
 	const qeury = `DELETE FROM followers WHERE follower=? OR following=?`
 	params := []interface{}{userId, userId}
 

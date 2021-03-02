@@ -2,46 +2,33 @@ package domain
 
 import (
 	"errors"
-	"microServiceBoilerplate/services/relation/instances"
-	"microServiceBoilerplate/services/relation/repository"
 
-	"github.com/mreza0100/golog"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
-
-type NewOpts struct {
-	Lgr *golog.Core
-}
-
-func New(opts *NewOpts) instances.Sevice {
-	return &service{
-		lgr:  opts.Lgr.With("In domain->"),
-		repo: repository.NewRepo(opts.Lgr),
-	}
-}
-
-type service struct {
-	lgr  *golog.Core
-	repo *instances.Repository
-}
 
 func (s *service) Follow(follower, following uint64) error {
 	if follower == following {
 		return errors.New("you cant follow your self")
 	}
 
-	return s.repo.Write.SetFollower(follower, following)
+	if s.repo.Followers_read.IsFollowing(follower, following) {
+		return status.Error(codes.AlreadyExists, "already following")
+	}
+
+	return s.repo.Followers_write.SetFollower(follower, following)
 }
 
 func (s *service) Unfollow(following, follower uint64) error {
-	return s.repo.Write.RemoveFollow(following, follower)
+	return s.repo.Followers_write.RemoveFollow(following, follower)
 }
 
 func (s *service) GetFollowers(userId uint64) []uint64 {
-	return s.repo.Read.GetFollowers(userId)
+	return s.repo.Followers_read.GetFollowers(userId)
 }
 
 func (s *service) DeleteAllRelations(userId uint64) error {
-	return s.repo.Write.DeleteAllRelations(userId)
+	return s.repo.Followers_write.DeleteAllRelations(userId)
 }
 
 func (s *service) IsFollowing(follower uint64, followings []uint64) (map[uint64]bool, error) {
@@ -53,7 +40,7 @@ func (s *service) IsFollowing(follower uint64, followings []uint64) (map[uint64]
 	)
 
 	{
-		result, err = s.repo.Read.IsFollowingGroup(follower, followings)
+		result, err = s.repo.Followers_read.IsFollowingGroup(follower, followings)
 		if err != nil {
 			return nil, err
 		}
