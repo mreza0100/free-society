@@ -9,7 +9,7 @@ import (
 type Publishers interface {
 	NewPost(userId, postId uint64) error
 	GetUsers(userIds []uint64) (map[uint64]*pb.User, error)
-	IsFollowingGroup(userId uint64, followings []uint64) map[uint64]bool
+	IsFollowingGroup(userId uint64, followings []uint64) (map[uint64]bool, error)
 	GetCounts(postIds []uint64) (map[uint64]uint64, error)
 	IsLikedGroup(postIds []uint64) (map[uint64]*emptypb.Empty, error)
 }
