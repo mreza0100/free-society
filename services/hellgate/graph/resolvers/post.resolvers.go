@@ -13,6 +13,7 @@ import (
 	"microServiceBoilerplate/services/hellgate/security"
 	"microServiceBoilerplate/services/hellgate/validation"
 	"microServiceBoilerplate/utils"
+	"time"
 )
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (int, error) {
@@ -70,11 +71,14 @@ func (r *mutationResolver) UndoLike(ctx context.Context, postID int) (bool, erro
 }
 
 func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Post, error) {
+	start := time.Now()
+	defer r.Lgr.InfoLog(time.Since(start))
+
 	var (
 		ids         []uint64
 		requestorId uint64
 		rawPosts    []*post.Post
-		result      []*models.Post
+		posts       []*models.Post
 	)
 
 	{
@@ -101,19 +105,22 @@ func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Pos
 			return nil, utils.GetGRPCMSG(err)
 		}
 		rawPosts = response.Posts
-		r.Lgr.InfoLog(rawPosts)
 	}
 	{
-		result = make([]*models.Post, len(rawPosts))
-
+		posts = make([]*models.Post, len(rawPosts))
 		for idx, p := range rawPosts {
-			result[idx] = &models.Post{
-				Title:       p.Title,
-				Body:        p.Body,
-				ID:          int(p.Id),
-				OwnerID:     int(p.OwnerId),
-				IsFollowing: p.IsFollowing,
+			posts[idx] = &models.Post{
+				Title: p.Title,
+				Body:  p.Body,
+				ID:    int(p.Id),
+
+				OwnerID: int(p.OwnerId),
+				Likes:   int(p.Likes),
+				IsLiked: p.IsLiked,
+
 				User: &models.User{
+					IsFollowing: p.IsFollowing,
+
 					ID:     int(p.User.Id),
 					Name:   p.User.Name,
 					Email:  p.User.Email,
@@ -123,7 +130,7 @@ func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Pos
 		}
 	}
 
-	return result, nil
+	return posts, nil
 }
 
 func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error) {
@@ -166,12 +173,17 @@ func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*
 		posts = make([]*models.Post, len(rawPosts))
 		for idx, p := range rawPosts {
 			posts[idx] = &models.Post{
-				Title:       p.Title,
-				Body:        p.Body,
-				ID:          int(p.Id),
-				OwnerID:     int(p.OwnerId),
-				IsFollowing: p.IsFollowing,
+				Title: p.Title,
+				Body:  p.Body,
+				ID:    int(p.Id),
+
+				OwnerID: int(p.OwnerId),
+				Likes:   int(p.Likes),
+				IsLiked: p.IsLiked,
+
 				User: &models.User{
+					IsFollowing: p.IsFollowing,
+
 					ID:     int(p.User.Id),
 					Name:   p.User.Name,
 					Email:  p.User.Email,

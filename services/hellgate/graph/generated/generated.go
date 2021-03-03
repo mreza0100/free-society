@@ -69,19 +69,21 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Email  func(childComplexity int) int
-		Gender func(childComplexity int) int
-		ID     func(childComplexity int) int
-		Name   func(childComplexity int) int
+		Email       func(childComplexity int) int
+		Gender      func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsFollowing func(childComplexity int) int
+		Name        func(childComplexity int) int
 	}
 
 	Post struct {
-		Body        func(childComplexity int) int
-		ID          func(childComplexity int) int
-		IsFollowing func(childComplexity int) int
-		OwnerID     func(childComplexity int) int
-		Title       func(childComplexity int) int
-		User        func(childComplexity int) int
+		Body    func(childComplexity int) int
+		ID      func(childComplexity int) int
+		IsLiked func(childComplexity int) int
+		Likes   func(childComplexity int) int
+		OwnerID func(childComplexity int) int
+		Title   func(childComplexity int) int
+		User    func(childComplexity int) int
 	}
 
 	Session struct {
@@ -325,6 +327,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ID(childComplexity), true
 
+	case "User.isFollowing":
+		if e.complexity.User.IsFollowing == nil {
+			break
+		}
+
+		return e.complexity.User.IsFollowing(childComplexity), true
+
 	case "User.name":
 		if e.complexity.User.Name == nil {
 			break
@@ -346,12 +355,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Post.ID(childComplexity), true
 
-	case "post.isFollowing":
-		if e.complexity.Post.IsFollowing == nil {
+	case "post.isLiked":
+		if e.complexity.Post.IsLiked == nil {
 			break
 		}
 
-		return e.complexity.Post.IsFollowing(childComplexity), true
+		return e.complexity.Post.IsLiked(childComplexity), true
+
+	case "post.likes":
+		if e.complexity.Post.Likes == nil {
+			break
+		}
+
+		return e.complexity.Post.Likes(childComplexity), true
 
 	case "post.ownerId":
 		if e.complexity.Post.OwnerID == nil {
@@ -494,7 +510,8 @@ type post {
 	body: String!
 	id: Int!
 	ownerId: Int!
-	isFollowing: Boolean!
+	isLiked: Boolean!
+	likes: Int!
 	user: User!
 }
 
@@ -536,6 +553,7 @@ type User {
 	name: String!
 	email: String!
 	gender: String!
+	isFollowing: Boolean!
 }
 
 input createUserInput {
@@ -1955,6 +1973,41 @@ func (ec *executionContext) _User_gender(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _User_isFollowing(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsFollowing, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3178,7 +3231,7 @@ func (ec *executionContext) _post_ownerId(ctx context.Context, field graphql.Col
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _post_isFollowing(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _post_isLiked(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3196,7 +3249,7 @@ func (ec *executionContext) _post_isFollowing(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.IsFollowing, nil
+		return obj.IsLiked, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3211,6 +3264,41 @@ func (ec *executionContext) _post_isFollowing(ctx context.Context, field graphql
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _post_likes(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Likes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _post_user(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
@@ -3657,6 +3745,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "isFollowing":
+			out.Values[i] = ec._User_isFollowing(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3940,8 +4033,13 @@ func (ec *executionContext) _post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "isFollowing":
-			out.Values[i] = ec._post_isFollowing(ctx, field, obj)
+		case "isLiked":
+			out.Values[i] = ec._post_isLiked(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "likes":
+			out.Values[i] = ec._post_likes(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

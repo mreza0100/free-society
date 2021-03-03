@@ -136,7 +136,7 @@ func (s *subscribers) IsFollowingGroup() {
 
 func (s *subscribers) isLikedGroup() {
 	subject := configs.Nats.Subjects.IsLikedGroup
-	dbug, success := s.lgr.DebugPKG("isLikedGroup", true)
+	dbug, success := s.lgr.DebugPKG("isLikedGroup", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -180,7 +180,7 @@ func (s *subscribers) isLikedGroup() {
 
 func (s *subscribers) countLikes() {
 	subject := configs.Nats.Subjects.CountLikes
-	dbug, success := s.lgr.DebugPKG("countLikes", true)
+	dbug, success := s.lgr.DebugPKG("countLikes", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {

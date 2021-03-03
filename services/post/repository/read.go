@@ -40,7 +40,5 @@ func (r *read) IsExists(postIds []uint64) ([]uint64, error) {
 	result := make([]uint64, 0)
 	tx.Scan(&result)
 
-	r.lgr.InfoLog(result)
-
 	return result, nil
 }

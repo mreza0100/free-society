@@ -84,9 +84,9 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 		// there maight be several posts from one owner
 		// I dont want to get same user
 		// over and over again in the same request to user service
-		notUniqueOwnerIds := make([]uint64, 0, len(rawPosts))
-		for _, i := range rawPosts {
-			notUniqueOwnerIds = append(notUniqueOwnerIds, i.OwnerId)
+		notUniqueOwnerIds := make([]uint64, len(rawPosts))
+		for idx, i := range rawPosts {
+			notUniqueOwnerIds[idx] = i.OwnerId
 		}
 		ownerIds = utils.UniqueIds(notUniqueOwnerIds)
 	}
@@ -115,7 +115,9 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 			var err error
 			followingGroup, err = s.publishers.IsFollowingGroup(requestorId, ownerIds)
 			errCh <- err
+			return
 		}
+		errCh <- nil
 	}()
 
 	{

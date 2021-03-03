@@ -17,7 +17,6 @@ type publishers struct {
 func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
 	subject := configs.Nats.Subjects.IsPostsExists
 	dbug, sussecc := p.lgr.DebugPKG("IsPostsExists", false)
-	p.lgr.InfoLog(p.nc == nil)
 
 	{
 		var (

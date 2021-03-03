@@ -16,7 +16,8 @@ type post {
 	body: String!
 	id: Int!
 	ownerId: Int!
-	isFollowing: Boolean!
+	isLiked: Boolean!
+	likes: Int!
 	user: User!
 }
 

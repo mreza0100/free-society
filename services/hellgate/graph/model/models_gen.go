@@ -3,10 +3,11 @@
 package models
 
 type User struct {
-	ID     int    `json:"id"`
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	Gender string `json:"gender"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	Gender      string `json:"gender"`
+	IsFollowing bool   `json:"isFollowing"`
 }
 
 type CreatePostInput struct {
@@ -26,12 +27,13 @@ type DeletePostInput struct {
 }
 
 type Post struct {
-	Title       string `json:"title"`
-	Body        string `json:"body"`
-	ID          int    `json:"id"`
-	OwnerID     int    `json:"ownerId"`
-	IsFollowing bool   `json:"isFollowing"`
-	User        *User  `json:"user"`
+	Title   string `json:"title"`
+	Body    string `json:"body"`
+	ID      int    `json:"id"`
+	OwnerID int    `json:"ownerId"`
+	IsLiked bool   `json:"isLiked"`
+	Likes   int    `json:"likes"`
+	User    *User  `json:"user"`
 }
 
 type Session struct {
