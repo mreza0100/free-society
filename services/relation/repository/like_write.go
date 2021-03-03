@@ -36,3 +36,12 @@ func (w *likes_write) UndoLike(likerId, postId uint64) error {
 
 	return nil
 }
+
+func (w *likes_write) PurgeUserLikes(liker uint64) error {
+	const query = `DELETE FROM likes WHERE liker_id=?`
+	params := []interface{}{liker}
+
+	tx := w.db.Exec(query, params...)
+
+	return tx.Error
+}

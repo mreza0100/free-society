@@ -50,15 +50,5 @@ func (w *write) DeleteUserPosts(userId uint64) error {
 
 	tx := w.db.Exec(query, params...)
 
-	if tx.Error != nil {
-		return tx.Error
-	}
-
-	if tx.RowsAffected == 0 {
-		w.lgr.Debug.CyanLog("tx.RowsAffected: ", tx.RowsAffected)
-		w.lgr.Debug.InfoLog("user dont have any posts")
-		return errors.New("user dont have any posts")
-	}
-
-	return nil
+	return tx.Error
 }

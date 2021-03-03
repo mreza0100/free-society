@@ -176,7 +176,7 @@ func (p *publishers) GetCounts(postIds []uint64) (map[uint64]uint64, error) {
 	}
 }
 
-func (p *publishers) IsLikedGroup(postIds []uint64) (map[uint64]*emptypb.Empty, error) {
+func (p *publishers) IsLikedGroup(liker uint64, postIds []uint64) (map[uint64]*emptypb.Empty, error) {
 	subject := configs.Nats.Subjects.IsLikedGroup
 	dbug, sussess := p.lgr.DebugPKG("IsLikedGroup", false)
 
@@ -191,6 +191,7 @@ func (p *publishers) IsLikedGroup(postIds []uint64) (map[uint64]*emptypb.Empty, 
 		{
 			byteRequest, err = proto.Marshal(&natsPb.IsLikedGroup_REQUESTRequest{
 				PostIds: postIds,
+				Liker:   liker,
 			})
 			if dbug("proto.Marshal")(err) != nil {
 				return nil, err

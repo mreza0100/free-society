@@ -14,6 +14,7 @@ type like interface {
 	UndoLike(likerId, postId uint64) error
 	IsLikedGroup(likerId uint64, postIds []uint64) ([]uint64, error)
 	CountLikes(postIds []uint64) (CountResult, error)
+	DeleteLikes(liker uint64) error
 }
 
 type Sevice interface {

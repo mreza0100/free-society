@@ -2,7 +2,7 @@ module microServiceBoilerplate
 
 go 1.15
 
-// replace github.com/mreza0100/golog => ../github.com/mreza0100/golog
+replace github.com/mreza0100/golog => ../golog
 
 require (
 	github.com/99designs/gqlgen v0.13.0

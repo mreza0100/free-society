@@ -13,7 +13,6 @@ import (
 	"microServiceBoilerplate/services/hellgate/security"
 	"microServiceBoilerplate/services/hellgate/validation"
 	"microServiceBoilerplate/utils"
-	"time"
 )
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (int, error) {
@@ -71,9 +70,6 @@ func (r *mutationResolver) UndoLike(ctx context.Context, postID int) (bool, erro
 }
 
 func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Post, error) {
-	start := time.Now()
-	defer r.Lgr.InfoLog(time.Since(start))
-
 	var (
 		ids         []uint64
 		requestorId uint64

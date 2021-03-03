@@ -104,7 +104,7 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 	go func() {
 		if hasRequestorId {
 			var err error
-			likedGroup, err = s.publishers.IsLikedGroup(postIds)
+			likedGroup, err = s.publishers.IsLikedGroup(requestorId, postIds)
 			errCh <- err
 			return
 		}

@@ -84,6 +84,10 @@ func (s *subscribers) DeleteUser() {
 				if debug("s.srv.DeleteUser")(err) != nil {
 					return
 				}
+				err = s.srv.DeleteLikes(userId)
+				if debug("s.srv.DeleteLikes")(err) != nil {
+					return
+				}
 				sussecc(userId)
 			}
 		})

@@ -26,8 +26,8 @@ func initLogger() *golog.Core {
 
 func main() {
 	var (
-		Lgr        = initLogger()
-		service    = microservice.NewPostService(Lgr)
+		lgr        = initLogger()
+		service    = microservice.NewPostService(lgr)
 		grpcServer = grpc.NewServer()
 	)
 	pb.RegisterPostServiceServer(grpcServer, service)

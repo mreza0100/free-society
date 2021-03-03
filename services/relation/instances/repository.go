@@ -23,6 +23,7 @@ type (
 	likes_write interface {
 		Like(likerId, ownerId, postId uint64) error
 		UndoLike(likerId, postId uint64) error
+		PurgeUserLikes(liker uint64) error
 	}
 )
 
