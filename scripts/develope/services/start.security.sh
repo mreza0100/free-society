@@ -11,4 +11,4 @@ root=$(pwd)
 source $root/scripts/develope/env.sh
 
 
-go run $root/services/security/server
+go run $root/services/security/server/server.go

@@ -12,11 +12,11 @@ import (
 	"github.com/mreza0100/golog"
 )
 
-type ServiceOpts struct {
+type NewOpts struct {
 	Lgr *golog.Core
 }
 
-func New(opts ServiceOpts) instances.Sevice {
+func New(opts *NewOpts) instances.Sevice {
 	return &service{
 		lgr:          opts.Lgr.With("In domain->"),
 		redisRepo:    redis.New(opts.Lgr),
@@ -36,7 +36,7 @@ func (s *service) NewUser(userId uint64, device, password string) (token string,
 	{
 		hashPass := security.HashIt(password)
 		err = s.postgresRepo.Write.NewUser(userId, hashPass)
-		if debug("after s.postgresRepo..NewUser")(err) != nil {
+		if debug("after s.postgresRepo.NewUser")(err) != nil {
 			return "", err
 		}
 	}
@@ -109,7 +109,7 @@ func (s *service) GetUserId(token string) (uint64, error) {
 func (s *service) PurgeUser(userId uint64) error {
 	var (
 		tokens []string
-		chErr  = make(chan error, 4)
+		chErr  = make(chan error)
 	)
 
 	{
@@ -133,7 +133,7 @@ func (s *service) PurgeUser(userId uint64) error {
 		}(chErr)
 	}
 
-	for i := 0; i < 4; i++ {
+	for i := 0; i < 2; i++ {
 		if err := <-chErr; err != nil {
 			return err
 		}
@@ -167,7 +167,7 @@ func (s *service) DeleteSession(sessionId uint64) (err error) {
 	return nil
 }
 
-func (s *service) ChangePassword(userId uint64, prevPassword, newPassword string) (err error) {
+func (s *service) ChangePassword(userId uint64, prevPassword, newPassword string) error {
 	var (
 		tokens []string
 	)
@@ -184,24 +184,23 @@ func (s *service) ChangePassword(userId uint64, prevPassword, newPassword string
 	}
 
 	{
-		err = s.postgresRepo.Write.ChangeHashPass(userId, security.HashIt(newPassword))
+		err := s.postgresRepo.Write.ChangeHashPass(userId, security.HashIt(newPassword))
 		if err != nil {
 			return err
 		}
 	}
 
 	{
-		var sessions []*models.Session
-		sessions, err = s.postgresRepo.Write.DeleteUserSessions(userId)
+		sessions, err := s.postgresRepo.Write.DeleteUserSessions(userId)
+		if err != nil {
+			return err
+		}
+
 		tokens = make([]string, len(sessions))
 		for idx, i := range sessions {
 			tokens[idx] = i.Token
 		}
 	}
 
-	{
-		err = s.redisRepo.Write.DeleteSession(tokens...)
-	}
-
-	return err
+	return s.redisRepo.Write.DeleteSession(tokens...)
 }

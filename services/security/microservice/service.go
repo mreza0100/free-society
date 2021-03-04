@@ -17,7 +17,7 @@ func NewSecurityService(lgr *golog.Core) instances.Handlers {
 		Nc:  nc,
 	})
 
-	services := domain.New(domain.ServiceOpts{
+	services := domain.New(&domain.NewOpts{
 		Lgr: lgr,
 	})
 
