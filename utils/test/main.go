@@ -1,6 +1,8 @@
 package test
 
-import "testing"
+import (
+	"testing"
+)
 
 func CheckFail(t *testing.T, err error) {
 	if err != nil {

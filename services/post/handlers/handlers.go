@@ -32,11 +32,12 @@ type handlers struct {
 
 func (h *handlers) NewPost(_ context.Context, in *pb.NewPostRequest) (*pb.NewPostResponse, error) {
 	postId, err := h.srv.NewPost(in.Title, in.Body, in.UserId)
-
-	h.publishers.NewPost(in.UserId, postId)
+	if err != nil {
+		return &pb.NewPostResponse{}, err
+	}
+	err = h.publishers.NewPost(in.UserId, postId)
 
 	return &pb.NewPostResponse{Id: postId}, err
-
 }
 
 func (h *handlers) DeletePost(_ context.Context, in *pb.DeletePostRequest) (*pb.DeletePostResponse, error) {

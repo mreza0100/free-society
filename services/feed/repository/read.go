@@ -21,7 +21,7 @@ func (r *read) GetFeed(userId, offset, limit uint64) ([]uint64, error) {
 	{
 		start = int64(offset)
 		stop = int64(offset + limit)
-		ids = make([]uint64, int(limit))
+		ids = make([]uint64, 0, int(limit))
 	}
 
 	{

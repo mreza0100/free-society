@@ -18,26 +18,31 @@ type publishers struct {
 
 func (p *publishers) NewPost(userId, postId uint64) error {
 	subject := configs.Nats.Subjects.NewPost
+	dbug, sussess := p.lgr.DebugPKG("NewPost", false)
 
 	{
-		data := &natsPb.NewPost_EVENT{
-			UserId: userId,
-			PostId: postId,
-		}
-		msgByte, err := proto.Marshal(data)
-		if err != nil {
-			p.lgr.Debug.RedLog("proto.Marshal has been returning error")
-			p.lgr.Debug.RedLog("Error: ", err)
-			return err
-		}
+		var (
+			msgByte []byte
 
-		err = p.nc.Publish(subject, msgByte)
-		if err != nil {
-			p.lgr.RedLog("in NewPost: can't publish msg")
-			p.lgr.RedLog("error: ", err)
-			return err
+			err error
+		)
+		{
+			msgByte, err = proto.Marshal(&natsPb.NewPost_EVENT{
+				UserId: userId,
+				PostId: postId,
+			})
+			if dbug("proto.Marshal")(err) != nil {
+				return err
+			}
+		}
+		{
+			err = p.nc.Publish(subject, msgByte)
+			if dbug("p.nc.Publish")(err) != nil {
+				return err
+			}
 		}
 	}
+	sussess()
 	return nil
 }
 

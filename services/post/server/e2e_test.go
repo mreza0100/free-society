@@ -4,13 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"microServiceBoilerplate/configs"
 	"microServiceBoilerplate/proto/connections"
 	"microServiceBoilerplate/proto/generated/post"
 	"microServiceBoilerplate/proto/generated/relation"
-	"microServiceBoilerplate/proto/generated/security"
-	"microServiceBoilerplate/proto/generated/user"
 	"microServiceBoilerplate/utils/test"
+	"sync"
 	"testing"
 
 	"github.com/mreza0100/golog"
@@ -18,15 +16,12 @@ import (
 
 var (
 	logger = golog.New(golog.InitOpns{
-		LogPath:      configs.LogPath,
-		Name:         "post service server_test",
-		WithTime:     false,
-		DebugMode:    true,
-		ClearLogFile: false,
+		LogPath:   "",
+		Name:      "post test",
+		WithTime:  false,
+		DebugMode: true,
 	})
 	postConn     = connections.PostSrvConn(logger)
-	userConn     = connections.UserSrvConn(logger)
-	securityConn = connections.SecuritySrvConn(logger)
 	relationConn = connections.RelationSrvConn(logger)
 
 	ctx = context.Background()
@@ -47,31 +42,20 @@ var (
 	postIds []uint64
 )
 
-func start(t *testing.T) {
-	{
-		response, err := userConn.NewUser(ctx, &user.NewUserRequest{
-			Name:   name,
-			Email:  email,
-			Gender: gender,
-		})
-		test.CheckFail(t, err)
-		if response.Id == 0 {
-			test.CheckFail(t, errors.New("user id was 0"))
-		}
-		userId = response.Id
-	}
-	{
-		_, err := securityConn.NewUser(ctx, &security.NewUserRequest{
-			UserId:   userId,
-			Password: "8888888",
-			Device:   "mamads device",
-		})
-		test.FailIf(t, err != nil, err)
-	}
+func TestMain(m *testing.M) {
+	var deleteUser func()
+	userId, deleteUser = test.NewUser(test.NewUserOpns{
+		Lgr:    logger,
+		Name:   name,
+		Email:  email,
+		Gender: gender,
+	})
+	defer deleteUser()
+
+	m.Run()
 }
 
 func Test_createPost(t *testing.T) {
-	start(t)
 	postIds = make([]uint64, 0, countPost)
 
 	for i := 0; i < countPost; i++ {
@@ -171,17 +155,15 @@ func Test_getPostsMultipleTimesAndCheck(t *testing.T) {
 }
 
 func Test_deletePost(t *testing.T) {
-	defer func() {
-		_, err := userConn.DeleteUser(ctx, &user.DeleteUserRequest{
-			Id: userId,
-		})
-		test.CheckFail(t, err)
-	}()
+	var wg sync.WaitGroup
 
 	for _, postId := range postIds {
+		wg.Add(1)
 		t.Run(fmt.Sprintf("delete post id: %v", postId), func(t *testing.T) {
 
 			go func(id uint64) {
+				defer wg.Done()
+
 				_, err := postConn.DeletePost(ctx, &post.DeletePostRequest{
 					PostId: postId,
 					UserId: userId,
@@ -191,5 +173,4 @@ func Test_deletePost(t *testing.T) {
 
 		})
 	}
-
 }
