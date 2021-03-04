@@ -12,4 +12,4 @@ source $root/scripts/develope/env.sh
 
 
 
-go run $root/services/user/server
+go run $root/services/user/server/server.go
