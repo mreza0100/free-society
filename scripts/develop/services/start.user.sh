@@ -8,6 +8,8 @@ cd ../../..
 root=$(pwd)
 
 
-source $root/scripts/develope/env.sh
+source $root/scripts/develop/env.sh
 
-go run $root/services/feed/server
+
+
+go run $root/services/user/server/server.go
