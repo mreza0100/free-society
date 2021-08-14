@@ -13,6 +13,6 @@ func RelationSrvConn(lgr *golog.Core) pb.RelationServiceClient {
 	if err != nil {
 		lgr.Fatal("Cant connect to user service", err)
 	}
-	lgr.SuccessLog("Connected to relation service :)")
+	lgr.SuccessLog("Connected to relation service")
 	return pb.NewRelationServiceClient(conn)
 }

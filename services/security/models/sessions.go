@@ -5,6 +5,7 @@ import "time"
 type Session struct {
 	ID        uint64    `gorm:"primarykey;autoIncrement:true"`
 	CreatedAt time.Time `gorm:"NOT NULL;default:NOW()"`
+	ExpireAt  time.Time `gorm:"NOT NULL;"`
 
 	Token string `gorm:"NOT NULL;type:text"`
 

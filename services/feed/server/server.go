@@ -17,7 +17,7 @@ import (
 
 func initLogger() *golog.Core {
 	return golog.New(golog.InitOpns{
-		LogPath:   configs.LogPath,
+		LogPath:   "./logs/feed.log",
 		Name:      "Feed_Service",
 		WithTime:  true,
 		DebugMode: utils.IsDevMode,

@@ -1,6 +1,8 @@
 package instances
 
-import "microServiceBoilerplate/services/security/models"
+import (
+	"microServiceBoilerplate/services/security/models"
+)
 
 type postgres_read interface {
 	GetHashPass(userId uint64) (string, error)
@@ -10,7 +12,7 @@ type postgres_read interface {
 }
 type postgres_write interface {
 	NewUser(userId uint64, hashPass string) error
-	NewSession(userId uint64, device, token string) (sessionId uint64, err error)
+	NewSession(userId uint64, device, token, expireAt string) (sessionId uint64, err error)
 	DeleteSessionByToken(token string) error
 	DeleteUserSessions(userId uint64) ([]*models.Session, error)
 	DeletePassword(userId uint64) error

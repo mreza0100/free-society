@@ -21,9 +21,9 @@ func (w *write) NewUser(userId uint64, hashPass string) error {
 	return tx.Error
 }
 
-func (w *write) NewSession(userId uint64, device, token string) (sessionId uint64, err error) {
-	const query = `INSERT INTO sessions (user_id, device, token) VALUES (?, ?, ?) RETURNING id`
-	params := []interface{}{userId, device, token}
+func (w *write) NewSession(userId uint64, device, token, expireAt string) (sessionId uint64, err error) {
+	const query = `INSERT INTO sessions (user_id, device, token, expire_at) VALUES (?, ?, ?, ?) RETURNING id`
+	params := []interface{}{userId, device, token, expireAt}
 
 	tx := w.db.Raw(query, params...)
 	if tx.Error != nil {

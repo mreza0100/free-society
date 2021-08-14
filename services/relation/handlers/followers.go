@@ -26,6 +26,6 @@ func (h *handlers) Unfollow(_ context.Context, in *pb.UnfollowRequest) (*empty.E
 	return &emptypb.Empty{}, err
 }
 
-func (this *handlers) GetFollowers(userId uint64) []uint64 {
-	return this.srv.GetFollowers(userId)
+func (h *handlers) GetFollowers(userId uint64) []uint64 {
+	return h.srv.GetFollowers(userId)
 }

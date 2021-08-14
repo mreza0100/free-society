@@ -28,11 +28,11 @@ type natsConfigsT struct {
 	Timeout        time.Duration
 }
 
-func (this *natsConfigsT) GetDefaultNatsOpts(name string) []nats.Option {
+func (nConf *natsConfigsT) GetDefaultNatsOpts(name string) []nats.Option {
 	opts := make([]nats.Option, 0, 7)
 
 	disconnectErrHandlerO := nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
-		log.Printf("Disconnected due to: %s, will attempt reconnects for %.0fm", err, this.TotalWait.Minutes())
+		log.Printf("Disconnected due to: %s, will attempt reconnects for %.0fm", err, nConf.TotalWait.Minutes())
 		log.Print("Retrying...")
 	})
 	reconnectHandlerO := nats.ReconnectHandler(func(nc *nats.Conn) {
@@ -46,8 +46,8 @@ func (this *natsConfigsT) GetDefaultNatsOpts(name string) []nats.Option {
 		opts,
 
 		nats.Name(name),
-		nats.ReconnectWait(this.ReconnectDelay),
-		nats.MaxReconnects(int(this.TotalWait/this.ReconnectDelay)),
+		nats.ReconnectWait(nConf.ReconnectDelay),
+		nats.MaxReconnects(int(nConf.TotalWait/nConf.ReconnectDelay)),
 		disconnectErrHandlerO,
 		reconnectHandlerO,
 		closedHandlerO,

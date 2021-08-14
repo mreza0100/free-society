@@ -11,10 +11,10 @@ type read struct {
 	h   *helpers
 }
 
-func (this *read) GetSession(token string) (uint64, error) {
-	cmd := this.db.Get(this.h.addPrefixS(token))
+func (r *read) GetSession(token string) (uint64, error) {
+	cmd := r.db.Get(r.h.addPrefixS(token))
 	if cmd.Err() != nil {
-		this.lgr.InfoLog(cmd.Err())
+		r.lgr.InfoLog(cmd.Err())
 		return 0, cmd.Err()
 	}
 

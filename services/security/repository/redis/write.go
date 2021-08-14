@@ -13,13 +13,13 @@ type write struct {
 	h   *helpers
 }
 
-func (this *write) NewSession(token string, userId uint64) error {
-	return this.db.Set(this.h.addPrefixS(token), userId, configs.Token_expire).Err()
+func (w *write) NewSession(token string, userId uint64) error {
+	return w.db.Set(w.h.addPrefixS(token), userId, configs.Token_expire).Err()
 }
 
-func (this *write) DeleteSession(tokens ...string) error {
+func (w *write) DeleteSession(tokens ...string) error {
 	if len(tokens) == 0 {
 		return nil
 	}
-	return this.db.Del(this.h.addPrefixes(tokens...)...).Err()
+	return w.db.Del(w.h.addPrefixes(tokens...)...).Err()
 }

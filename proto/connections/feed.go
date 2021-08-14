@@ -14,6 +14,6 @@ func FeedSrvConn(lgr *golog.Core) pb.FeedServiceClient {
 		lgr.Fatal("Cant connect to feed service", err)
 	}
 
-	lgr.SuccessLog("Connected to feed service :)")
+	lgr.SuccessLog("Connected to feed service")
 	return pb.NewFeedServiceClient(conn)
 }

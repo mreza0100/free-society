@@ -13,6 +13,6 @@ func SecuritySrvConn(lgr *golog.Core) pb.SecurityServiceClient {
 	if err != nil {
 		lgr.Fatal("Cant connect to security service", err)
 	}
-	lgr.SuccessLog("Connected to security service :)")
+	lgr.SuccessLog("Connected to security service")
 	return pb.NewSecurityServiceClient(conn)
 }

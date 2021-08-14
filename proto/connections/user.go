@@ -13,6 +13,6 @@ func UserSrvConn(lgr *golog.Core) pb.UserServiceClient {
 	if err != nil {
 		lgr.Fatal("Cant connect to user service", err)
 	}
-	lgr.SuccessLog("Connected to user service :)")
+	lgr.SuccessLog("Connected to user service")
 	return pb.NewUserServiceClient(conn)
 }

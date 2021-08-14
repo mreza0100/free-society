@@ -14,7 +14,7 @@ type publishers struct {
 	nc  *nats.Conn
 }
 
-func (this *publishers) GetFollowers(userId uint64) ([]uint64, error) {
+func (p *publishers) GetFollowers(userId uint64) ([]uint64, error) {
 	subject := configs.Nats.Subjects.GetFollowers
 
 	{
@@ -29,16 +29,16 @@ func (this *publishers) GetFollowers(userId uint64) ([]uint64, error) {
 				UserId: userId,
 			})
 			if err != nil {
-				this.lgr.RedLog("In GetFollowers proto.Marshal error")
-				this.lgr.RedLog("Error: ", err)
+				p.lgr.RedLog("In GetFollowers proto.Marshal error")
+				p.lgr.RedLog("Error: ", err)
 				return nil, err
 			}
 		}
 		{
-			response, err := this.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			response, err := p.nc.Request(subject, byteRequest, configs.Nats.Timeout)
 			if err != nil {
-				this.lgr.RedLog("In GetFollowers this.nc.Request error")
-				this.lgr.RedLog("Error: ", err)
+				p.lgr.RedLog("In GetFollowers this.nc.Request error")
+				p.lgr.RedLog("Error: ", err)
 				return nil, err
 			}
 			byteResponse = response.Data
@@ -47,8 +47,8 @@ func (this *publishers) GetFollowers(userId uint64) ([]uint64, error) {
 			response := &natsPb.GetFollowers_REQUESTResponse{}
 			err = proto.Unmarshal(byteResponse, response)
 			if err != nil {
-				this.lgr.RedLog("In GetFollowers proto.Unmarshal error")
-				this.lgr.RedLog("Error: ", err)
+				p.lgr.RedLog("In GetFollowers proto.Unmarshal error")
+				p.lgr.RedLog("Error: ", err)
 				return nil, err
 			}
 			followers = response.Followers
@@ -59,7 +59,7 @@ func (this *publishers) GetFollowers(userId uint64) ([]uint64, error) {
 }
 
 // not used
-func (this *publishers) GetPosts(postIds []uint64) ([]*natsPb.Post, error) {
+func (p *publishers) GetPosts(postIds []uint64) ([]*natsPb.Post, error) {
 	subject := configs.Nats.Subjects.GetPosts
 
 	{
@@ -67,15 +67,15 @@ func (this *publishers) GetPosts(postIds []uint64) ([]*natsPb.Post, error) {
 			PostIds: postIds,
 		})
 		if err != nil {
-			this.lgr.RedLog("In GetPosts proto.Marshal error")
-			this.lgr.RedLog("Error: ", err)
+			p.lgr.RedLog("In GetPosts proto.Marshal error")
+			p.lgr.RedLog("Error: ", err)
 			return nil, err
 		}
 
-		response, err := this.nc.Request(subject, byteReq, configs.Nats.Timeout)
+		response, err := p.nc.Request(subject, byteReq, configs.Nats.Timeout)
 		if err != nil {
-			this.lgr.RedLog("In GetPosts this.nc.Request error")
-			this.lgr.RedLog("Error: ", err)
+			p.lgr.RedLog("In GetPosts this.nc.Request error")
+			p.lgr.RedLog("Error: ", err)
 			return nil, err
 		}
 
@@ -83,8 +83,8 @@ func (this *publishers) GetPosts(postIds []uint64) ([]*natsPb.Post, error) {
 			data := &natsPb.GetPosts_REQUESTResponse{}
 			err = proto.Unmarshal(response.Data, data)
 			if err != nil {
-				this.lgr.RedLog("In GetPosts proto.Unmarshal error")
-				this.lgr.RedLog("Error: ", err)
+				p.lgr.RedLog("In GetPosts proto.Unmarshal error")
+				p.lgr.RedLog("Error: ", err)
 				return nil, err
 			}
 

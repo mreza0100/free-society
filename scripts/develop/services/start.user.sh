@@ -1,15 +1,14 @@
 #!/bin/bash
 clear
 
-dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-cd $dir
-cd ../../..
-root=$(pwd)
-
-
-source $root/scripts/develop/env.sh
+cd $DIR/../../../
+ROOT=$(pwd)
 
 
+source $ROOT/scripts/develop/env.sh
 
-go run $root/services/user/server/server.go
+
+
+go run $ROOT/services/user/server/server.go

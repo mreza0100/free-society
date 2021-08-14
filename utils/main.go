@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
@@ -61,4 +62,7 @@ func IsInclude(subject uint64, arr []uint64) bool {
 		}
 	}
 	return false
+}
+func ParseDateForDb(t time.Time) string {
+	return t.Format(time.RFC3339)
 }

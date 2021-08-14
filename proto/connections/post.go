@@ -14,6 +14,6 @@ func PostSrvConn(lgr *golog.Core) pb.PostServiceClient {
 		lgr.Fatal("Cant connect to post service", err)
 	}
 
-	lgr.SuccessLog("Connected to post service :)")
+	lgr.SuccessLog("Connected to post service")
 	return pb.NewPostServiceClient(conn)
 }

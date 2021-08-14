@@ -2,12 +2,16 @@ package domain
 
 import (
 	"errors"
+	"microServiceBoilerplate/configs"
 	"microServiceBoilerplate/services/security/instances"
 	"microServiceBoilerplate/services/security/models"
 	"microServiceBoilerplate/services/security/repository/postgres"
 	"microServiceBoilerplate/services/security/repository/redis"
 	"microServiceBoilerplate/services/security/utils"
 	"microServiceBoilerplate/utils/security"
+	"time"
+
+	generalUtils "microServiceBoilerplate/utils"
 
 	"github.com/mreza0100/golog"
 )
@@ -42,7 +46,9 @@ func (s *service) NewUser(userId uint64, device, password string) (token string,
 	}
 	{
 		token = utils.CreateToken()
-		_, err = s.postgresRepo.Write.NewSession(userId, device, token)
+		expire := generalUtils.ParseDateForDb(time.Now().Add(configs.Token_expire))
+
+		_, err = s.postgresRepo.Write.NewSession(userId, device, token, expire)
 		if debug("after s.postgresRepo..NewSession")(err) != nil {
 			return "", err
 		}
@@ -77,7 +83,9 @@ func (s *service) Login(userId uint64, device, password string) (string, error) 
 		token = utils.CreateToken()
 	}
 	{
-		_, err = s.postgresRepo.Write.NewSession(userId, device, token)
+		expire := generalUtils.ParseDateForDb(time.Now().Add(configs.Token_expire))
+
+		_, err = s.postgresRepo.Write.NewSession(userId, device, token, expire)
 		if err != nil {
 			return "", err
 		}

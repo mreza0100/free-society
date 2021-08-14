@@ -10,6 +10,6 @@ type helpers struct {
 	lgr *golog.Core
 }
 
-func (this *helpers) parseId(userId uint64) string {
+func (h *helpers) parseId(userId uint64) string {
 	return fmt.Sprintf("feed_user_id_%v", userId)
 }

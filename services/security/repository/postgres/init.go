@@ -5,6 +5,7 @@ import (
 	"microServiceBoilerplate/configs"
 	instances "microServiceBoilerplate/services/security/instances"
 	"microServiceBoilerplate/services/security/models"
+	"time"
 
 	"github.com/mreza0100/golog"
 	postgres "gorm.io/driver/postgres"
@@ -22,6 +23,7 @@ func New(lgr *golog.Core) *instances.Repo_Postgres {
 
 	{
 		db = getConnection(lgr)
+		autoSessionExpirator(db)
 		lgr = lgr.With("In Repository->")
 	}
 	{
@@ -78,4 +80,26 @@ func getConfigs() (driverConfigs gorm.Dialector, gormConfigs *gorm.Config) {
 	}
 
 	return
+}
+
+func autoSessionExpirator(db *gorm.DB) {
+	go func() {
+		ticker := time.NewTicker(configs.Token_expire_auto_remove_duration)
+
+		for {
+			select {
+			case <-ticker.C:
+				now := time.Now().Add(time.Hour * 26).Format(time.RFC3339)
+
+				tx := db.Exec(`
+							DELETE
+							FROM sessions
+							WHERE expire_at < ?
+						`, now)
+				if tx.Error != nil {
+					panic(tx.Error)
+				}
+			}
+		}
+	}()
 }

@@ -4,14 +4,13 @@ clear
 
 
 
-dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-cd $dir
-cd ../..
-root=$(pwd)
+cd $DIR/../../
+ROOT=$(pwd)
 
-generated=$root/proto/generated
-raw_protos=$root/proto/raw_protos
+generated=$ROOT/proto/generated
+raw_protos=$ROOT/proto/raw_protos
 
 
 function generate {
@@ -20,16 +19,19 @@ function generate {
 		./*.proto
 }
 
-protos=("user" "post" "relation" "feed" "security" "nats")
+
+
+protos=$(ls $ROOT/proto/raw_protos)
 
 
 for t in ${protos[@]};
 do
-	cd $root
+	echo $t
+	cd $ROOT
 	mkdir -p $generated/$t
 	cd $raw_protos/$t
 	generate $t
-	
+	echo "---"
 done
 
 

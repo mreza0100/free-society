@@ -1,13 +1,12 @@
 #!/bin/bash
 clear
 
-dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-cd $dir
-cd ../../..
-root=$(pwd)
+cd $DIR/../../../
+ROOT=$(pwd)
 
 
-cd $root/services/hellgate/docker
+cd $ROOT/services/hellgate/docker
 
 sudo docker-compose up $1
