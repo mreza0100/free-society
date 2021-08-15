@@ -31,7 +31,7 @@ type handlers struct {
 }
 
 func (h *handlers) GetNotifications(_ context.Context, in *pb.GetNotificationsRequest) (*pb.GetNotificationsResponse, error) {
-	rawNotifications, err := h.srv.Getnotifications(in.UserId, int(in.Limit), int(in.Offset))
+	rawNotifications, err := h.srv.GetNotifications(in.UserId, in.Limit, in.Offset)
 	if err != nil {
 		return nil, err
 	}

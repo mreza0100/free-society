@@ -12,7 +12,7 @@ type read struct {
 	db  *gorm.DB
 }
 
-func (r *read) GetNotifications(userId uint64, limit, offset int) ([]models.Notification, error) {
+func (r *read) GetNotifications(userId uint64, limit, offset int64) ([]models.Notification, error) {
 	const query = "SELECT * FROM notifications WHERE user_id = ? limit ? offset ?"
 	params := []interface{}{userId, limit, offset}
 

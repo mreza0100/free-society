@@ -31,7 +31,10 @@ func (s *service) SetLikeNotification(userId, likerId, postId uint64) (uint64, e
 	return s.repo.Write.SetLikeNotification(userId, likerId, postId)
 }
 
-func (s *service) Getnotifications(userId uint64, limit, offset int) ([]models.Notification, error) {
+func (s *service) GetNotifications(userId uint64, limit, offset int64) ([]models.Notification, error) {
+	if limit > 50 {
+		limit = 50
+	}
 	return s.repo.Read.GetNotifications(userId, limit, offset)
 }
 

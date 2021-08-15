@@ -3,7 +3,7 @@ package instances
 import "freeSociety/services/notification/models"
 
 type read interface {
-	GetNotifications(userId uint64, limit, offset int) ([]models.Notification, error)
+	GetNotifications(userId uint64, limit, offset int64) ([]models.Notification, error)
 }
 
 type write interface {
