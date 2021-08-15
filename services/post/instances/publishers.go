@@ -1,7 +1,7 @@
 package instances
 
 import (
-	pb "microServiceBoilerplate/proto/generated/post"
+	pb "freeSociety/proto/generated/post"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )

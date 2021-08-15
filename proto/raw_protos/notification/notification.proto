@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package notification;
+
+option go_package = "/notification";
+
+
+service NotificationService {
+      rpc GetNotifications(GetNotificationsRequest) returns (GetNotificationsResponse);
+      rpc ClearNotifications(ClearNotificationsRequest) returns (ClearNotificationsResponse);      
+}
+
+message ClearNotificationsRequest {
+      uint64 userId  = 1;
+}
+
+message ClearNotificationsResponse {}
+
+
+// ---
+
+message GetNotificationsRequest {
+      uint64 userId = 1;
+      int64  offset = 2;
+      int64  limit  = 3;
+}
+
+message Notification {
+      uint64 id = 1;
+
+      bool   isLike  = 2;
+      uint64 likerId = 3;
+
+      uint64 postId  = 4;
+
+      bool   seen    = 5;
+      string time    = 6;
+}
+
+message GetNotificationsResponse {
+      repeated Notification notifications = 2;
+}

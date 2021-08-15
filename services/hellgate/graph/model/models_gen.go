@@ -2,6 +2,15 @@
 
 package models
 
+type Notification struct {
+	ID      int    `json:"id"`
+	IsLike  bool   `json:"IsLike"`
+	LikerID int    `json:"LikerId"`
+	PostID  int    `json:"PostId"`
+	Seen    bool   `json:"Seen"`
+	Time    string `json:"Time"`
+}
+
 type User struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`

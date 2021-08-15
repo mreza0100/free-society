@@ -1,10 +1,10 @@
 package microservice
 
 import (
-	"microServiceBoilerplate/services/security/domain"
-	"microServiceBoilerplate/services/security/handlers"
-	"microServiceBoilerplate/services/security/instances"
-	securityNats "microServiceBoilerplate/services/security/nats"
+	"freeSociety/services/security/domain"
+	"freeSociety/services/security/handlers"
+	"freeSociety/services/security/instances"
+	securityNats "freeSociety/services/security/nats"
 
 	"github.com/mreza0100/golog"
 )

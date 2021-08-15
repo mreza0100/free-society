@@ -2,9 +2,9 @@ package repository
 
 import (
 	"fmt"
-	"microServiceBoilerplate/configs"
-	"microServiceBoilerplate/services/feed/instances"
-	"microServiceBoilerplate/utils"
+	"freeSociety/configs"
+	"freeSociety/services/feed/instances"
+	"freeSociety/utils"
 
 	"github.com/go-redis/redis"
 	"github.com/mreza0100/golog"

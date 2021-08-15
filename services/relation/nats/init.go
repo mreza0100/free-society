@@ -1,8 +1,8 @@
 package relationNats
 
 import (
-	"microServiceBoilerplate/proto/connections"
-	"microServiceBoilerplate/services/relation/instances"
+	"freeSociety/proto/connections"
+	"freeSociety/services/relation/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"

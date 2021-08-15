@@ -6,11 +6,11 @@ package resolvers
 import (
 	"context"
 	"errors"
-	securityPb "microServiceBoilerplate/proto/generated/security"
-	"microServiceBoilerplate/proto/generated/user"
-	models "microServiceBoilerplate/services/hellgate/graph/model"
-	"microServiceBoilerplate/services/hellgate/security"
-	"microServiceBoilerplate/utils"
+	securityPb "freeSociety/proto/generated/security"
+	"freeSociety/proto/generated/user"
+	models "freeSociety/services/hellgate/graph/model"
+	"freeSociety/services/hellgate/security"
+	"freeSociety/utils"
 )
 
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (bool, error) {

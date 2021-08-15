@@ -8,16 +8,17 @@ import (
 )
 
 type subjectsT struct {
-	NewPost          string
-	DeleteUser       string
-	IsUserExist      string
-	GetFollowers     string
-	GetPosts         string
-	GetUsersByIds    string
-	IsFollowingGroup string
-	IsPostsExists    string
-	IsLikedGroup     string
-	CountLikes       string
+	NewPost             string
+	DeleteUser          string
+	IsUserExist         string
+	GetFollowers        string
+	GetPosts            string
+	GetUsersByIds       string
+	IsFollowingGroup    string
+	IsPostsExists       string
+	IsLikedGroup        string
+	CountLikes          string
+	SetLikeNotification string
 }
 
 type natsConfigsT struct {
@@ -80,5 +81,6 @@ func init() {
 		sbjs.IsPostsExists = "post.is_exists"
 		sbjs.IsLikedGroup = "post.is_liked_group"
 		sbjs.CountLikes = "post.count_likes"
+		sbjs.SetLikeNotification = "notification.set_like"
 	}
 }

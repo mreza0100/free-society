@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"microServiceBoilerplate/services/relation/instances"
+	"freeSociety/services/relation/instances"
 )
 
 func (s *service) Like(likerId, ownerId, postId uint64) error {

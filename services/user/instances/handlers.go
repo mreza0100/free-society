@@ -1,7 +1,7 @@
 package instances
 
 import (
-	pb "microServiceBoilerplate/proto/generated/user"
+	pb "freeSociety/proto/generated/user"
 )
 
 type Handlers interface {

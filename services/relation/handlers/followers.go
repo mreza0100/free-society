@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
-	pb "microServiceBoilerplate/proto/generated/relation"
+	pb "freeSociety/proto/generated/relation"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/protobuf/types/known/emptypb"

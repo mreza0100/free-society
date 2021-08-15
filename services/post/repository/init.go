@@ -2,9 +2,9 @@ package repository
 
 import (
 	"fmt"
-	"microServiceBoilerplate/configs"
-	"microServiceBoilerplate/services/post/instances"
-	"microServiceBoilerplate/services/post/models"
+	"freeSociety/configs"
+	"freeSociety/services/post/instances"
+	"freeSociety/services/post/models"
 
 	"github.com/mreza0100/golog"
 	"gorm.io/driver/postgres"

@@ -4,7 +4,7 @@ package resolvers
 // will be copied through when generating and any unknown code will be moved to the end.
 
 import (
-	"microServiceBoilerplate/services/hellgate/graph/generated"
+	"freeSociety/services/hellgate/graph/generated"
 )
 
 // Mutation returns generated.MutationResolver implementation.

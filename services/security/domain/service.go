@@ -2,16 +2,16 @@ package domain
 
 import (
 	"errors"
-	"microServiceBoilerplate/configs"
-	"microServiceBoilerplate/services/security/instances"
-	"microServiceBoilerplate/services/security/models"
-	"microServiceBoilerplate/services/security/repository/postgres"
-	"microServiceBoilerplate/services/security/repository/redis"
-	"microServiceBoilerplate/services/security/utils"
-	"microServiceBoilerplate/utils/security"
+	"freeSociety/configs"
+	"freeSociety/services/security/instances"
+	"freeSociety/services/security/models"
+	"freeSociety/services/security/repository/postgres"
+	"freeSociety/services/security/repository/redis"
+	"freeSociety/services/security/utils"
+	"freeSociety/utils/security"
 	"time"
 
-	generalUtils "microServiceBoilerplate/utils"
+	generalUtils "freeSociety/utils"
 
 	"github.com/mreza0100/golog"
 )
@@ -35,7 +35,7 @@ type service struct {
 }
 
 func (s *service) NewUser(userId uint64, device, password string) (token string, err error) {
-	debug, sussecc := s.lgr.DebugPKG("NewUser", false)
+	debug, success := s.lgr.DebugPKG("NewUser", false)
 
 	{
 		hashPass := security.HashIt(password)
@@ -60,7 +60,7 @@ func (s *service) NewUser(userId uint64, device, password string) (token string,
 		}
 	}
 
-	sussecc(token)
+	success(token)
 	return token, nil
 }
 

@@ -3,12 +3,12 @@ package main_test
 import (
 	"context"
 	"errors"
-	"microServiceBoilerplate/proto/connections"
-	"microServiceBoilerplate/proto/generated/feed"
-	"microServiceBoilerplate/proto/generated/post"
-	"microServiceBoilerplate/proto/generated/relation"
-	"microServiceBoilerplate/services/relation/domain"
-	"microServiceBoilerplate/utils/test"
+	"freeSociety/proto/connections"
+	"freeSociety/proto/generated/feed"
+	"freeSociety/proto/generated/post"
+	"freeSociety/proto/generated/relation"
+	"freeSociety/services/relation/domain"
+	"freeSociety/utils/test"
 	"testing"
 	"time"
 

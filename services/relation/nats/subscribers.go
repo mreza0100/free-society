@@ -1,9 +1,9 @@
 package relationNats
 
 import (
-	"microServiceBoilerplate/configs"
-	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/relation/instances"
+	"freeSociety/configs"
+	natsPb "freeSociety/proto/generated/nats"
+	"freeSociety/services/relation/instances"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/mreza0100/golog"
@@ -19,7 +19,7 @@ type subscribers struct {
 
 func (s *subscribers) GetFollowers() {
 	subject := configs.Nats.Subjects.GetFollowers
-	dbug, sussecc := s.lgr.DebugPKG("GetFollowers_REQUEST", false)
+	dbug, success := s.lgr.DebugPKG("GetFollowers_REQUEST", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -52,7 +52,7 @@ func (s *subscribers) GetFollowers() {
 				}
 			}
 			{
-				sussecc(response)
+				success(response)
 				msg.Respond(response)
 			}
 		})
@@ -61,7 +61,7 @@ func (s *subscribers) GetFollowers() {
 
 func (s *subscribers) DeleteUser() {
 	subject := configs.Nats.Subjects.DeleteUser
-	debug, sussecc := s.lgr.DebugPKG("DeleteUser", false)
+	debug, success := s.lgr.DebugPKG("DeleteUser", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -88,7 +88,7 @@ func (s *subscribers) DeleteUser() {
 				if debug("s.srv.DeleteLikes")(err) != nil {
 					return
 				}
-				sussecc(userId)
+				success(userId)
 			}
 		})
 

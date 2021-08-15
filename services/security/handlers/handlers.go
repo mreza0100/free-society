@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"context"
-	pb "microServiceBoilerplate/proto/generated/security"
-	"microServiceBoilerplate/services/security/instances"
-	"microServiceBoilerplate/services/security/models"
+	pb "freeSociety/proto/generated/security"
+	"freeSociety/services/security/instances"
+	"freeSociety/services/security/models"
 
 	"github.com/mreza0100/golog"
 )

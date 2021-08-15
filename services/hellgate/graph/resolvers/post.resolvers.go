@@ -6,13 +6,13 @@ package resolvers
 import (
 	"context"
 	"errors"
-	"microServiceBoilerplate/proto/generated/feed"
-	"microServiceBoilerplate/proto/generated/post"
-	"microServiceBoilerplate/proto/generated/relation"
-	models "microServiceBoilerplate/services/hellgate/graph/model"
-	"microServiceBoilerplate/services/hellgate/security"
-	"microServiceBoilerplate/services/hellgate/validation"
-	"microServiceBoilerplate/utils"
+	"freeSociety/proto/generated/feed"
+	"freeSociety/proto/generated/post"
+	"freeSociety/proto/generated/relation"
+	models "freeSociety/services/hellgate/graph/model"
+	"freeSociety/services/hellgate/security"
+	"freeSociety/services/hellgate/validation"
+	"freeSociety/utils"
 )
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (int, error) {

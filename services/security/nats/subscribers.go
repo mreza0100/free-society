@@ -1,9 +1,9 @@
 package securityNats
 
 import (
-	"microServiceBoilerplate/configs"
-	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/security/instances"
+	"freeSociety/configs"
+	natsPb "freeSociety/proto/generated/nats"
+	"freeSociety/services/security/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"

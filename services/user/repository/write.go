@@ -1,7 +1,7 @@
 package repository
 
 import (
-	models "microServiceBoilerplate/services/user/models"
+	models "freeSociety/services/user/models"
 
 	"github.com/mreza0100/golog"
 	"google.golang.org/grpc/codes"

@@ -1,7 +1,7 @@
 package instances
 
 import (
-	pb "microServiceBoilerplate/proto/generated/security"
+	pb "freeSociety/proto/generated/security"
 )
 
 type Handlers interface {

@@ -5,12 +5,12 @@ package resolvers
 
 import (
 	"context"
-	securityPb "microServiceBoilerplate/proto/generated/security"
-	"microServiceBoilerplate/proto/generated/user"
-	models "microServiceBoilerplate/services/hellgate/graph/model"
-	"microServiceBoilerplate/services/hellgate/security"
-	"microServiceBoilerplate/services/hellgate/validation"
-	"microServiceBoilerplate/utils"
+	securityPb "freeSociety/proto/generated/security"
+	"freeSociety/proto/generated/user"
+	models "freeSociety/services/hellgate/graph/model"
+	"freeSociety/services/hellgate/security"
+	"freeSociety/services/hellgate/validation"
+	"freeSociety/utils"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUserInput) (int, error) {

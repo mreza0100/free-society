@@ -1,10 +1,10 @@
 package microservice
 
 import (
-	"microServiceBoilerplate/services/post/domain"
-	"microServiceBoilerplate/services/post/handlers"
-	"microServiceBoilerplate/services/post/instances"
-	postNats "microServiceBoilerplate/services/post/nats"
+	"freeSociety/services/post/domain"
+	"freeSociety/services/post/handlers"
+	"freeSociety/services/post/instances"
+	postNats "freeSociety/services/post/nats"
 
 	"github.com/mreza0100/golog"
 )

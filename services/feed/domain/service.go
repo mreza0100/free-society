@@ -1,8 +1,8 @@
 package domain
 
 import (
-	"microServiceBoilerplate/services/feed/instances"
-	"microServiceBoilerplate/services/feed/repository"
+	"freeSociety/services/feed/instances"
+	"freeSociety/services/feed/repository"
 
 	"github.com/mreza0100/golog"
 )

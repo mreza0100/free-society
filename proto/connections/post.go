@@ -1,8 +1,8 @@
 package connections
 
 import (
-	"microServiceBoilerplate/configs"
-	pb "microServiceBoilerplate/proto/generated/post"
+	"freeSociety/configs"
+	pb "freeSociety/proto/generated/post"
 
 	"github.com/mreza0100/golog"
 	"google.golang.org/grpc"

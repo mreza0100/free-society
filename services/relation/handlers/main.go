@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	pb "microServiceBoilerplate/proto/generated/relation"
-	"microServiceBoilerplate/services/relation/instances"
+	pb "freeSociety/proto/generated/relation"
+	"freeSociety/services/relation/instances"
 
 	"github.com/mreza0100/golog"
 )

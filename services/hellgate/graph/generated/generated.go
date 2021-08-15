@@ -7,7 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	models "microServiceBoilerplate/services/hellgate/graph/model"
+	models "freeSociety/services/hellgate/graph/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -47,25 +47,36 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		ChangePassword func(childComplexity int, prevPassword string, newPassword string) int
-		CreatePost     func(childComplexity int, input models.CreatePostInput) int
-		CreateUser     func(childComplexity int, input models.CreateUserInput) int
-		DeletePost     func(childComplexity int, input models.DeletePostInput) int
-		DeleteSession  func(childComplexity int, sessionID int) int
-		DeleteUser     func(childComplexity int) int
-		Follow         func(childComplexity int, following int) int
-		Like           func(childComplexity int, postID int, ownerID int) int
-		Login          func(childComplexity int, email string, password string) int
-		Logout         func(childComplexity int) int
-		UndoLike       func(childComplexity int, postID int) int
-		Unfollow       func(childComplexity int, following int) int
+		ChangePassword     func(childComplexity int, prevPassword string, newPassword string) int
+		ClearNotifications func(childComplexity int) int
+		CreatePost         func(childComplexity int, input models.CreatePostInput) int
+		CreateUser         func(childComplexity int, input models.CreateUserInput) int
+		DeletePost         func(childComplexity int, input models.DeletePostInput) int
+		DeleteSession      func(childComplexity int, sessionID int) int
+		DeleteUser         func(childComplexity int) int
+		Follow             func(childComplexity int, following int) int
+		Like               func(childComplexity int, postID int, ownerID int) int
+		Login              func(childComplexity int, email string, password string) int
+		Logout             func(childComplexity int) int
+		UndoLike           func(childComplexity int, postID int) int
+		Unfollow           func(childComplexity int, following int) int
+	}
+
+	Notification struct {
+		ID      func(childComplexity int) int
+		IsLike  func(childComplexity int) int
+		LikerID func(childComplexity int) int
+		PostID  func(childComplexity int) int
+		Seen    func(childComplexity int) int
+		Time    func(childComplexity int) int
 	}
 
 	Query struct {
-		GetFeed  func(childComplexity int, offset int, limit int) int
-		GetPost  func(childComplexity int, input []int) int
-		GetUser  func(childComplexity int, id int) int
-		Sessions func(childComplexity int) int
+		GetFeed          func(childComplexity int, offset int, limit int) int
+		GetNotifications func(childComplexity int, offset int, limit int) int
+		GetPost          func(childComplexity int, input []int) int
+		GetUser          func(childComplexity int, id int) int
+		Sessions         func(childComplexity int) int
 	}
 
 	User struct {
@@ -98,6 +109,7 @@ type MutationResolver interface {
 	Logout(ctx context.Context) (bool, error)
 	DeleteSession(ctx context.Context, sessionID int) (bool, error)
 	ChangePassword(ctx context.Context, prevPassword string, newPassword string) (bool, error)
+	ClearNotifications(ctx context.Context) (bool, error)
 	CreatePost(ctx context.Context, input models.CreatePostInput) (int, error)
 	DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error)
 	Like(ctx context.Context, postID int, ownerID int) (bool, error)
@@ -109,6 +121,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Sessions(ctx context.Context) ([]*models.Session, error)
+	GetNotifications(ctx context.Context, offset int, limit int) ([]*models.Notification, error)
 	GetPost(ctx context.Context, input []int) ([]*models.Post, error)
 	GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error)
 	GetUser(ctx context.Context, id int) (*models.User, error)
@@ -140,6 +153,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ChangePassword(childComplexity, args["prevPassword"].(string), args["newPassword"].(string)), true
+
+	case "Mutation.clearNotifications":
+		if e.complexity.Mutation.ClearNotifications == nil {
+			break
+		}
+
+		return e.complexity.Mutation.ClearNotifications(childComplexity), true
 
 	case "Mutation.createPost":
 		if e.complexity.Mutation.CreatePost == nil {
@@ -263,6 +283,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Unfollow(childComplexity, args["following"].(int)), true
 
+	case "Notification.id":
+		if e.complexity.Notification.ID == nil {
+			break
+		}
+
+		return e.complexity.Notification.ID(childComplexity), true
+
+	case "Notification.IsLike":
+		if e.complexity.Notification.IsLike == nil {
+			break
+		}
+
+		return e.complexity.Notification.IsLike(childComplexity), true
+
+	case "Notification.LikerId":
+		if e.complexity.Notification.LikerID == nil {
+			break
+		}
+
+		return e.complexity.Notification.LikerID(childComplexity), true
+
+	case "Notification.PostId":
+		if e.complexity.Notification.PostID == nil {
+			break
+		}
+
+		return e.complexity.Notification.PostID(childComplexity), true
+
+	case "Notification.Seen":
+		if e.complexity.Notification.Seen == nil {
+			break
+		}
+
+		return e.complexity.Notification.Seen(childComplexity), true
+
+	case "Notification.Time":
+		if e.complexity.Notification.Time == nil {
+			break
+		}
+
+		return e.complexity.Notification.Time(childComplexity), true
+
 	case "Query.getFeed":
 		if e.complexity.Query.GetFeed == nil {
 			break
@@ -274,6 +336,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetFeed(childComplexity, args["offset"].(int), args["limit"].(int)), true
+
+	case "Query.getNotifications":
+		if e.complexity.Query.GetNotifications == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getNotifications_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetNotifications(childComplexity, args["offset"].(int), args["limit"].(int)), true
 
 	case "Query.getPost":
 		if e.complexity.Query.GetPost == nil {
@@ -492,6 +566,23 @@ type session {
 	sessionId: Int!
 }
 `, BuiltIn: false},
+	{Name: "graph/schema/notifications.graphql", Input: `extend type Query {
+	getNotifications(offset: Int!, limit: Int!): [Notification!]! @private
+}
+
+extend type Mutation {
+	clearNotifications: Boolean! @private
+}
+
+type Notification {
+	id: Int!
+	IsLike: Boolean!
+	LikerId: Int!
+	PostId: Int!
+	Seen: Boolean!
+	Time: String!
+}
+`, BuiltIn: false},
 	{Name: "graph/schema/post.graphql", Input: `extend type Query {
 	getPost(input: [Int!]!): [post!]! @optional
 	getFeed(offset: Int!, limit: Int!): [post!]! @private
@@ -600,7 +691,7 @@ func (ec *executionContext) field_Mutation_createPost_args(ctx context.Context, 
 	var arg0 models.CreatePostInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNcreatePostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreatePostInput(ctx, tmp)
+		arg0, err = ec.unmarshalNcreatePostInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreatePostInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -615,7 +706,7 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 	var arg0 models.CreateUserInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNcreateUserInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserInput(ctx, tmp)
+		arg0, err = ec.unmarshalNcreateUserInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -630,7 +721,7 @@ func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, 
 	var arg0 models.DeletePostInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNdeletePostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐDeletePostInput(ctx, tmp)
+		arg0, err = ec.unmarshalNdeletePostInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐDeletePostInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -763,6 +854,30 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 }
 
 func (ec *executionContext) field_Query_getFeed_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["offset"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["offset"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getNotifications_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 int
@@ -1040,6 +1155,61 @@ func (ec *executionContext) _Mutation_changePassword(ctx context.Context, field 
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Mutation().ChangePassword(rctx, args["prevPassword"].(string), args["newPassword"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Private == nil {
+				return nil, errors.New("directive private is not implemented")
+			}
+			return ec.directives.Private(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_clearNotifications(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ClearNotifications(rctx)
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -1544,6 +1714,216 @@ func (ec *executionContext) _Mutation_deleteUser(ctx context.Context, field grap
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Notification_id(ctx context.Context, field graphql.CollectedField, obj *models.Notification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notification_IsLike(ctx context.Context, field graphql.CollectedField, obj *models.Notification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsLike, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notification_LikerId(ctx context.Context, field graphql.CollectedField, obj *models.Notification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.LikerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notification_PostId(ctx context.Context, field graphql.CollectedField, obj *models.Notification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PostID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notification_Seen(ctx context.Context, field graphql.CollectedField, obj *models.Notification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Seen, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Notification_Time(ctx context.Context, field graphql.CollectedField, obj *models.Notification) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Notification",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Time, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_sessions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1582,7 +1962,7 @@ func (ec *executionContext) _Query_sessions(ctx context.Context, field graphql.C
 		if data, ok := tmp.([]*models.Session); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*microServiceBoilerplate/services/hellgate/graph/model.Session`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*freeSociety/services/hellgate/graph/model.Session`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1596,7 +1976,69 @@ func (ec *executionContext) _Query_sessions(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*models.Session)
 	fc.Result = res
-	return ec.marshalNsession2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐSessionᚄ(ctx, field.Selections, res)
+	return ec.marshalNsession2ᚕᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐSessionᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getNotifications(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getNotifications_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetNotifications(rctx, args["offset"].(int), args["limit"].(int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Private == nil {
+				return nil, errors.New("directive private is not implemented")
+			}
+			return ec.directives.Private(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*models.Notification); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*freeSociety/services/hellgate/graph/model.Notification`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*models.Notification)
+	fc.Result = res
+	return ec.marshalNNotification2ᚕᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐNotificationᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1644,7 +2086,7 @@ func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.Co
 		if data, ok := tmp.([]*models.Post); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*microServiceBoilerplate/services/hellgate/graph/model.Post`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*freeSociety/services/hellgate/graph/model.Post`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1658,7 +2100,7 @@ func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*models.Post)
 	fc.Result = res
-	return ec.marshalNpost2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
+	return ec.marshalNpost2ᚕᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1706,7 +2148,7 @@ func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.Co
 		if data, ok := tmp.([]*models.Post); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*microServiceBoilerplate/services/hellgate/graph/model.Post`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*freeSociety/services/hellgate/graph/model.Post`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1720,7 +2162,7 @@ func (ec *executionContext) _Query_getFeed(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*models.Post)
 	fc.Result = res
-	return ec.marshalNpost2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
+	return ec.marshalNpost2ᚕᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1759,7 +2201,7 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*models.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3333,7 +3775,7 @@ func (ec *executionContext) _post_user(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(*models.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalNUser2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _session_device(ctx context.Context, field graphql.CollectedField, obj *models.Session) (ret graphql.Marshaler) {
@@ -3580,6 +4022,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "clearNotifications":
+			out.Values[i] = ec._Mutation_clearNotifications(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createPost":
 			out.Values[i] = ec._Mutation_createPost(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -3631,6 +4078,58 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
+var notificationImplementors = []string{"Notification"}
+
+func (ec *executionContext) _Notification(ctx context.Context, sel ast.SelectionSet, obj *models.Notification) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, notificationImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Notification")
+		case "id":
+			out.Values[i] = ec._Notification_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "IsLike":
+			out.Values[i] = ec._Notification_IsLike(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "LikerId":
+			out.Values[i] = ec._Notification_LikerId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "PostId":
+			out.Values[i] = ec._Notification_PostId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Seen":
+			out.Values[i] = ec._Notification_Seen(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "Time":
+			out.Values[i] = ec._Notification_Time(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -3655,6 +4154,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_sessions(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getNotifications":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getNotifications(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4160,6 +4673,53 @@ func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.S
 	return ret
 }
 
+func (ec *executionContext) marshalNNotification2ᚕᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Notification) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNNotification2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐNotification(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNNotification2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐNotification(ctx context.Context, sel ast.SelectionSet, v *models.Notification) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Notification(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4175,7 +4735,7 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4414,22 +4974,22 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) unmarshalNcreatePostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreatePostInput(ctx context.Context, v interface{}) (models.CreatePostInput, error) {
+func (ec *executionContext) unmarshalNcreatePostInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreatePostInput(ctx context.Context, v interface{}) (models.CreatePostInput, error) {
 	res, err := ec.unmarshalInputcreatePostInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNcreateUserInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserInput(ctx context.Context, v interface{}) (models.CreateUserInput, error) {
+func (ec *executionContext) unmarshalNcreateUserInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreateUserInput(ctx context.Context, v interface{}) (models.CreateUserInput, error) {
 	res, err := ec.unmarshalInputcreateUserInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNdeletePostInput2microServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐDeletePostInput(ctx context.Context, v interface{}) (models.DeletePostInput, error) {
+func (ec *executionContext) unmarshalNdeletePostInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐDeletePostInput(ctx context.Context, v interface{}) (models.DeletePostInput, error) {
 	res, err := ec.unmarshalInputdeletePostInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNpost2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Post) graphql.Marshaler {
+func (ec *executionContext) marshalNpost2ᚕᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Post) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4453,7 +5013,7 @@ func (ec *executionContext) marshalNpost2ᚕᚖmicroServiceBoilerplateᚋservice
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNpost2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPost(ctx, sel, v[i])
+			ret[i] = ec.marshalNpost2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐPost(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4466,7 +5026,7 @@ func (ec *executionContext) marshalNpost2ᚕᚖmicroServiceBoilerplateᚋservice
 	return ret
 }
 
-func (ec *executionContext) marshalNpost2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *models.Post) graphql.Marshaler {
+func (ec *executionContext) marshalNpost2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v *models.Post) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4476,7 +5036,7 @@ func (ec *executionContext) marshalNpost2ᚖmicroServiceBoilerplateᚋservices�
 	return ec._post(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNsession2ᚕᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐSessionᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Session) graphql.Marshaler {
+func (ec *executionContext) marshalNsession2ᚕᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐSessionᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Session) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -4500,7 +5060,7 @@ func (ec *executionContext) marshalNsession2ᚕᚖmicroServiceBoilerplateᚋserv
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNsession2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐSession(ctx, sel, v[i])
+			ret[i] = ec.marshalNsession2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐSession(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4513,7 +5073,7 @@ func (ec *executionContext) marshalNsession2ᚕᚖmicroServiceBoilerplateᚋserv
 	return ret
 }
 
-func (ec *executionContext) marshalNsession2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐSession(ctx context.Context, sel ast.SelectionSet, v *models.Session) graphql.Marshaler {
+func (ec *executionContext) marshalNsession2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐSession(ctx context.Context, sel ast.SelectionSet, v *models.Session) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -4571,7 +5131,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return graphql.MarshalString(*v)
 }
 
-func (ec *executionContext) marshalOUser2ᚖmicroServiceBoilerplateᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

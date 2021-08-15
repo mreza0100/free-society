@@ -1,10 +1,10 @@
 package microservice
 
 import (
-	"microServiceBoilerplate/services/feed/domain"
-	"microServiceBoilerplate/services/feed/handlers"
-	"microServiceBoilerplate/services/feed/instances"
-	feedNats "microServiceBoilerplate/services/feed/nats"
+	"freeSociety/services/feed/domain"
+	"freeSociety/services/feed/handlers"
+	"freeSociety/services/feed/instances"
+	feedNats "freeSociety/services/feed/nats"
 
 	"github.com/mreza0100/golog"
 )

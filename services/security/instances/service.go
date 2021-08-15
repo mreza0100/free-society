@@ -1,6 +1,6 @@
 package instances
 
-import "microServiceBoilerplate/services/security/models"
+import "freeSociety/services/security/models"
 
 type Sevice interface {
 	NewUser(userId uint64, device, password string) (string, error)

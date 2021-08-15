@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"context"
-	pb "microServiceBoilerplate/proto/generated/post"
-	"microServiceBoilerplate/services/post/instances"
+	pb "freeSociety/proto/generated/post"
+	"freeSociety/services/post/instances"
 
 	"github.com/mreza0100/golog"
 )

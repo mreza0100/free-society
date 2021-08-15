@@ -1,9 +1,9 @@
 package userNats
 
 import (
-	"microServiceBoilerplate/configs"
-	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/user/instances"
+	"freeSociety/configs"
+	natsPb "freeSociety/proto/generated/nats"
+	"freeSociety/services/user/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"

@@ -1,7 +1,7 @@
 package instances
 
 import (
-	"microServiceBoilerplate/services/security/models"
+	"freeSociety/services/security/models"
 )
 
 type postgres_read interface {

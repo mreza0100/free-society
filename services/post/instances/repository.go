@@ -1,6 +1,6 @@
 package instances
 
-import "microServiceBoilerplate/services/post/models"
+import "freeSociety/services/post/models"
 
 type read interface {
 	GetPost(postIds []uint64) ([]*models.Post, error)

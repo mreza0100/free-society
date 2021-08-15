@@ -2,9 +2,9 @@ package test
 
 import (
 	"context"
-	"microServiceBoilerplate/proto/connections"
-	"microServiceBoilerplate/proto/generated/security"
-	"microServiceBoilerplate/proto/generated/user"
+	"freeSociety/proto/connections"
+	"freeSociety/proto/generated/security"
+	"freeSociety/proto/generated/user"
 
 	"github.com/mreza0100/golog"
 )

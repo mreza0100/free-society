@@ -1,8 +1,8 @@
 package relationNats
 
 import (
-	"microServiceBoilerplate/configs"
-	natsPb "microServiceBoilerplate/proto/generated/nats"
+	"freeSociety/configs"
+	natsPb "freeSociety/proto/generated/nats"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
@@ -14,9 +14,52 @@ type publishers struct {
 	nc  *nats.Conn
 }
 
+func (p *publishers) LikeNotify(userId, likerId, postId uint64) (uint64, error) {
+	subject := configs.Nats.Subjects.SetLikeNotification
+	dbug, success := p.lgr.DebugPKG("LikeNotify", false)
+
+	{
+		var (
+			request      []byte
+			byteResponse []byte
+			response     = new(natsPb.SetNotificationResponse)
+		)
+
+		{
+			var err error
+			request, err = proto.Marshal(&natsPb.SetNotificationRequest{
+				IsLike:  true,
+				UserId:  userId,
+				LikerId: likerId,
+				PostId:  postId,
+			})
+			if dbug("proto.Marshal")(err) != nil {
+				return 0, err
+			}
+		}
+		{
+			msg, err := p.nc.Request(subject, request, configs.Nats.Timeout)
+			if dbug("p.nc.Request")(err) != nil {
+				p.lgr.InfoLog(22)
+				return 0, err
+			}
+			byteResponse = msg.Data
+		}
+
+		{
+			err := proto.Unmarshal(byteResponse, response)
+			if dbug("proto.Unmarshal")(err) != nil {
+				return 0, err
+			}
+		}
+		success()
+		return response.NotificationId, nil
+	}
+}
+
 func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
 	subject := configs.Nats.Subjects.IsPostsExists
-	dbug, sussecc := p.lgr.DebugPKG("IsPostsExists", false)
+	dbug, success := p.lgr.DebugPKG("IsPostsExists", false)
 
 	{
 		var (
@@ -48,14 +91,14 @@ func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
 			}
 		}
 
-		sussecc(response.Exists)
+		success(response.Exists)
 		return response.Exists, err
 	}
 }
 
 func (p *publishers) IsUserExist(userId uint64) bool {
 	subject := configs.Nats.Subjects.IsUserExist
-	dbug, sussecc := p.lgr.DebugPKG("IsUserExist", false)
+	dbug, success := p.lgr.DebugPKG("IsUserExist", false)
 
 	{
 		byteData, _ := proto.Marshal(&natsPb.IsUserExist_REQUESTRequest{
@@ -73,7 +116,7 @@ func (p *publishers) IsUserExist(userId uint64) bool {
 			return false
 		}
 
-		sussecc(response.Exist)
+		success(response.Exist)
 		return response.Exist
 	}
 }

@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"context"
-	pb "microServiceBoilerplate/proto/generated/user"
+	pb "freeSociety/proto/generated/user"
 
-	"microServiceBoilerplate/services/user/instances"
+	"freeSociety/services/user/instances"
 
 	"github.com/mreza0100/golog"
 )

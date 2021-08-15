@@ -3,10 +3,10 @@ package main_test
 import (
 	"context"
 	"errors"
-	"microServiceBoilerplate/proto/connections"
-	"microServiceBoilerplate/proto/generated/security"
-	"microServiceBoilerplate/proto/generated/user"
-	"microServiceBoilerplate/utils/test"
+	"freeSociety/proto/connections"
+	"freeSociety/proto/generated/security"
+	"freeSociety/proto/generated/user"
+	"freeSociety/utils/test"
 	"testing"
 
 	"github.com/mreza0100/golog"

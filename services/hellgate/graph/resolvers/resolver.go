@@ -1,15 +1,16 @@
 package resolvers
 
 import (
-	pbFeed "microServiceBoilerplate/proto/generated/feed"
-	pbPost "microServiceBoilerplate/proto/generated/post"
-	pbRelation "microServiceBoilerplate/proto/generated/relation"
-	pbSecurity "microServiceBoilerplate/proto/generated/security"
-	pbUser "microServiceBoilerplate/proto/generated/user"
+	pbFeed "freeSociety/proto/generated/feed"
+	pbNotification "freeSociety/proto/generated/notification"
+	pbPost "freeSociety/proto/generated/post"
+	pbRelation "freeSociety/proto/generated/relation"
+	pbSecurity "freeSociety/proto/generated/security"
+	pbUser "freeSociety/proto/generated/user"
 
-	"microServiceBoilerplate/services/hellgate/graph/generated"
-	gqlGenerated "microServiceBoilerplate/services/hellgate/graph/generated"
-	"microServiceBoilerplate/services/hellgate/security"
+	"freeSociety/services/hellgate/graph/generated"
+	gqlGenerated "freeSociety/services/hellgate/graph/generated"
+	"freeSociety/services/hellgate/security"
 
 	"github.com/mreza0100/golog"
 )
@@ -17,32 +18,35 @@ import (
 type Resolver struct {
 	Lgr *golog.Core
 
-	feedConn     pbFeed.FeedServiceClient
-	userConn     pbUser.UserServiceClient
-	postConn     pbPost.PostServiceClient
-	SecurityConn pbSecurity.SecurityServiceClient
-	relationConn pbRelation.RelationServiceClient
+	feedConn         pbFeed.FeedServiceClient
+	userConn         pbUser.UserServiceClient
+	postConn         pbPost.PostServiceClient
+	SecurityConn     pbSecurity.SecurityServiceClient
+	relationConn     pbRelation.RelationServiceClient
+	notificationConn pbNotification.NotificationServiceClient
 }
 
 type NewOpts struct {
 	Lgr *golog.Core
 
-	FeedConn     pbFeed.FeedServiceClient
-	UserConn     pbUser.UserServiceClient
-	PostConn     pbPost.PostServiceClient
-	SecurityConn pbSecurity.SecurityServiceClient
-	RelationConn pbRelation.RelationServiceClient
+	FeedConn         pbFeed.FeedServiceClient
+	UserConn         pbUser.UserServiceClient
+	PostConn         pbPost.PostServiceClient
+	SecurityConn     pbSecurity.SecurityServiceClient
+	RelationConn     pbRelation.RelationServiceClient
+	NotificationConn pbNotification.NotificationServiceClient
 }
 
 func New(opts NewOpts) *gqlGenerated.Config {
 	resolvers := &Resolver{
 		Lgr: opts.Lgr,
 
-		feedConn:     opts.FeedConn,
-		userConn:     opts.UserConn,
-		postConn:     opts.PostConn,
-		SecurityConn: opts.SecurityConn,
-		relationConn: opts.RelationConn,
+		feedConn:         opts.FeedConn,
+		userConn:         opts.UserConn,
+		postConn:         opts.PostConn,
+		SecurityConn:     opts.SecurityConn,
+		relationConn:     opts.RelationConn,
+		notificationConn: opts.NotificationConn,
 	}
 
 	directives := generated.DirectiveRoot{

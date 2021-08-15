@@ -1,9 +1,9 @@
 package postNats
 
 import (
-	"microServiceBoilerplate/configs"
-	natsPb "microServiceBoilerplate/proto/generated/nats"
-	"microServiceBoilerplate/services/post/instances"
+	"freeSociety/configs"
+	natsPb "freeSociety/proto/generated/nats"
+	"freeSociety/services/post/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
@@ -18,7 +18,7 @@ type subscribers struct {
 
 func (s *subscribers) DeleteUserPosts() {
 	subject := configs.Nats.Subjects.DeleteUser
-	dbug, sussecc := s.lgr.DebugPKG("DeleteUserPosts", false)
+	dbug, success := s.lgr.DebugPKG("DeleteUserPosts", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -33,14 +33,14 @@ func (s *subscribers) DeleteUserPosts() {
 			if dbug("s.srv.DeleteUserPosts")(err) != nil {
 				return
 			}
-			sussecc()
+			success()
 		})
 	}
 }
 
 func (s *subscribers) IsExists() {
 	subject := configs.Nats.Subjects.IsPostsExists
-	dbug, sussecc := s.lgr.DebugPKG("IsExists", false)
+	dbug, success := s.lgr.DebugPKG("IsExists", false)
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -74,7 +74,7 @@ func (s *subscribers) IsExists() {
 			}
 
 			msg.Respond(lastResult)
-			sussecc(response)
+			success(response)
 		})
 	}
 }

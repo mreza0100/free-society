@@ -2,9 +2,9 @@ package redis
 
 import (
 	"fmt"
-	"microServiceBoilerplate/configs"
-	"microServiceBoilerplate/services/security/instances"
-	"microServiceBoilerplate/utils"
+	"freeSociety/configs"
+	"freeSociety/services/security/instances"
+	"freeSociety/utils"
 
 	"github.com/go-redis/redis"
 	"github.com/mreza0100/golog"

@@ -1,8 +1,8 @@
 package feedNats
 
 import (
-	"microServiceBoilerplate/configs"
-	natsPb "microServiceBoilerplate/proto/generated/nats"
+	"freeSociety/configs"
+	natsPb "freeSociety/proto/generated/nats"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/mreza0100/golog"

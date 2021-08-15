@@ -1,11 +1,11 @@
 package domain
 
 import (
-	pb "microServiceBoilerplate/proto/generated/post"
-	"microServiceBoilerplate/services/post/instances"
-	"microServiceBoilerplate/services/post/models"
-	"microServiceBoilerplate/services/post/repository"
-	"microServiceBoilerplate/utils"
+	pb "freeSociety/proto/generated/post"
+	"freeSociety/services/post/instances"
+	"freeSociety/services/post/models"
+	"freeSociety/services/post/repository"
+	"freeSociety/utils"
 
 	"github.com/mreza0100/golog"
 	"google.golang.org/protobuf/types/known/emptypb"

@@ -1,8 +1,8 @@
 package instances
 
 import (
-	pb "microServiceBoilerplate/proto/generated/user"
-	"microServiceBoilerplate/services/user/models"
+	pb "freeSociety/proto/generated/user"
+	"freeSociety/services/user/models"
 )
 
 type Sevice interface {

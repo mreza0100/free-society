@@ -1,6 +1,6 @@
 package instances
 
-import "microServiceBoilerplate/services/user/models"
+import "freeSociety/services/user/models"
 
 type (
 	read interface {

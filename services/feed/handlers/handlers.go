@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"context"
-	pb "microServiceBoilerplate/proto/generated/feed"
-	"microServiceBoilerplate/services/feed/instances"
+	pb "freeSociety/proto/generated/feed"
+	"freeSociety/services/feed/instances"
 
 	"github.com/mreza0100/golog"
 )

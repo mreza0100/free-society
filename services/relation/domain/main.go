@@ -1,8 +1,8 @@
 package domain
 
 import (
-	"microServiceBoilerplate/services/relation/instances"
-	"microServiceBoilerplate/services/relation/repository"
+	"freeSociety/services/relation/instances"
+	"freeSociety/services/relation/repository"
 
 	"github.com/mreza0100/golog"
 )

@@ -2,9 +2,9 @@ package postgres
 
 import (
 	fmt "fmt"
-	"microServiceBoilerplate/configs"
-	instances "microServiceBoilerplate/services/security/instances"
-	"microServiceBoilerplate/services/security/models"
+	"freeSociety/configs"
+	instances "freeSociety/services/security/instances"
+	"freeSociety/services/security/models"
 	"time"
 
 	"github.com/mreza0100/golog"

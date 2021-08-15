@@ -5,9 +5,9 @@ package resolvers
 
 import (
 	"context"
-	"microServiceBoilerplate/proto/generated/relation"
-	"microServiceBoilerplate/services/hellgate/security"
-	"microServiceBoilerplate/utils"
+	"freeSociety/proto/generated/relation"
+	"freeSociety/services/hellgate/security"
+	"freeSociety/utils"
 )
 
 func (r *mutationResolver) Follow(ctx context.Context, following int) (bool, error) {

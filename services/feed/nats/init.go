@@ -1,8 +1,8 @@
 package feedNats
 
 import (
-	"microServiceBoilerplate/proto/connections"
-	"microServiceBoilerplate/services/feed/instances"
+	"freeSociety/proto/connections"
+	"freeSociety/services/feed/instances"
 
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"

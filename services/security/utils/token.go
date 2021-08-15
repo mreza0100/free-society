@@ -2,8 +2,8 @@ package utils
 
 import (
 	"fmt"
-	"microServiceBoilerplate/utils/random"
-	"microServiceBoilerplate/utils/security"
+	"freeSociety/utils/random"
+	"freeSociety/utils/security"
 
 	uu "github.com/gofrs/uuid"
 )

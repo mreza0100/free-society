@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	pb "microServiceBoilerplate/proto/generated/relation"
+	pb "freeSociety/proto/generated/relation"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/codes"
@@ -20,9 +20,21 @@ func (h *handlers) Like(_ context.Context, in *pb.LikeRequest) (*empty.Empty, er
 		if len(isExists) != 1 {
 			return &emptypb.Empty{}, status.Error(codes.NotFound, "post not found")
 		}
+
+		err = h.srv.Like(in.LikerId, in.OwnerId, in.PostId)
+		if err != nil {
+			return &emptypb.Empty{}, err
+		}
 	}
 
-	return &emptypb.Empty{}, h.srv.Like(in.LikerId, in.OwnerId, in.PostId)
+	{
+		_, err := h.publishers.LikeNotify(in.OwnerId, in.LikerId, in.PostId)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &emptypb.Empty{}, nil
 }
 
 func (h *handlers) UndoLike(_ context.Context, in *pb.UndoLikeRequest) (*empty.Empty, error) {

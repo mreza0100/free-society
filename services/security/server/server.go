@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
+	"freeSociety/configs"
+	pb "freeSociety/proto/generated/security"
+	"freeSociety/utils"
 	"log"
-	"microServiceBoilerplate/configs"
-	pb "microServiceBoilerplate/proto/generated/security"
-	"microServiceBoilerplate/utils"
 	"net"
 
 	"google.golang.org/grpc"
 
 	"github.com/mreza0100/golog"
 
-	"microServiceBoilerplate/services/security/microservice"
+	"freeSociety/services/security/microservice"
 )
 
 func initLogger() *golog.Core {

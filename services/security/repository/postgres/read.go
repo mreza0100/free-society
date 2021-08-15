@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"microServiceBoilerplate/services/security/models"
+	"freeSociety/services/security/models"
 
 	"github.com/mreza0100/golog"
 	"gorm.io/gorm"

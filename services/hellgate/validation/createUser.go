@@ -2,7 +2,7 @@ package validation
 
 import (
 	"errors"
-	models "microServiceBoilerplate/services/hellgate/graph/model"
+	models "freeSociety/services/hellgate/graph/model"
 
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"

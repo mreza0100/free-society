@@ -1,0 +1,16 @@
+extend type Query {
+	getNotifications(offset: Int!, limit: Int!): [Notification!]! @private
+}
+
+extend type Mutation {
+	clearNotifications: Boolean! @private
+}
+
+type Notification {
+	id: Int!
+	IsLike: Boolean!
+	LikerId: Int!
+	PostId: Int!
+	Seen: Boolean!
+	Time: String!
+}

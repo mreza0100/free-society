@@ -1,6 +1,6 @@
 package instances
 
-import natsPb "microServiceBoilerplate/proto/generated/nats"
+import natsPb "freeSociety/proto/generated/nats"
 
 type Publishers interface {
 	GetFollowers(userId uint64) ([]uint64, error)

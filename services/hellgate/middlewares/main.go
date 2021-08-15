@@ -1,8 +1,8 @@
 package middlewares
 
 import (
-	"microServiceBoilerplate/services/hellgate/security"
-	"microServiceBoilerplate/utils"
+	"freeSociety/services/hellgate/security"
+	"freeSociety/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

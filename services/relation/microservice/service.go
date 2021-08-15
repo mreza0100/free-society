@@ -1,10 +1,10 @@
 package microservice
 
 import (
-	"microServiceBoilerplate/services/relation/domain"
-	"microServiceBoilerplate/services/relation/handlers"
-	"microServiceBoilerplate/services/relation/instances"
-	relationNats "microServiceBoilerplate/services/relation/nats"
+	"freeSociety/services/relation/domain"
+	"freeSociety/services/relation/handlers"
+	"freeSociety/services/relation/instances"
+	relationNats "freeSociety/services/relation/nats"
 
 	"github.com/mreza0100/golog"
 )

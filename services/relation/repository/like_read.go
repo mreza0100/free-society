@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"microServiceBoilerplate/services/relation/instances"
+	"freeSociety/services/relation/instances"
 
 	"github.com/mreza0100/golog"
 	gorm "gorm.io/gorm"

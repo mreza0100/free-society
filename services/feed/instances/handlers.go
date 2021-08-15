@@ -1,7 +1,7 @@
 package instances
 
 import (
-	pb "microServiceBoilerplate/proto/generated/feed"
+	pb "freeSociety/proto/generated/feed"
 )
 
 type Handlers interface {

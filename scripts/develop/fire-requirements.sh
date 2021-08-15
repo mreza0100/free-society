@@ -8,11 +8,19 @@ cd ../..
 ROOT=$(pwd)
 
 
-bash $ROOT/scripts/develop/db/post/start.sh --detach
-bash $ROOT/scripts/develop/db/relation/start.sh --detach
-bash $ROOT/scripts/develop/db/user/start.sh --detach
+
+cd $ROOT/scripts/develop/db/
+dbs=$(ls -d ./*/)
+echo $dbs
+
+for t in ${dbs[@]};
+do
+      echo 'Running' $t
+      bash $ROOT/scripts/develop/db/$t/start.sh --detach
+      echo $t 'Done'
+      echo '--------------------------------------------------------------------'
+done
+
 bash $ROOT/scripts/develop/nats/start.sh --detach
-bash $ROOT/scripts/develop/db/feed/start.sh --detach
-bash $ROOT/scripts/develop/db/security/start.sh --detach
 
 exit 0

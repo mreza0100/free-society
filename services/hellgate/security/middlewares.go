@@ -3,7 +3,7 @@ package security
 import (
 	"context"
 	"errors"
-	"microServiceBoilerplate/proto/generated/security"
+	"freeSociety/proto/generated/security"
 
 	"github.com/99designs/gqlgen/graphql"
 )

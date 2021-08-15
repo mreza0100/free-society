@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package natsPb;
+
+option go_package = "/natsPb";
+
+
+message SetNotificationRequest {
+      bool   isLike  = 1;
+
+      uint64 userId  = 2;
+      uint64 likerId = 3;
+
+      uint64 postId  = 4;
+}
+
+message SetNotificationResponse {
+      uint64 notificationId = 1;
+}

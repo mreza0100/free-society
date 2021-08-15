@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"microServiceBoilerplate/configs"
+	"freeSociety/configs"
 
 	"github.com/go-redis/redis"
 	"github.com/mreza0100/golog"

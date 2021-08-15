@@ -1,11 +1,11 @@
 package domain
 
 import (
-	pb "microServiceBoilerplate/proto/generated/user"
-	"microServiceBoilerplate/services/user/models"
-	"microServiceBoilerplate/services/user/repository"
+	pb "freeSociety/proto/generated/user"
+	"freeSociety/services/user/models"
+	"freeSociety/services/user/repository"
 
-	"microServiceBoilerplate/services/user/instances"
+	"freeSociety/services/user/instances"
 
 	"github.com/mreza0100/golog"
 )

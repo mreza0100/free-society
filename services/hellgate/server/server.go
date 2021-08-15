@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"microServiceBoilerplate/configs"
-	"microServiceBoilerplate/services/hellgate/graph/generated"
-	"microServiceBoilerplate/services/hellgate/graph/resolvers"
-	"microServiceBoilerplate/services/hellgate/middlewares"
-	"microServiceBoilerplate/utils"
+	"freeSociety/configs"
+	"freeSociety/services/hellgate/graph/generated"
+	"freeSociety/services/hellgate/graph/resolvers"
+	"freeSociety/services/hellgate/middlewares"
+	"freeSociety/utils"
 
-	"microServiceBoilerplate/proto/connections"
+	"freeSociety/proto/connections"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -30,11 +30,12 @@ func main() {
 	graphqlServer := handler.NewDefaultServer(generated.NewExecutableSchema(*resolvers.New(resolvers.NewOpts{
 		Lgr: lgr,
 
-		SecurityConn: connections.SecuritySrvConn(lgr),
-		RelationConn: connections.RelationSrvConn(lgr),
-		FeedConn:     connections.FeedSrvConn(lgr),
-		UserConn:     connections.UserSrvConn(lgr),
-		PostConn:     connections.PostSrvConn(lgr),
+		SecurityConn:     connections.SecuritySrvConn(lgr),
+		RelationConn:     connections.RelationSrvConn(lgr),
+		FeedConn:         connections.FeedSrvConn(lgr),
+		UserConn:         connections.UserSrvConn(lgr),
+		PostConn:         connections.PostSrvConn(lgr),
+		NotificationConn: connections.NotificationSrvConn(lgr),
 	})))
 
 	ginServer := gin.New()
