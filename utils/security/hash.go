@@ -17,7 +17,7 @@ func init() {
 	}
 }
 
-func HashIt(thing string) string {
+func HashSha1(thing string) string {
 	thing = salt + thing
 
 	hash := sha1.New()
@@ -30,6 +30,6 @@ func HashIt(thing string) string {
 	return hashedStr
 }
 
-func HashCompare(hash, str string) bool {
-	return hash == HashIt(str)
+func HashSha1Compare(hash, str string) bool {
+	return hash == HashSha1(str)
 }

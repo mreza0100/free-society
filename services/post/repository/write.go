@@ -2,6 +2,8 @@ package repository
 
 import (
 	"errors"
+	"freeSociety/configs"
+	"strings"
 
 	"github.com/mreza0100/golog"
 	"gorm.io/gorm"
@@ -12,9 +14,17 @@ type write struct {
 	db  *gorm.DB
 }
 
-func (w *write) NewPost(title, body string, userId uint64) (uint64, error) {
-	const query = `INSERT INTO posts (title, body, owner_id) VALUES (?, ?, ?) RETURNING id`
-	params := []interface{}{title, body, userId}
+func (w *write) NewPost(title, body string, userId uint64, imagePaths []string) (uint64, error) {
+	const query = `INSERT INTO posts (title, body, owner_id, pictures_path) VALUES (?, ?, ?, ? ) RETURNING id`
+	params := []interface{}{title, body, userId, strings.Join(imagePaths, "&")}
+
+	for i := 0; i < configs.Max_picture_per_post; i++ {
+		if len(imagePaths) > i {
+			params = append(params, imagePaths[i])
+		} else {
+			params = append(params, nil)
+		}
+	}
 
 	tx := w.db.Raw(query, params...)
 	if tx.Error != nil {

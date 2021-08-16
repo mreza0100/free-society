@@ -16,5 +16,5 @@ func Getuuid() string {
 func CreateToken() string {
 	uuid := Getuuid()
 	uuid += fmt.Sprintf("%v", random.GetIntRange(1000))
-	return security.HashIt(uuid)
+	return security.HashSha1(uuid)
 }

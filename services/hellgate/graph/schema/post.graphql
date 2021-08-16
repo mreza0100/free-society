@@ -1,5 +1,5 @@
 extend type Query {
-	getPost(input: [Int!]!): [post!]! @optional
+	getPost(ids: [Int!]!): [post!]! @optional
 	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 
@@ -19,12 +19,20 @@ type post {
 	isLiked: Boolean!
 	likes: Int!
 	user: User!
+	pictureUrls: [String!]
 }
 
 input createPostInput {
 	title: String!
 	body: String!
+
+	image1: Upload
+	image2: Upload
+	image3: Upload
+	image4: Upload
 }
 input deletePostInput {
 	postId: Int!
 }
+
+scalar Upload

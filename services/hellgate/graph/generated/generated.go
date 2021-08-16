@@ -74,7 +74,7 @@ type ComplexityRoot struct {
 	Query struct {
 		GetFeed          func(childComplexity int, offset int, limit int) int
 		GetNotifications func(childComplexity int, offset int, limit int) int
-		GetPost          func(childComplexity int, input []int) int
+		GetPost          func(childComplexity int, ids []int) int
 		GetUser          func(childComplexity int, id int) int
 		Sessions         func(childComplexity int) int
 	}
@@ -88,13 +88,14 @@ type ComplexityRoot struct {
 	}
 
 	Post struct {
-		Body    func(childComplexity int) int
-		ID      func(childComplexity int) int
-		IsLiked func(childComplexity int) int
-		Likes   func(childComplexity int) int
-		OwnerID func(childComplexity int) int
-		Title   func(childComplexity int) int
-		User    func(childComplexity int) int
+		Body        func(childComplexity int) int
+		ID          func(childComplexity int) int
+		IsLiked     func(childComplexity int) int
+		Likes       func(childComplexity int) int
+		OwnerID     func(childComplexity int) int
+		PictureUrls func(childComplexity int) int
+		Title       func(childComplexity int) int
+		User        func(childComplexity int) int
 	}
 
 	Session struct {
@@ -122,7 +123,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Sessions(ctx context.Context) ([]*models.Session, error)
 	GetNotifications(ctx context.Context, offset int, limit int) ([]*models.Notification, error)
-	GetPost(ctx context.Context, input []int) ([]*models.Post, error)
+	GetPost(ctx context.Context, ids []int) ([]*models.Post, error)
 	GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error)
 	GetUser(ctx context.Context, id int) (*models.User, error)
 }
@@ -359,7 +360,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetPost(childComplexity, args["input"].([]int)), true
+		return e.complexity.Query.GetPost(childComplexity, args["ids"].([]int)), true
 
 	case "Query.getUser":
 		if e.complexity.Query.GetUser == nil {
@@ -449,6 +450,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Post.OwnerID(childComplexity), true
+
+	case "post.pictureUrls":
+		if e.complexity.Post.PictureUrls == nil {
+			break
+		}
+
+		return e.complexity.Post.PictureUrls(childComplexity), true
 
 	case "post.title":
 		if e.complexity.Post.Title == nil {
@@ -584,7 +592,7 @@ type Notification {
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/post.graphql", Input: `extend type Query {
-	getPost(input: [Int!]!): [post!]! @optional
+	getPost(ids: [Int!]!): [post!]! @optional
 	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 
@@ -604,15 +612,23 @@ type post {
 	isLiked: Boolean!
 	likes: Int!
 	user: User!
+	pictureUrls: [String!]
 }
 
 input createPostInput {
 	title: String!
 	body: String!
+
+	image1: Upload
+	image2: Upload
+	image3: Upload
+	image4: Upload
 }
 input deletePostInput {
 	postId: Int!
 }
+
+scalar Upload
 `, BuiltIn: false},
 	{Name: "graph/schema/relations.graphql", Input: `extend type Mutation {
 	follow(following: Int!): Boolean! @private
@@ -905,14 +921,14 @@ func (ec *executionContext) field_Query_getPost_args(ctx context.Context, rawArg
 	var err error
 	args := map[string]interface{}{}
 	var arg0 []int
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["ids"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
 		arg0, err = ec.unmarshalNInt2ᚕintᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg0
+	args["ids"] = arg0
 	return args, nil
 }
 
@@ -2067,7 +2083,7 @@ func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.Co
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().GetPost(rctx, args["input"].([]int))
+			return ec.resolvers.Query().GetPost(rctx, args["ids"].([]int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Optional == nil {
@@ -3778,6 +3794,38 @@ func (ec *executionContext) _post_user(ctx context.Context, field graphql.Collec
 	return ec.marshalNUser2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _post_pictureUrls(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PictureUrls, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalOString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _session_device(ctx context.Context, field graphql.CollectedField, obj *models.Session) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -3906,6 +3954,38 @@ func (ec *executionContext) unmarshalInputcreatePostInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("body"))
 			it.Body, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image1":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image1"))
+			it.Image1, err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image2":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image2"))
+			it.Image2, err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image3":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image3"))
+			it.Image3, err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image4":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image4"))
+			it.Image4, err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4561,6 +4641,8 @@ func (ec *executionContext) _post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "pictureUrls":
+			out.Values[i] = ec._post_pictureUrls(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5116,6 +5198,42 @@ func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.S
 	return graphql.MarshalString(v)
 }
 
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
 	if v == nil {
 		return nil, nil
@@ -5129,6 +5247,21 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (*graphql.Upload, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalUpload(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v *graphql.Upload) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalUpload(*v)
 }
 
 func (ec *executionContext) marshalOUser2ᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {

@@ -42,17 +42,24 @@ message Post {
       bool   isFollowing = 6;
       bool   isLiked     = 7;
       User   user        = 8;
+
+      repeated string PictureUrls = 9;
 }
 message GetPostResponse {
       repeated Post posts = 1;
 }
 //
 
-// new
+// new post
+message Picture {
+      string name  = 1;
+      bytes content = 2;
+}
 message NewPostRequest {
       string title  = 1;
       string body   = 2;
       uint64 userId = 3;
+      repeated Picture pictures = 4;
 }
 message NewPostResponse { uint64 id = 1; }
 //

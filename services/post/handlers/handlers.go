@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	pb "freeSociety/proto/generated/post"
 	"freeSociety/services/post/instances"
 
@@ -32,14 +31,17 @@ type handlers struct {
 }
 
 func (h *handlers) NewPost(_ context.Context, in *pb.NewPostRequest) (*pb.NewPostResponse, error) {
-	fmt.Println(22)
-	postId, err := h.srv.NewPost(in.Title, in.Body, in.UserId)
+	postId, err := h.srv.NewPost(in.Title, in.Body, in.UserId, in.Pictures)
 	if err != nil {
 		return &pb.NewPostResponse{}, err
 	}
-	err = h.publishers.NewPost(in.UserId, postId)
 
-	return &pb.NewPostResponse{Id: postId}, err
+	err = h.publishers.NewPost(in.UserId, postId)
+	if err != nil {
+		return &pb.NewPostResponse{}, err
+	}
+
+	return &pb.NewPostResponse{Id: postId}, nil
 }
 
 func (h *handlers) DeletePost(_ context.Context, in *pb.DeletePostRequest) (*pb.DeletePostResponse, error) {

@@ -8,7 +8,7 @@ type read interface {
 }
 
 type write interface {
-	NewPost(title, body string, userId uint64) (uint64, error)
+	NewPost(title, body string, userId uint64, imagePaths []string) (uint64, error)
 	DeletePost(postId, userId uint64) error
 	DeleteUserPosts(userId uint64) error
 }

@@ -1,11 +1,16 @@
 package domain
 
 import (
+	"fmt"
+	"freeSociety/configs"
 	pb "freeSociety/proto/generated/post"
 	"freeSociety/services/post/instances"
 	"freeSociety/services/post/models"
 	"freeSociety/services/post/repository"
 	"freeSociety/utils"
+	"freeSociety/utils/files"
+	"freeSociety/utils/hash"
+	"strings"
 
 	"github.com/mreza0100/golog"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -30,8 +35,39 @@ type service struct {
 	publishers instances.Publishers
 }
 
-func (s *service) NewPost(title, body string, userId uint64) (uint64, error) {
-	return s.repo.Write.NewPost(title, body, userId)
+func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Picture) (uint64, error) {
+	var (
+		picturesPath = make([]string, len(pictures))
+		postId       uint64
+	)
+
+	{
+		if len(pictures) > configs.Max_picture_per_post {
+			return 0, fmt.Errorf("more then %v pictures", configs.Max_picture_per_post)
+		}
+		for i := 0; i < len(pictures); i++ {
+			format := files.GetFileFormat(pictures[i].Name)
+			hash := hash.Hash512(pictures[i].Content)
+
+			picturesPath[i] = hash + format
+		}
+	}
+	{
+		var err error
+		postId, err = s.repo.Write.NewPost(title, body, userId, picturesPath)
+		if err != nil {
+			return 0, err
+		}
+	}
+	{
+		for i := 0; i < len(pictures); i++ {
+			err := files.CreateAndWriteFile(configs.PicturesPath+picturesPath[i], pictures[i].Content)
+			if err != nil {
+				return 0, err
+			}
+		}
+	}
+	return postId, nil
 }
 
 func (s *service) DeletePost(postId, userId uint64) error {
@@ -130,25 +166,23 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 	{
 		posts = make([]*pb.Post, 0, len(rawPosts))
 		for _, rawPost := range rawPosts {
+			id := rawPost.ID
+			ownerId := rawPost.OwnerId
+
 			converted := &pb.Post{
-				Title:   rawPost.Title,
-				Body:    rawPost.Body,
-				Id:      rawPost.ID,
-				OwnerId: rawPost.OwnerId,
+				Title:       rawPost.Title,
+				Body:        rawPost.Body,
+				Id:          id,
+				OwnerId:     ownerId,
+				Likes:       likeCount[id],
+				IsFollowing: followingGroup[id],
+				User:        users[ownerId],
+				PictureUrls: strings.Split(rawPost.PicturesPath, "&"),
 			}
-			{
-				converted.Likes = likeCount[converted.Id]
-			}
-			{
-				converted.IsFollowing = followingGroup[converted.Id]
-			}
-			{
-				converted.User = users[converted.OwnerId]
-			}
-			{
-				_, found := likedGroup[converted.Id]
-				converted.IsLiked = found
-			}
+
+			_, found := likedGroup[converted.Id]
+			converted.IsLiked = found
+
 			posts = append(posts, converted)
 		}
 	}

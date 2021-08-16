@@ -6,6 +6,7 @@ package resolvers
 import (
 	"context"
 	"errors"
+	"freeSociety/configs"
 	"freeSociety/proto/generated/feed"
 	"freeSociety/proto/generated/post"
 	"freeSociety/proto/generated/relation"
@@ -13,20 +14,69 @@ import (
 	"freeSociety/services/hellgate/security"
 	"freeSociety/services/hellgate/validation"
 	"freeSociety/utils"
+	"io"
+
+	"github.com/99designs/gqlgen/graphql"
 )
 
 func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (int, error) {
-	userId := security.GetUserId(ctx)
+	var (
+		userId      = security.GetUserId(ctx)
+		rawPictures = make([]*graphql.Upload, 0, 4)
+		pictures    = make([]*post.Picture, 0, 4)
+	)
 
-	err := validation.CreatePost(&input)
-	if err != nil {
-		return 0, err
+	{
+		if input.Image1 != nil {
+			rawPictures = append(rawPictures, input.Image1)
+		}
+		if input.Image2 != nil {
+			rawPictures = append(rawPictures, input.Image2)
+		}
+		if input.Image3 != nil {
+			rawPictures = append(rawPictures, input.Image3)
+		}
+		if input.Image4 != nil {
+			rawPictures = append(rawPictures, input.Image4)
+		}
+	}
+	{
+		for _, image := range rawPictures {
+			if image.Size > configs.Picture_size_limit {
+				return 0, errors.New("image size is too large")
+			}
+		}
+
+		for _, image := range rawPictures {
+			// check image content type to be exacly an image
+			if image.ContentType != "image/jpeg" && image.ContentType != "image/png" {
+				return 0, errors.New("image type is not a image")
+			}
+		}
+	}
+	{
+		if err := validation.CreatePost(&input); err != nil {
+			return 0, err
+		}
+	}
+	{
+		for _, image := range rawPictures {
+			pictureContent, err := io.ReadAll(image.File)
+			if err != nil {
+				return 0, err
+			}
+			pictures = append(pictures, &post.Picture{
+				Name:    image.Filename,
+				Content: pictureContent,
+			})
+		}
 	}
 
 	response, err := r.postConn.NewPost(ctx, &post.NewPostRequest{
-		Title:  input.Title,
-		Body:   input.Body,
-		UserId: userId,
+		Title:    input.Title,
+		Body:     input.Body,
+		UserId:   userId,
+		Pictures: pictures,
 	})
 	if err != nil {
 		return 0, utils.GetGRPCMSG(err)
@@ -69,32 +119,32 @@ func (r *mutationResolver) UndoLike(ctx context.Context, postID int) (bool, erro
 	return err == nil, nil
 }
 
-func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Post, error) {
+func (r *queryResolver) GetPost(ctx context.Context, ids []int) ([]*models.Post, error) {
 	var (
-		ids         []uint64
+		uIds        []uint64
 		requestorId uint64
 		rawPosts    []*post.Post
 		posts       []*models.Post
 	)
 
 	{
-		if len(input) > 50 {
+		if len(ids) > 50 {
 			return []*models.Post{}, errors.New("too many ids")
 		}
 		requestorId, _ = security.GetOptionalId(ctx)
 	}
 
 	{
-		ids = make([]uint64, len(input))
+		uIds = make([]uint64, len(ids))
 		{
-			for i := 0; i < len(input); i++ {
-				ids[i] = uint64(input[i])
+			for i := 0; i < len(ids); i++ {
+				uIds[i] = uint64(ids[i])
 			}
 		}
 	}
 	{
 		response, err := r.postConn.GetPost(ctx, &post.GetPostRequest{
-			Ids:         ids,
+			Ids:         uIds,
 			RequestorId: requestorId,
 		})
 		if err != nil {
@@ -110,9 +160,10 @@ func (r *queryResolver) GetPost(ctx context.Context, input []int) ([]*models.Pos
 				Body:  p.Body,
 				ID:    int(p.Id),
 
-				OwnerID: int(p.OwnerId),
-				Likes:   int(p.Likes),
-				IsLiked: p.IsLiked,
+				OwnerID:     int(p.OwnerId),
+				Likes:       int(p.Likes),
+				IsLiked:     p.IsLiked,
+				PictureUrls: p.PictureUrls,
 
 				User: &models.User{
 					IsFollowing: p.IsFollowing,

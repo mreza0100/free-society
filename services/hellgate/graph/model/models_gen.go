@@ -2,6 +2,10 @@
 
 package models
 
+import (
+	"github.com/99designs/gqlgen/graphql"
+)
+
 type Notification struct {
 	ID      int    `json:"id"`
 	IsLike  bool   `json:"IsLike"`
@@ -20,8 +24,12 @@ type User struct {
 }
 
 type CreatePostInput struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	Title  string          `json:"title"`
+	Body   string          `json:"body"`
+	Image1 *graphql.Upload `json:"image1"`
+	Image2 *graphql.Upload `json:"image2"`
+	Image3 *graphql.Upload `json:"image3"`
+	Image4 *graphql.Upload `json:"image4"`
 }
 
 type CreateUserInput struct {
@@ -36,13 +44,14 @@ type DeletePostInput struct {
 }
 
 type Post struct {
-	Title   string `json:"title"`
-	Body    string `json:"body"`
-	ID      int    `json:"id"`
-	OwnerID int    `json:"ownerId"`
-	IsLiked bool   `json:"isLiked"`
-	Likes   int    `json:"likes"`
-	User    *User  `json:"user"`
+	Title       string   `json:"title"`
+	Body        string   `json:"body"`
+	ID          int      `json:"id"`
+	OwnerID     int      `json:"ownerId"`
+	IsLiked     bool     `json:"isLiked"`
+	Likes       int      `json:"likes"`
+	User        *User    `json:"user"`
+	PictureUrls []string `json:"pictureUrls"`
 }
 
 type Session struct {

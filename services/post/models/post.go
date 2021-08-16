@@ -3,9 +3,13 @@ package models
 import "time"
 
 type Post struct {
-	Title     string    `gorm:"type:text;NOT NULL"`
-	Body      string    `gorm:"type:text;NOT NULL"`
-	OwnerId   uint64    `gorm:"NOT NULL;type:bigserial"`
-	ID        uint64    `gorm:"primarykey;autoIncrement:true"`
+	ID      uint64 `gorm:"primarykey;autoIncrement:true"`
+	OwnerId uint64 `gorm:"NOT NULL;"`
+
+	Title string `gorm:"type:text;NOT NULL"`
+	Body  string `gorm:"type:text;NOT NULL"`
+
+	PicturesPath string `gorm:""`
+
 	CreatedAt time.Time `gorm:"default:NOW();NOT NULL"`
 }

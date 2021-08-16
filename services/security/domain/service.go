@@ -38,7 +38,7 @@ func (s *service) NewUser(userId uint64, device, password string) (token string,
 	debug, success := s.lgr.DebugPKG("NewUser", false)
 
 	{
-		hashPass := security.HashIt(password)
+		hashPass := security.HashSha1(password)
 		err = s.postgresRepo.Write.NewUser(userId, hashPass)
 		if debug("after s.postgresRepo.NewUser")(err) != nil {
 			return "", err
@@ -75,7 +75,7 @@ func (s *service) Login(userId uint64, device, password string) (string, error) 
 		if err != nil {
 			return "", errors.New("email or password is wrong")
 		}
-		if !security.HashCompare(hashPass, password) {
+		if !security.HashSha1Compare(hashPass, password) {
 			return "", errors.New("email or password is wrong")
 		}
 	}
@@ -186,13 +186,13 @@ func (s *service) ChangePassword(userId uint64, prevPassword, newPassword string
 			return err
 		}
 
-		if !security.HashCompare(hashPass, prevPassword) {
+		if !security.HashSha1Compare(hashPass, prevPassword) {
 			return errors.New("password is wrong")
 		}
 	}
 
 	{
-		err := s.postgresRepo.Write.ChangeHashPass(userId, security.HashIt(newPassword))
+		err := s.postgresRepo.Write.ChangeHashPass(userId, security.HashSha1(newPassword))
 		if err != nil {
 			return err
 		}
