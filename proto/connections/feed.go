@@ -9,7 +9,7 @@ import (
 )
 
 func FeedSrvConn(lgr *golog.Core) pb.FeedServiceClient {
-	conn, err := grpc.Dial(configs.Configs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.Configs.ConnectionTimeout))
+	conn, err := grpc.Dial(configs.Configs.Addr, getGRPCDefaultOptions(configs.Configs.ConnectionTimeout))
 	if err != nil {
 		lgr.Fatal("Cant connect to feed service", err)
 	}

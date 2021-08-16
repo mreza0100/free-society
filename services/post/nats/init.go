@@ -11,7 +11,7 @@ import (
 const natName = "Post Service"
 
 func Connection(lgr *golog.Core) *nats.Conn {
-	return connections.GetConnection(lgr, natName)
+	return connections.GetNatsConnection(lgr, natName)
 }
 
 type InitSubsOpts struct {
