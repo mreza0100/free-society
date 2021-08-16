@@ -1,15 +1,15 @@
 package connections
 
 import (
-	"freeSociety/configs"
 	pb "freeSociety/proto/generated/post"
+	"freeSociety/services/post/configs"
 
 	"github.com/mreza0100/golog"
 	"google.golang.org/grpc"
 )
 
 func PostSrvConn(lgr *golog.Core) pb.PostServiceClient {
-	conn, err := grpc.Dial(configs.PostConfigs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.PostConfigs.Timeout))
+	conn, err := grpc.Dial(configs.Configs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.Configs.ConnectionTimeout))
 	if err != nil {
 		lgr.Fatal("Cant connect to post service", err)
 	}

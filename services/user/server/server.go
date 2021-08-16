@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"freeSociety/configs"
 	pb "freeSociety/proto/generated/user"
+	"freeSociety/services/user/configs"
 	"freeSociety/utils"
 	"log"
 	"net"
@@ -17,7 +17,7 @@ import (
 
 func initLogger() *golog.Core {
 	return golog.New(golog.InitOpns{
-		LogPath:   configs.LogPath,
+		LogPath:   configs.Configs.LogPath,
 		Name:      "User_Service",
 		WithTime:  true,
 		DebugMode: utils.IsDevMode,
@@ -32,7 +32,7 @@ func main() {
 	)
 	pb.RegisterUserServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.UserConfigs.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.Configs.Service_port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

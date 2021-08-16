@@ -1,0 +1,5 @@
+{
+	"service_port": 9090,
+	"postgres_port": 5433,
+	"redis_port": 0
+}

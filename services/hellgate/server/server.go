@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"freeSociety/configs"
+	"freeSociety/services/hellgate/configs"
 	"freeSociety/services/hellgate/graph/generated"
 	"freeSociety/services/hellgate/graph/resolvers"
 	"freeSociety/services/hellgate/middlewares"
@@ -18,7 +18,7 @@ import (
 
 func initLogger() *golog.Core {
 	return golog.New(golog.InitOpns{
-		LogPath:   configs.LogPath,
+		LogPath:   configs.Configs.LogPath,
 		Name:      "🔥__Hellgate__🔥",
 		WithTime:  true,
 		DebugMode: utils.IsDevMode,
@@ -53,5 +53,5 @@ func main() {
 	})
 
 	lgr.RedLog("🔥🔥🔥 Hellgate is open now 🔥🔥🔥")
-	ginServer.Run(fmt.Sprintf(":%v", configs.HellgateConfigs.Port))
+	ginServer.Run(fmt.Sprintf(":%v", configs.Configs.Service_port))
 }

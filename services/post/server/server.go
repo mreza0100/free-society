@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"freeSociety/configs"
 	pb "freeSociety/proto/generated/post"
 	"freeSociety/utils"
 	"log"
 	"net"
 
 	"google.golang.org/grpc"
+
+	"freeSociety/services/post/configs"
 
 	"github.com/mreza0100/golog"
 
@@ -17,7 +18,7 @@ import (
 
 func initLogger() *golog.Core {
 	return golog.New(golog.InitOpns{
-		LogPath:   configs.LogPath,
+		LogPath:   configs.Configs.LogPath,
 		Name:      "Post_Service",
 		WithTime:  true,
 		DebugMode: utils.IsDevMode,
@@ -32,7 +33,7 @@ func main() {
 	)
 	pb.RegisterPostServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.PostConfigs.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.Configs.Service_port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

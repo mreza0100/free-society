@@ -2,10 +2,12 @@ package postgres
 
 import (
 	fmt "fmt"
-	"freeSociety/configs"
+	"freeSociety/services/security/configs"
 	instances "freeSociety/services/security/instances"
 	"freeSociety/services/security/models"
 	"time"
+
+	globalConfigs "freeSociety/configs"
 
 	"github.com/mreza0100/golog"
 	postgres "gorm.io/driver/postgres"
@@ -67,7 +69,7 @@ func getConnection(lgr *golog.Core) *gorm.DB {
 }
 
 func getConfigs() (driverConfigs gorm.Dialector, gormConfigs *gorm.Config) {
-	DSN := fmt.Sprintf("host=localhost user=postgres dbname=postgres port=%v", configs.SecurityConfigs.DBPort)
+	DSN := fmt.Sprintf("host=localhost user=postgres dbname=postgres port=%v", configs.Configs.Postgres_port)
 	driverConfigs = postgres.New(postgres.Config{
 		DSN: DSN,
 	})
@@ -84,7 +86,7 @@ func getConfigs() (driverConfigs gorm.Dialector, gormConfigs *gorm.Config) {
 
 func autoSessionExpirator(db *gorm.DB) {
 	go func() {
-		ticker := time.NewTicker(configs.Token_expire_auto_remove_duration)
+		ticker := time.NewTicker(globalConfigs.Token_expire_auto_remove_duration)
 
 		for {
 			select {

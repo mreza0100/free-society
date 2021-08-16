@@ -2,7 +2,7 @@ package repository
 
 import (
 	"fmt"
-	"freeSociety/configs"
+	"freeSociety/services/notification/configs"
 	"freeSociety/services/notification/instances"
 	"freeSociety/services/notification/models"
 
@@ -65,7 +65,7 @@ func getConnection(lgr *golog.Core) *gorm.DB {
 }
 
 func getConfigs() (driverConfigs gorm.Dialector, gormConfigs *gorm.Config) {
-	DSN := fmt.Sprintf("host=localhost user=postgres dbname=postgres port=%v", configs.NotificationConfigs.DBPort)
+	DSN := fmt.Sprintf("host=localhost user=postgres dbname=postgres port=%v", configs.Configs.Postgres_port)
 	driverConfigs = postgres.New(postgres.Config{
 		DSN: DSN,
 	})

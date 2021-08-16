@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"freeSociety/configs"
 	pb "freeSociety/proto/generated/feed"
+	"freeSociety/services/feed/configs"
 	"freeSociety/utils"
 	"log"
 	"net"
@@ -32,7 +32,7 @@ func main() {
 	)
 	pb.RegisterFeedServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.FeedConfigs.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.Configs.Service_port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

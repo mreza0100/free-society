@@ -1,15 +1,16 @@
 package connections
 
 import (
-	"freeSociety/configs"
 	pb "freeSociety/proto/generated/relation"
+
+	"freeSociety/services/relation/configs"
 
 	"github.com/mreza0100/golog"
 	"google.golang.org/grpc"
 )
 
 func RelationSrvConn(lgr *golog.Core) pb.RelationServiceClient {
-	conn, err := grpc.Dial(configs.RelationConfigs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.RelationConfigs.Timeout))
+	conn, err := grpc.Dial(configs.Configs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.Configs.ConnectionTimeout))
 	if err != nil {
 		lgr.Fatal("Cant connect to user service", err)
 	}

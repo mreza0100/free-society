@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"freeSociety/configs"
 	pb "freeSociety/proto/generated/security"
 	"freeSociety/utils"
 	"log"
@@ -12,12 +11,13 @@ import (
 
 	"github.com/mreza0100/golog"
 
+	"freeSociety/services/security/configs"
 	"freeSociety/services/security/microservice"
 )
 
 func initLogger() *golog.Core {
 	return golog.New(golog.InitOpns{
-		LogPath:   configs.LogPath,
+		LogPath:   configs.Configs.LogPath,
 		Name:      "Security_Service",
 		WithTime:  true,
 		DebugMode: utils.IsDevMode,
@@ -32,7 +32,7 @@ func main() {
 	)
 	pb.RegisterSecurityServiceServer(grpcServer, service)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.SecurityConfigs.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", configs.Configs.Service_port))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

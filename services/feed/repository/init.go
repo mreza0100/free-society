@@ -2,7 +2,7 @@ package repository
 
 import (
 	"fmt"
-	"freeSociety/configs"
+	"freeSociety/services/feed/configs"
 	"freeSociety/services/feed/instances"
 	"freeSociety/utils"
 
@@ -47,7 +47,7 @@ func New(lgr *golog.Core) *instances.Repository {
 
 func getConnection(lgr *golog.Core) *redis.Client {
 	connection := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("localhost:%v", configs.FeedConfigs.RedisPort),
+		Addr:     fmt.Sprintf("localhost:%v", configs.Configs.Redis_port),
 		Password: "",
 		DB:       0,
 	})

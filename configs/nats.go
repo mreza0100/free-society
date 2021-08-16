@@ -60,7 +60,7 @@ func (nConf *natsConfigsT) GetDefaultNatsOpts(name string) []nats.Option {
 var Nats *natsConfigsT
 
 func init() {
-	sbjs := &subjectsT{}
+	sbjs := new(subjectsT)
 
 	Nats = &natsConfigsT{
 		Url:            nats.DefaultURL,

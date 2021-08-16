@@ -3,7 +3,7 @@ package repository
 import (
 	fmt "fmt"
 
-	"freeSociety/configs"
+	"freeSociety/services/relation/configs"
 	"freeSociety/services/relation/instances"
 	models "freeSociety/services/relation/models"
 
@@ -59,7 +59,7 @@ func NewRepo(lgr *golog.Core) *instances.Repository {
 }
 
 func getConfigs() (driverConfigs gorm.Dialector, gormConfigs *gorm.Config) {
-	DSN := fmt.Sprintf("host=localhost user=postgres dbname=postgres port=%v", configs.RelationConfigs.DBPort)
+	DSN := fmt.Sprintf("host=localhost user=postgres dbname=postgres port=%v", configs.Configs.Postgres_port)
 	driverConfigs = postgres.New(postgres.Config{
 		DSN: DSN,
 	})
