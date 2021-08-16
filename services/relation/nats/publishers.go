@@ -15,7 +15,7 @@ type publishers struct {
 }
 
 func (p *publishers) LikeNotify(userId, likerId, postId uint64) (uint64, error) {
-	subject := configs.Nats.Subjects.SetLikeNotification
+	subject := configs.NatsConfigs.Subjects.SetLikeNotification
 	dbug, success := p.lgr.DebugPKG("LikeNotify", false)
 
 	{
@@ -38,7 +38,7 @@ func (p *publishers) LikeNotify(userId, likerId, postId uint64) (uint64, error) 
 			}
 		}
 		{
-			msg, err := p.nc.Request(subject, request, configs.Nats.Timeout)
+			msg, err := p.nc.Request(subject, request, configs.NatsConfigs.Timeout)
 			if dbug("p.nc.Request")(err) != nil {
 				p.lgr.InfoLog(22)
 				return 0, err
@@ -58,7 +58,7 @@ func (p *publishers) LikeNotify(userId, likerId, postId uint64) (uint64, error) 
 }
 
 func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
-	subject := configs.Nats.Subjects.IsPostsExists
+	subject := configs.NatsConfigs.Subjects.IsPostsExists
 	dbug, success := p.lgr.DebugPKG("IsPostsExists", false)
 
 	{
@@ -77,7 +77,7 @@ func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
 			}
 		}
 		{
-			response, err := p.nc.Request(subject, request, configs.Nats.Timeout)
+			response, err := p.nc.Request(subject, request, configs.NatsConfigs.Timeout)
 			if dbug("p.nc.Request")(err) != nil {
 				return nil, err
 			}
@@ -97,7 +97,7 @@ func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
 }
 
 func (p *publishers) IsUserExist(userId uint64) bool {
-	subject := configs.Nats.Subjects.IsUserExist
+	subject := configs.NatsConfigs.Subjects.IsUserExist
 	dbug, success := p.lgr.DebugPKG("IsUserExist", false)
 
 	{
@@ -105,7 +105,7 @@ func (p *publishers) IsUserExist(userId uint64) bool {
 			UserId: userId,
 		})
 
-		msg, err := p.nc.Request(subject, byteData, configs.Nats.Timeout)
+		msg, err := p.nc.Request(subject, byteData, configs.NatsConfigs.Timeout)
 		if dbug("nc.Request error")(err) != nil {
 			return false
 		}

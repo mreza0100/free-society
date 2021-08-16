@@ -18,7 +18,7 @@ type subscribers struct {
 }
 
 func (s *subscribers) getLikeNotifications() {
-	subject := configs.Nats.Subjects.SetLikeNotification
+	subject := configs.NatsConfigs.Subjects.SetLikeNotification
 	dbug, success := s.lgr.DebugPKG("getLikeNotifications", false)
 
 	{

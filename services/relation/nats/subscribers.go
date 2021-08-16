@@ -18,7 +18,7 @@ type subscribers struct {
 }
 
 func (s *subscribers) GetFollowers() {
-	subject := configs.Nats.Subjects.GetFollowers
+	subject := configs.NatsConfigs.Subjects.GetFollowers
 	dbug, success := s.lgr.DebugPKG("GetFollowers_REQUEST", false)
 
 	{
@@ -60,7 +60,7 @@ func (s *subscribers) GetFollowers() {
 }
 
 func (s *subscribers) DeleteUser() {
-	subject := configs.Nats.Subjects.DeleteUser
+	subject := configs.NatsConfigs.Subjects.DeleteUser
 	debug, success := s.lgr.DebugPKG("DeleteUser", false)
 
 	{
@@ -96,7 +96,7 @@ func (s *subscribers) DeleteUser() {
 }
 
 func (s *subscribers) IsFollowingGroup() {
-	subject := configs.Nats.Subjects.IsFollowingGroup
+	subject := configs.NatsConfigs.Subjects.IsFollowingGroup
 	dbug, success := s.lgr.DebugPKG("IsFollowingGroup", false)
 
 	{
@@ -139,7 +139,7 @@ func (s *subscribers) IsFollowingGroup() {
 }
 
 func (s *subscribers) isLikedGroup() {
-	subject := configs.Nats.Subjects.IsLikedGroup
+	subject := configs.NatsConfigs.Subjects.IsLikedGroup
 	dbug, success := s.lgr.DebugPKG("isLikedGroup", false)
 
 	{
@@ -183,7 +183,7 @@ func (s *subscribers) isLikedGroup() {
 }
 
 func (s *subscribers) countLikes() {
-	subject := configs.Nats.Subjects.CountLikes
+	subject := configs.NatsConfigs.Subjects.CountLikes
 	dbug, success := s.lgr.DebugPKG("countLikes", false)
 
 	{

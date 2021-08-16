@@ -1,15 +1,11 @@
 package connections
 
-import (
-	"time"
+// func getGRPCDefaultOptions(timeout time.Duration, extra ...grpc.DialOption) []grpc.DialOption {
+// 	opts := make([]grpc.DialOption, 0, len(extra)+4)
 
-	"google.golang.org/grpc"
-)
+// 	opts = append(opts, extra...)
 
-func getGRPCDefaultOptions(timeout time.Duration, extra ...grpc.DialOption) (opts []grpc.DialOption) {
-	opts = append(opts, extra...)
+// 	opts = append(opts, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(timeout))
 
-	opts = append(opts, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(timeout))
-
-	return
-}
+// 	return opts
+// }

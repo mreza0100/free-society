@@ -17,7 +17,7 @@ type subscribers struct {
 }
 
 func (s *subscribers) deleteDeletedUserSessions() {
-	subject := configs.Nats.Subjects.DeleteUser
+	subject := configs.NatsConfigs.Subjects.DeleteUser
 	dbug, success := s.lgr.DebugPKG("deleteDeletedUserSessions", false)
 
 	{

@@ -30,3 +30,6 @@ sleep 1s
 
 echo "user"
 bash ./user/clean.sh
+
+echo "notification"
+bash ./notification/clean.sh

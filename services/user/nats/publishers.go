@@ -32,7 +32,7 @@ func (p *publishers) DeleteUser(userId uint64) error {
 	}
 
 	{
-		err = p.nc.Publish(configs.Nats.Subjects.DeleteUser, byteData)
+		err = p.nc.Publish(configs.NatsConfigs.Subjects.DeleteUser, byteData)
 		if err != nil {
 			p.lgr.Log("cant publish pb (DeleteUser)")
 			p.lgr.Log("error: ", err)

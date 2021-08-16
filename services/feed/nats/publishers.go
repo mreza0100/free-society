@@ -15,7 +15,7 @@ type publishers struct {
 }
 
 func (p *publishers) GetFollowers(userId uint64) ([]uint64, error) {
-	subject := configs.Nats.Subjects.GetFollowers
+	subject := configs.NatsConfigs.Subjects.GetFollowers
 
 	{
 		var (
@@ -35,7 +35,7 @@ func (p *publishers) GetFollowers(userId uint64) ([]uint64, error) {
 			}
 		}
 		{
-			response, err := p.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			response, err := p.nc.Request(subject, byteRequest, configs.NatsConfigs.Timeout)
 			if err != nil {
 				p.lgr.RedLog("In GetFollowers this.nc.Request error")
 				p.lgr.RedLog("Error: ", err)
@@ -60,7 +60,7 @@ func (p *publishers) GetFollowers(userId uint64) ([]uint64, error) {
 
 // not used
 func (p *publishers) GetPosts(postIds []uint64) ([]*natsPb.Post, error) {
-	subject := configs.Nats.Subjects.GetPosts
+	subject := configs.NatsConfigs.Subjects.GetPosts
 
 	{
 		byteReq, err := proto.Marshal(&natsPb.GetPosts_REQUESTRequest{
@@ -72,7 +72,7 @@ func (p *publishers) GetPosts(postIds []uint64) ([]*natsPb.Post, error) {
 			return nil, err
 		}
 
-		response, err := p.nc.Request(subject, byteReq, configs.Nats.Timeout)
+		response, err := p.nc.Request(subject, byteReq, configs.NatsConfigs.Timeout)
 		if err != nil {
 			p.lgr.RedLog("In GetPosts this.nc.Request error")
 			p.lgr.RedLog("Error: ", err)

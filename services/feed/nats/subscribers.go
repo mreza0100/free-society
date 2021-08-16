@@ -17,7 +17,7 @@ type subscribers struct {
 }
 
 func (s *subscribers) setPost() {
-	subject := configs.Nats.Subjects.NewPost
+	subject := configs.NatsConfigs.Subjects.NewPost
 
 	{
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
@@ -36,7 +36,7 @@ func (s *subscribers) setPost() {
 }
 
 func (s *subscribers) deleteFeed() {
-	subject := configs.Nats.Subjects.DeleteUser
+	subject := configs.NatsConfigs.Subjects.DeleteUser
 	dbug, success := s.lgr.DebugPKG("deleteFeed", false)
 
 	{

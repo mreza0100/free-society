@@ -4,14 +4,13 @@ import (
 	"freeSociety/configs"
 	"log"
 
-	globalConfigs "freeSociety/configs"
-
 	"github.com/mreza0100/golog"
 	"github.com/nats-io/nats.go"
 )
 
-func GetDefaultNatsOpts(name string, nConf *globalConfigs.NatsConfigsT) []nats.Option {
+func GetDefaultNatsOpts(name string) []nats.Option {
 	opts := make([]nats.Option, 0, 7)
+	nConf := configs.NatsConfigs
 
 	disconnectErrHandlerO := nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
 		log.Printf("Disconnected due to: %s, will attempt reconnects for %.0fm", err, nConf.TotalWait.Minutes())
@@ -40,11 +39,11 @@ func GetDefaultNatsOpts(name string, nConf *globalConfigs.NatsConfigsT) []nats.O
 
 func GetNatsConnection(lgr *golog.Core, natName string) *nats.Conn {
 	nc, err := nats.Connect(
-		configs.Nats.Url,
-		GetDefaultNatsOpts(natName, configs.Nats)...,
+		configs.NatsConfigs.Url,
+		GetDefaultNatsOpts(natName)...,
 	)
 	if err != nil {
-		lgr.Fatal("✖✖✖From nats connection: cant connect to nats server. exiting NOW✖✖✖", "\t", err)
+		lgr.Fatal("✖✖✖From nats connection: cant connect to nats server exiting NOW✖✖✖", "\t", err)
 	}
 
 	return nc

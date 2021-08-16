@@ -17,7 +17,7 @@ type subscribers struct {
 }
 
 func (s *subscribers) isUserExist_REQUEST() {
-	subject := configs.Nats.Subjects.IsUserExist
+	subject := configs.NatsConfigs.Subjects.IsUserExist
 	dbug, success := s.lgr.DebugPKG("IsUserExist_REQUEST", false)
 
 	{
@@ -63,7 +63,7 @@ func (s *subscribers) isUserExist_REQUEST() {
 }
 
 func (s *subscribers) getUsersByIds_REQUEST() {
-	subject := configs.Nats.Subjects.GetUsersByIds
+	subject := configs.NatsConfigs.Subjects.GetUsersByIds
 	dbug, success := s.lgr.DebugPKG("getUsersByIds_REQUEST", false)
 
 	{

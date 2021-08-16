@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	pb "freeSociety/proto/generated/post"
 	"freeSociety/services/post/instances"
 
@@ -31,6 +32,7 @@ type handlers struct {
 }
 
 func (h *handlers) NewPost(_ context.Context, in *pb.NewPostRequest) (*pb.NewPostResponse, error) {
+	fmt.Println(22)
 	postId, err := h.srv.NewPost(in.Title, in.Body, in.UserId)
 	if err != nil {
 		return &pb.NewPostResponse{}, err

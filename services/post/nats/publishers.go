@@ -17,7 +17,7 @@ type publishers struct {
 }
 
 func (p *publishers) NewPost(userId, postId uint64) error {
-	subject := configs.Nats.Subjects.NewPost
+	subject := configs.NatsConfigs.Subjects.NewPost
 	dbug, sussess := p.lgr.DebugPKG("NewPost", false)
 
 	{
@@ -47,7 +47,7 @@ func (p *publishers) NewPost(userId, postId uint64) error {
 }
 
 func (p *publishers) GetUsers(userIds []uint64) (map[uint64]*pb.User, error) {
-	subject := configs.Nats.Subjects.GetUsersByIds
+	subject := configs.NatsConfigs.Subjects.GetUsersByIds
 	dbug, success := p.lgr.DebugPKG("GetProfiles", false)
 
 	{
@@ -72,7 +72,7 @@ func (p *publishers) GetUsers(userIds []uint64) (map[uint64]*pb.User, error) {
 		}
 		{
 			var res *nats.Msg
-			res, err := p.nc.Request(subject, request, configs.Nats.Timeout)
+			res, err := p.nc.Request(subject, request, configs.NatsConfigs.Timeout)
 			if dbug("p.nc.Request")(err) != nil {
 				return nil, err
 			}
@@ -98,7 +98,7 @@ func (p *publishers) GetUsers(userIds []uint64) (map[uint64]*pb.User, error) {
 }
 
 func (p *publishers) IsFollowingGroup(userId uint64, followings []uint64) (map[uint64]bool, error) {
-	subject := configs.Nats.Subjects.IsFollowingGroup
+	subject := configs.NatsConfigs.Subjects.IsFollowingGroup
 	dbug, success := p.lgr.DebugPKG("IsFollowings", false)
 
 	{
@@ -123,7 +123,7 @@ func (p *publishers) IsFollowingGroup(userId uint64, followings []uint64) (map[u
 			}
 		}
 		{
-			res, err := p.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			res, err := p.nc.Request(subject, byteRequest, configs.NatsConfigs.Timeout)
 			if dbug("p.nc.Request")(err) != nil {
 				return nil, err
 			}
@@ -143,7 +143,7 @@ func (p *publishers) IsFollowingGroup(userId uint64, followings []uint64) (map[u
 }
 
 func (p *publishers) GetCounts(postIds []uint64) (map[uint64]uint64, error) {
-	subject := configs.Nats.Subjects.CountLikes
+	subject := configs.NatsConfigs.Subjects.CountLikes
 	dbug, success := p.lgr.DebugPKG("GetCounts", false)
 
 	{
@@ -163,7 +163,7 @@ func (p *publishers) GetCounts(postIds []uint64) (map[uint64]uint64, error) {
 			}
 		}
 		{
-			res, err := p.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			res, err := p.nc.Request(subject, byteRequest, configs.NatsConfigs.Timeout)
 			if dbug("p.nc.Request")(err) != nil {
 				return nil, err
 			}
@@ -182,7 +182,7 @@ func (p *publishers) GetCounts(postIds []uint64) (map[uint64]uint64, error) {
 }
 
 func (p *publishers) IsLikedGroup(liker uint64, postIds []uint64) (map[uint64]*emptypb.Empty, error) {
-	subject := configs.Nats.Subjects.IsLikedGroup
+	subject := configs.NatsConfigs.Subjects.IsLikedGroup
 	dbug, sussess := p.lgr.DebugPKG("IsLikedGroup", false)
 
 	{
@@ -203,7 +203,7 @@ func (p *publishers) IsLikedGroup(liker uint64, postIds []uint64) (map[uint64]*e
 			}
 		}
 		{
-			res, err := p.nc.Request(subject, byteRequest, configs.Nats.Timeout)
+			res, err := p.nc.Request(subject, byteRequest, configs.NatsConfigs.Timeout)
 			if dbug("p.nc.Request")(err) != nil {
 				return nil, err
 			}

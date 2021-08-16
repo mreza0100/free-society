@@ -20,28 +20,25 @@ type subjectsT struct {
 	SetLikeNotification string
 }
 
-// configs that nats package in services need
 type NatsConfigsT struct {
 	Url            string
 	TotalWait      time.Duration
 	ReconnectDelay time.Duration
+	Subjects       *subjectsT
 	Timeout        time.Duration
-
-	Subjects *subjectsT
 }
 
-var Nats *NatsConfigsT
+var NatsConfigs *NatsConfigsT
 
 func init() {
 	sbjs := new(subjectsT)
 
-	Nats = &NatsConfigsT{
+	NatsConfigs = &NatsConfigsT{
 		Url:            nats.DefaultURL,
 		TotalWait:      2 * time.Minute,
 		ReconnectDelay: time.Second,
+		Subjects:       sbjs,
 		Timeout:        time.Second,
-
-		Subjects: sbjs,
 	}
 
 	{

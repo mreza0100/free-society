@@ -17,7 +17,7 @@ type subscribers struct {
 }
 
 func (s *subscribers) DeleteUserPosts() {
-	subject := configs.Nats.Subjects.DeleteUser
+	subject := configs.NatsConfigs.Subjects.DeleteUser
 	dbug, success := s.lgr.DebugPKG("DeleteUserPosts", false)
 
 	{
@@ -39,7 +39,7 @@ func (s *subscribers) DeleteUserPosts() {
 }
 
 func (s *subscribers) IsExists() {
-	subject := configs.Nats.Subjects.IsPostsExists
+	subject := configs.NatsConfigs.Subjects.IsPostsExists
 	dbug, success := s.lgr.DebugPKG("IsExists", false)
 
 	{

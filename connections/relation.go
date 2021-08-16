@@ -10,7 +10,7 @@ import (
 )
 
 func RelationSrvConn(lgr *golog.Core) pb.RelationServiceClient {
-	conn, err := grpc.Dial(configs.Configs.Addr, getGRPCDefaultOptions(configs.Configs.ConnectionTimeout))
+	conn, err := grpc.Dial(configs.Configs.Addr, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithTimeout(configs.Configs.ConnectionTimeout))
 	if err != nil {
 		lgr.Fatal("Cant connect to user service", err)
 	}
