@@ -1,7 +1,7 @@
 package securityNats
 
 import (
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/services/security/instances"
 
 	"github.com/mreza0100/golog"

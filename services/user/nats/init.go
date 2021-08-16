@@ -1,7 +1,7 @@
 package userNats
 
 import (
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/services/user/instances"
 
 	"github.com/mreza0100/golog"

@@ -1,7 +1,7 @@
 package notificationNats
 
 import (
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/services/notification/instances"
 
 	"github.com/mreza0100/golog"

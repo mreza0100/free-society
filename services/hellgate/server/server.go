@@ -8,7 +8,7 @@ import (
 	"freeSociety/services/hellgate/middlewares"
 	"freeSociety/utils"
 
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

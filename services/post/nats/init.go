@@ -1,7 +1,7 @@
 package postNats
 
 import (
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/services/post/instances"
 
 	"github.com/mreza0100/golog"

@@ -3,7 +3,7 @@ package main_test
 import (
 	"context"
 	"errors"
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/proto/generated/security"
 	"freeSociety/services/security/domain"
 	"freeSociety/utils/test"

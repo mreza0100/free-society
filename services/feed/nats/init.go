@@ -1,7 +1,7 @@
 package feedNats
 
 import (
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/services/feed/instances"
 
 	"github.com/mreza0100/golog"

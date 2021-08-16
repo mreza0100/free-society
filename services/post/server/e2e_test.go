@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/proto/generated/post"
 	"freeSociety/proto/generated/relation"
 	"freeSociety/utils/test"

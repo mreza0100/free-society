@@ -1,7 +1,7 @@
 package relationNats
 
 import (
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/services/relation/instances"
 
 	"github.com/mreza0100/golog"

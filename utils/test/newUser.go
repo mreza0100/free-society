@@ -2,7 +2,7 @@ package test
 
 import (
 	"context"
-	"freeSociety/proto/connections"
+	"freeSociety/connections"
 	"freeSociety/proto/generated/security"
 	"freeSociety/proto/generated/user"
 
