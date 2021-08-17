@@ -14,7 +14,9 @@
 
 ### Features:
   Post<br />
+  Upload 4 pictures for every post<br />
   Like<br />
+  Notification for like<br />
   Advanced security<br />
   Session management<br />
   Follow<br />
