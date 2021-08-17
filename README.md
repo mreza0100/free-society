@@ -24,8 +24,8 @@
 
 ## In order to use this project first clone it
 ```
-git clone https://github.com/mreza0100/golang-microService
-cd ./golang-microService
+git clone https://github.com/mreza0100/free-society
+cd ./free-society
 ```
 
 #### Requirements
