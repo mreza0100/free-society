@@ -93,7 +93,7 @@ func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePo
 		UserId: userId,
 	})
 
-	return err != nil, utils.GetGRPCMSG(err)
+	return err == nil, utils.GetGRPCMSG(err)
 }
 
 func (r *mutationResolver) Like(ctx context.Context, postID int, ownerID int) (bool, error) {
