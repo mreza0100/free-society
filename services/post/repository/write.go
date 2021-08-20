@@ -16,7 +16,7 @@ type write struct {
 
 func (w *write) NewPost(title, body string, userId uint64, imagePaths []string) (uint64, error) {
 	const query = `INSERT INTO posts (title, body, owner_id, pictures_path) VALUES (?, ?, ?, ? ) RETURNING id`
-	params := []interface{}{title, body, userId, strings.Join(imagePaths, "&")}
+	params := []interface{}{title, body, userId, strings.Join(imagePaths, configs.DB_picture_sep)}
 
 	for i := 0; i < configs.Max_picture_per_post; i++ {
 		if len(imagePaths) > i {
@@ -37,21 +37,23 @@ func (w *write) NewPost(title, body string, userId uint64, imagePaths []string) 
 	return result.Id, nil
 }
 
-func (w *write) DeletePost(postId, userId uint64) error {
-	const query = `DELETE FROM posts WHERE id=? AND owner_id=?`
+func (w *write) DeletePost(postId, userId uint64) (picturesPath string, err error) {
+	const query = `DELETE FROM posts WHERE id=? AND owner_id=? RETURNING pictures_path`
 	params := []interface{}{postId, userId}
 
-	tx := w.db.Exec(query, params...)
-
+	tx := w.db.Raw(query, params...)
 	if tx.Error != nil {
-		return tx.Error
+		return "", tx.Error
 	}
+
+	result := struct{ PicturesPath string }{}
+	tx.Scan(&result)
 
 	if tx.RowsAffected != 1 {
-		return errors.New("Cant find post")
+		return "", errors.New("Cant find post")
 	}
 
-	return nil
+	return result.PicturesPath, tx.Error
 }
 
 func (w *write) DeleteUserPosts(userId uint64) error {

@@ -10,6 +10,7 @@ import (
 	"freeSociety/utils"
 	"freeSociety/utils/files"
 	"freeSociety/utils/hash"
+	"path"
 	"strings"
 
 	"github.com/mreza0100/golog"
@@ -61,7 +62,12 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 	}
 	{
 		for i := 0; i < len(pictures); i++ {
-			err := files.CreateAndWriteFile(configs.PicturesPath+picturesPath[i], pictures[i].Content)
+			p := path.Join(configs.PicturesPath, picturesPath[i])
+
+			if files.FileExist(p) {
+				continue
+			}
+			err := files.CreateAndWriteFile(p, pictures[i].Content)
 			if err != nil {
 				return 0, err
 			}
@@ -71,7 +77,28 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 }
 
 func (s *service) DeletePost(postId, userId uint64) error {
-	return s.repo.Write.DeletePost(postId, userId)
+	rawPicturesPaths, err := s.repo.Write.DeletePost(postId, userId)
+	if err != nil {
+		return err
+	}
+
+	picturesPaths := strings.Split(rawPicturesPaths, configs.DB_picture_sep)
+	for i := 0; i < len(picturesPaths); i++ {
+		exist, err := s.repo.Read.IsPictureExist(picturesPaths[i])
+		s.lgr.InfoLog(exist, "---", err)
+		if err != nil {
+			return err
+		}
+		if exist {
+			continue
+		}
+
+		if files.DeleteFile(path.Join(configs.PicturesPath, picturesPaths[i])) != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *service) DeleteUserPosts(userId uint64) error {
@@ -177,7 +204,7 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 				Likes:       likeCount[id],
 				IsFollowing: followingGroup[id],
 				User:        users[ownerId],
-				PictureUrls: strings.Split(rawPost.PicturesPath, "&"),
+				PictureUrls: strings.Split(rawPost.PicturesPath, configs.DB_picture_sep),
 			}
 
 			_, found := likedGroup[converted.Id]

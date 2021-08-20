@@ -14,7 +14,8 @@ const (
 )
 
 var (
-	ROOT         = os.Getenv("ROOT")
-	LogPath      = ROOT + "/logs/all.log"
-	PicturesPath = ROOT + "/public/images/"
+	ROOT           = os.Getenv("ROOT")
+	LogPath        = ROOT + "/logs/all.log"
+	PicturesPath   = ROOT + "/public/images/"
+	DB_picture_sep = ","
 )

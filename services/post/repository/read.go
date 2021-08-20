@@ -42,3 +42,21 @@ func (r *read) IsExists(postIds []uint64) ([]uint64, error) {
 
 	return result, nil
 }
+
+func (r *read) IsPictureExist(name string) (bool, error) {
+	const query = `SELECT pictures_path FROM posts WHERE pictures_path LIKE '%'|| ? ||'%'`
+	params := []interface{}{name}
+
+	tx := r.db.Raw(query, params...)
+	if tx.Error != nil {
+		return false, tx.Error
+	}
+
+	data := struct{ PicturesPath string }{}
+	tx.Scan(&data)
+
+	r.lgr.InfoLog(name)
+	r.lgr.InfoLog("data.PicturesPath: ", data.PicturesPath)
+
+	return data.PicturesPath != "", tx.Error
+}
