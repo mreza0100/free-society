@@ -10,26 +10,27 @@ import (
 
 const natName = "Feed Service"
 
-func Connection(lgr *golog.Core) *nats.Conn {
-	return connections.GetNatsConnection(lgr, natName)
-}
-
-type InitSubsOpts struct {
-	Lgr *golog.Core
-	Srv instances.Sevice
-	Nc  *nats.Conn
-}
-
-func InitSubs(opts *InitSubsOpts) {
+func initSubscribers(lgr *golog.Core, nc *nats.Conn, srv instances.Sevice) {
 	s := subscribers{
-		srv: opts.Srv,
-		lgr: opts.Lgr.With("In subscribers->"),
-		nc:  opts.Nc,
+		srv: srv,
+		lgr: lgr.With("In subscribers->"),
+		nc:  nc,
 	}
-	opts.Lgr.SuccessLog("subscribers has been attached to nats")
+	lgr.SuccessLog("subscribers has been attached to nats")
 
-	s.setPost()
-	s.deleteFeed()
+	{
+		s.deleteFeed()
+		s.setPost()
+	}
+}
+
+func InitNats(lgr *golog.Core) (publishers instances.Publishers, setServices func(instances.Sevice)) {
+	nc := connections.GetNatsConnection(lgr, natName)
+	publishers = NewPublishers(nc, lgr)
+
+	return publishers, func(s instances.Sevice) {
+		initSubscribers(lgr, nc, s)
+	}
 }
 
 func NewPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {

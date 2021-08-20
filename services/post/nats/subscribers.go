@@ -16,7 +16,7 @@ type subscribers struct {
 	nc  *nats.Conn
 }
 
-func (s *subscribers) DeleteUserPosts() {
+func (s *subscribers) deleteUserPosts() {
 	subject := configs.NatsConfigs.Subjects.DeleteUser
 	dbug, success := s.lgr.DebugPKG("DeleteUserPosts", false)
 
@@ -38,7 +38,7 @@ func (s *subscribers) DeleteUserPosts() {
 	}
 }
 
-func (s *subscribers) IsExists() {
+func (s *subscribers) isExists() {
 	subject := configs.NatsConfigs.Subjects.IsPostsExists
 	dbug, success := s.lgr.DebugPKG("IsExists", false)
 

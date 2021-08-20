@@ -10,24 +10,17 @@ import (
 )
 
 func NewPostService(lgr *golog.Core) instances.Handlers {
-	nc := postNats.Connection(lgr)
-
-	publishers := postNats.NewPublishers(nc, lgr)
+	publishers, setServices := postNats.InitNats(lgr)
 
 	services := domain.New(&domain.NewOpts{
 		Lgr:        lgr,
 		Publishers: publishers,
 	})
-
-	postNats.InitSubs(&postNats.InitSubsOpts{
-		Lgr: lgr,
-		Srv: services,
-		Nc:  nc,
-	})
+	setServices(services)
 
 	return handlers.New(&handlers.NewOpts{
+		Lgr:        lgr,
 		Srv:        services,
 		Publishers: publishers,
-		Lgr:        lgr,
 	})
 }

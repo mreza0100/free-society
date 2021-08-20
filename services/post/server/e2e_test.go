@@ -33,7 +33,7 @@ const (
 	title  = "test title"
 	body   = "test body"
 	name   = "mamad"
-	email  = "mamad@mamad.com"
+	email  = "mamad123@mamad.com"
 	gender = "male"
 )
 

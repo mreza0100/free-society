@@ -15,4 +15,5 @@ func newPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {
 
 type publishers struct {
 	lgr *golog.Core
+	nc  *nats.Conn
 }

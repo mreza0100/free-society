@@ -17,7 +17,7 @@ type subscribers struct {
 	nc  *nats.Conn
 }
 
-func (s *subscribers) GetFollowers() {
+func (s *subscribers) getFollowers() {
 	subject := configs.NatsConfigs.Subjects.GetFollowers
 	dbug, success := s.lgr.DebugPKG("GetFollowers_REQUEST", false)
 
@@ -59,7 +59,7 @@ func (s *subscribers) GetFollowers() {
 	}
 }
 
-func (s *subscribers) DeleteUser() {
+func (s *subscribers) deleteUser() {
 	subject := configs.NatsConfigs.Subjects.DeleteUser
 	debug, success := s.lgr.DebugPKG("DeleteUser", false)
 
@@ -95,7 +95,7 @@ func (s *subscribers) DeleteUser() {
 	}
 }
 
-func (s *subscribers) IsFollowingGroup() {
+func (s *subscribers) isFollowingGroup() {
 	subject := configs.NatsConfigs.Subjects.IsFollowingGroup
 	dbug, success := s.lgr.DebugPKG("IsFollowingGroup", false)
 

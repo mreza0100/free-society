@@ -14,7 +14,7 @@ import (
 
 const (
 	name   = "mamad"
-	email  = "mamad@mamad.com"
+	email  = "mamad123@mamad.com"
 	gender = "male"
 )
 
@@ -81,7 +81,7 @@ func Test_getUser(t *testing.T) {
 	})
 }
 
-func Test_deleteuser(t *testing.T) {
+func Test_deleteUser(t *testing.T) {
 	_, err := userConn.DeleteUser(ctx, &user.DeleteUserRequest{
 		Id: userId,
 	})

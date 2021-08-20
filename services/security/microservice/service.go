@@ -10,24 +10,15 @@ import (
 )
 
 func NewSecurityService(lgr *golog.Core) instances.Handlers {
-	nc := securityNats.Connection(lgr)
-
-	publishers := securityNats.NewPublishers(&securityNats.NewPublishersOpts{
-		Lgr: lgr,
-		Nc:  nc,
-	})
+	publishers, setServices := securityNats.InitNats(lgr)
 
 	services := domain.New(&domain.NewOpts{
-		Lgr: lgr,
+		Lgr:        lgr,
+		Publishers: publishers,
 	})
+	setServices(services)
 
-	securityNats.InitSubs(&securityNats.InitSubsOpts{
-		Lgr: lgr,
-		Srv: services,
-		Nc:  nc,
-	})
-
-	return handlers.NewHandlers(handlers.NewHandlersOpts{
+	return handlers.New(&handlers.NewOpts{
 		Lgr:        lgr,
 		Srv:        services,
 		Publishers: publishers,

@@ -10,35 +10,32 @@ import (
 
 const natName = "Relation Service"
 
-func Connection(lgr *golog.Core) *nats.Conn {
-	return connections.GetNatsConnection(lgr, natName)
-}
-
-type NewPublishersOpts struct {
-	Lgr *golog.Core
-	Nc  *nats.Conn
-}
-
-type InitSubsOpts struct {
-	Lgr *golog.Core
-	Srv instances.Sevice
-	Nc  *nats.Conn
-}
-
-func InitSubs(opts *InitSubsOpts) {
+func initSubscribers(lgr *golog.Core, nc *nats.Conn, srv instances.Sevice) {
 	s := subscribers{
-		srv: opts.Srv,
-		nc:  opts.Nc,
-		lgr: opts.Lgr.With("In subscribers->"),
+		srv: srv,
+		lgr: lgr.With("In subscribers->"),
+		nc:  nc,
 	}
-	opts.Lgr.SuccessLog("subscribers has been attached to nats")
+	lgr.SuccessLog("subscribers has been attached to nats")
 
-	s.GetFollowers()
-	s.IsFollowingGroup()
-	s.DeleteUser()
-	s.isLikedGroup()
-	s.countLikes()
+	{
+		s.getFollowers()
+		s.isFollowingGroup()
+		s.deleteUser()
+		s.isLikedGroup()
+		s.countLikes()
+	}
 }
+
+func InitNats(lgr *golog.Core) (publishers instances.Publishers, setServices func(instances.Sevice)) {
+	nc := connections.GetNatsConnection(lgr, natName)
+	publishers = NewPublishers(nc, lgr)
+
+	return publishers, func(s instances.Sevice) {
+		initSubscribers(lgr, nc, s)
+	}
+}
+
 func NewPublishers(nc *nats.Conn, lgr *golog.Core) instances.Publishers {
 	return &publishers{
 		lgr: lgr.With("In publishers->"),

@@ -17,7 +17,8 @@ import (
 )
 
 type NewOpts struct {
-	Lgr *golog.Core
+	Lgr        *golog.Core
+	Publishers instances.Publishers
 }
 
 func New(opts *NewOpts) instances.Sevice {

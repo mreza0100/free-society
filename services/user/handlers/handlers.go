@@ -9,13 +9,13 @@ import (
 	"github.com/mreza0100/golog"
 )
 
-type NewHandlersOpts struct {
+type NewOpts struct {
 	Lgr        *golog.Core
 	Srv        instances.Sevice
 	Publishers instances.Publishers
 }
 
-func NewHandlers(opts *NewHandlersOpts) instances.Handlers {
+func New(opts *NewOpts) instances.Handlers {
 	return &handlers{
 		lgr:        opts.Lgr.With("In handlers->"),
 		srv:        opts.Srv,

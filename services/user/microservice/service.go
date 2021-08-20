@@ -10,21 +10,15 @@ import (
 )
 
 func NewUserService(lgr *golog.Core) instances.Handlers {
-	nc := userNats.Connection(lgr)
+	publishers, setServices := userNats.InitNats(lgr)
 
 	services := domain.New(&domain.NewOpts{
-		Lgr: lgr,
+		Lgr:        lgr,
+		Publishers: publishers,
 	})
+	setServices(services)
 
-	publishers := userNats.NewPublishers(nc, lgr)
-
-	userNats.InitSubs(&userNats.InitSubsOpts{
-		Lgr: lgr,
-		Srv: services,
-		Nc:  nc,
-	})
-
-	return handlers.NewHandlers(&handlers.NewHandlersOpts{
+	return handlers.New(&handlers.NewOpts{
 		Lgr:        lgr,
 		Srv:        services,
 		Publishers: publishers,
