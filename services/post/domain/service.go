@@ -62,7 +62,7 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 	}
 	{
 		for i := 0; i < len(pictures); i++ {
-			p := path.Join(configs.PicturesPath, picturesPath[i])
+			p := path.Join(configs.ROOT, configs.PicturesPath, picturesPath[i])
 
 			if files.FileExist(p) {
 				continue
@@ -93,7 +93,7 @@ func (s *service) DeletePost(postId, userId uint64) error {
 			continue
 		}
 
-		if files.DeleteFile(path.Join(configs.PicturesPath, picturesPaths[i])) != nil {
+		if files.DeleteFile(path.Join(configs.ROOT, configs.PicturesPath, picturesPaths[i])) != nil {
 			return err
 		}
 	}
@@ -193,22 +193,26 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 	{
 		posts = make([]*pb.Post, 0, len(rawPosts))
 		for _, rawPost := range rawPosts {
-			id := rawPost.ID
-			ownerId := rawPost.OwnerId
-
 			converted := &pb.Post{
 				Title:       rawPost.Title,
 				Body:        rawPost.Body,
-				Id:          id,
-				OwnerId:     ownerId,
-				Likes:       likeCount[id],
-				IsFollowing: followingGroup[id],
-				User:        users[ownerId],
-				PictureUrls: strings.Split(rawPost.PicturesPath, configs.DB_picture_sep),
+				Id:          rawPost.ID,
+				OwnerId:     rawPost.OwnerId,
+				Likes:       likeCount[rawPost.ID],
+				IsFollowing: followingGroup[rawPost.ID],
+				User:        users[rawPost.OwnerId],
 			}
 
-			_, found := likedGroup[converted.Id]
-			converted.IsLiked = found
+			{
+				picPaths := strings.Split(rawPost.PicturesPath, configs.DB_picture_sep)
+				for i := 0; i < len(picPaths); i++ {
+					picPaths[i] = configs.PicturesPath + picPaths[i]
+				}
+			}
+			{
+				_, found := likedGroup[converted.Id]
+				converted.IsLiked = found
+			}
 
 			posts = append(posts, converted)
 		}

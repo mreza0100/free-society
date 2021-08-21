@@ -17,14 +17,17 @@ service UserService {
 
 // get User
 message GetUserRequest {
-      uint64 id    = 1;
-      string email = 2;      
+      uint64 id          = 1;
+      uint64 requestorId = 2;
+      string email       = 3;
 }
 message GetUserResponse {
-      uint64 id     = 1;
-      string name   = 2;
-      string email  = 3;
-      string gender = 4;
+      uint64 id          = 1;
+      string name        = 2;
+      string email       = 3;
+      string gender      = 4;
+      string avatarPath  = 5;
+      bool   isFollowing = 6;
 }
 //
 
@@ -40,6 +43,9 @@ message NewUserRequest {
       string name     = 1;
       string email    = 2;
       string gender   = 3;
+
+      string avatarFormat = 4;
+      bytes  avatar       = 5;
 }
 message NewUserResponse { uint64 id = 1; }
 //

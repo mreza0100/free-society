@@ -2,7 +2,7 @@ package security
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -56,7 +56,8 @@ func GetRequest(ctx context.Context) *http.Request {
 func GetUserId(ctx context.Context) uint64 {
 	data, ok := ctx.Value(USER_ID_KEY_CTX).(uint64)
 	if !ok {
-		log.Fatal("in GetUserId: ", "ok was false")
+		fmt.Println("ok was false")
+		fmt.Println("Did you set resolver mode to optinal | private")
 	}
 
 	return data

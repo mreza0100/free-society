@@ -6,8 +6,8 @@ import (
 )
 
 type Sevice interface {
-	NewUser(in *pb.NewUserRequest) (uint64, error)
-	GetUser(id uint64, email string) (*pb.GetUserResponse, error)
+	NewUser(name, email, gender, avatarFormat string, avatar []byte) (uint64, error)
+	GetUser(requestor, id uint64, email string) (*pb.GetUserResponse, error)
 	DeleteUser(id uint64) error
 	GetUsers(ids []uint64) (map[uint64]*models.User, error)
 

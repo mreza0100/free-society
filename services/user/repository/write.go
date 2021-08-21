@@ -1,8 +1,6 @@
 package repository
 
 import (
-	models "freeSociety/services/user/models"
-
 	"github.com/mreza0100/golog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,16 +13,15 @@ type write struct {
 	read *read
 }
 
-func (w *write) NewUser(user *models.User) (uint64, error) {
+func (w *write) NewUser(name, gender, email, avatarPath string) (uint64, error) {
 	{
-		if w.read.IsUserExistByEmail(user.Email) {
-			const err = "there is already a user with this email"
-			return 0, status.Error(codes.AlreadyExists, err)
+		if w.read.IsUserExistByEmail(email) {
+			return 0, status.Error(codes.AlreadyExists, "there is already a user with this email")
 		}
 	}
 	{
-		const query = `INSERT INTO users (name, gender, email) VALUES (?, ?, ?) RETURNING id`
-		params := []interface{}{user.Name, user.Gender, user.Email}
+		const query = `INSERT INTO users (name, gender, email, avatar_path) VALUES (?, ?, ?, ?) RETURNING id`
+		params := []interface{}{name, gender, email, avatarPath}
 
 		tx := w.db.Raw(query, params...)
 		if tx.Error != nil {
@@ -38,15 +35,18 @@ func (w *write) NewUser(user *models.User) (uint64, error) {
 	}
 }
 
-func (w *write) DeleteUser(userId uint64) error {
-	const query = `DELETE FROM users WHERE id=?`
+func (w *write) DeleteUser(userId uint64) (picturePath string, err error) {
+	const query = `DELETE FROM users WHERE id=? RETURNING avatar_path`
 	params := []interface{}{userId}
 
-	tx := w.db.Exec(query, params...)
+	tx := w.db.Raw(query, params...)
 
 	if tx.RowsAffected == 0 {
-		return status.Error(codes.NotFound, "cant find user")
+		return "", status.Error(codes.NotFound, "cant find user")
 	}
 
-	return nil
+	data := struct{ AvatarPath string }{}
+	tx.Scan(&data)
+
+	return data.AvatarPath, nil
 }

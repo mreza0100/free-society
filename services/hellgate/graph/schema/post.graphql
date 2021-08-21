@@ -34,5 +34,3 @@ input createPostInput {
 input deletePostInput {
 	postId: Int!
 }
-
-scalar Upload

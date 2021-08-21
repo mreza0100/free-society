@@ -28,14 +28,12 @@ func (r *followers_read) IsFollowing(follower, following uint64) bool {
 
 	tx := r.db.Raw(query, params...)
 
-	{
-		if tx.Error != nil {
-			return false
-		}
+	if tx.Error != nil {
+		return false
 	}
 
-	data := &struct{ Exists bool }{}
-	tx.Scan(data)
+	data := struct{ Exists bool }{}
+	tx.Scan(&data)
 
 	return data.Exists
 }

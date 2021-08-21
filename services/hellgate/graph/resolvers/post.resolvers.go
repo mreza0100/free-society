@@ -40,7 +40,7 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePo
 			rawPictures = append(rawPictures, input.Image4)
 		}
 	}
-	{
+	{ // check if the user is allowed to upload this pictures
 		for _, image := range rawPictures {
 			if image.Size > configs.Picture_size_limit {
 				return 0, errors.New("image size is too large")
@@ -78,11 +78,8 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePo
 		UserId:   userId,
 		Pictures: pictures,
 	})
-	if err != nil {
-		return 0, utils.GetGRPCMSG(err)
-	}
 
-	return int(response.Id), nil
+	return int(response.Id), utils.GetGRPCMSG(err)
 }
 
 func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error) {

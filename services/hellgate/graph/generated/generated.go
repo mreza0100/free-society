@@ -80,6 +80,7 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
+		Avatar      func(childComplexity int) int
 		Email       func(childComplexity int) int
 		Gender      func(childComplexity int) int
 		ID          func(childComplexity int) int
@@ -381,6 +382,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Sessions(childComplexity), true
 
+	case "User.avatar":
+		if e.complexity.User.Avatar == nil {
+			break
+		}
+
+		return e.complexity.User.Avatar(childComplexity), true
+
 	case "User.email":
 		if e.complexity.User.Email == nil {
 			break
@@ -627,8 +635,6 @@ input createPostInput {
 input deletePostInput {
 	postId: Int!
 }
-
-scalar Upload
 `, BuiltIn: false},
 	{Name: "graph/schema/relations.graphql", Input: `extend type Mutation {
 	follow(following: Int!): Boolean! @private
@@ -645,9 +651,10 @@ type Mutation
 
 directive @private on FIELD_DEFINITION
 directive @optional on FIELD_DEFINITION
+scalar Upload
 `, BuiltIn: false},
 	{Name: "graph/schema/user.graphql", Input: `extend type Query {
-	getUser(id: Int!): User
+	getUser(id: Int!): User @optional
 }
 
 extend type Mutation {
@@ -661,6 +668,7 @@ type User {
 	email: String!
 	gender: String!
 	isFollowing: Boolean!
+	avatar: String!
 }
 
 input createUserInput {
@@ -668,6 +676,7 @@ input createUserInput {
 	email: String!
 	gender: String!
 	password: String!
+	avatar: Upload
 }
 `, BuiltIn: false},
 }
@@ -2205,8 +2214,28 @@ func (ec *executionContext) _Query_getUser(ctx context.Context, field graphql.Co
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetUser(rctx, args["id"].(int))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetUser(rctx, args["id"].(int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Optional == nil {
+				return nil, errors.New("directive optional is not implemented")
+			}
+			return ec.directives.Optional(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *freeSociety/services/hellgate/graph/model.User`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2464,6 +2493,41 @@ func (ec *executionContext) _User_isFollowing(ctx context.Context, field graphql
 	res := resTmp.(bool)
 	fc.Result = res
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _User_avatar(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Avatar, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -4033,6 +4097,14 @@ func (ec *executionContext) unmarshalInputcreateUserInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "avatar":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("avatar"))
+			it.Avatar, err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		}
 	}
 
@@ -4340,6 +4412,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "isFollowing":
 			out.Values[i] = ec._User_isFollowing(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "avatar":
+			out.Values[i] = ec._User_avatar(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

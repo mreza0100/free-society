@@ -2,10 +2,8 @@ package handlers
 
 import (
 	"context"
-	"freeSociety/configs"
 	pb "freeSociety/proto/generated/post"
 	"freeSociety/services/post/instances"
-	"freeSociety/utils/files"
 
 	"github.com/mreza0100/golog"
 )
@@ -17,10 +15,6 @@ type NewOpts struct {
 }
 
 func New(opts *NewOpts) instances.Handlers {
-	if !files.FileExist(configs.PicturesPath) {
-		files.CreateDir(configs.PicturesPath)
-	}
-
 	return &handlers{
 		srv:        opts.Srv,
 		lgr:        opts.Lgr,

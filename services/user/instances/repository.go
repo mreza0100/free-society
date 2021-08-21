@@ -11,8 +11,8 @@ type (
 		GetUsersByIds(userIds []uint64) ([]*models.User, error)
 	}
 	write interface {
-		NewUser(user *models.User) (uint64, error)
-		DeleteUser(id uint64) error
+		NewUser(name, gender, email, avatarPath string) (uint64, error)
+		DeleteUser(userId uint64) (picturePath string, err error)
 	}
 
 	Repository struct {

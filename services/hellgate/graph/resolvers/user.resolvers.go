@@ -5,31 +5,67 @@ package resolvers
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"freeSociety/configs"
 	securityPb "freeSociety/proto/generated/security"
 	"freeSociety/proto/generated/user"
 	models "freeSociety/services/hellgate/graph/model"
 	"freeSociety/services/hellgate/security"
 	"freeSociety/services/hellgate/validation"
 	"freeSociety/utils"
+	"freeSociety/utils/files"
+	"io"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUserInput) (int, error) {
-	err := validation.CreateUser(&input)
-	if err != nil {
-		return 0, err
+	var (
+		avatarFormat = ""
+		avatarBytes  = []byte{}
+		userId       uint64
+	)
+	{
+		err := validation.CreateUser(&input)
+		if err != nil {
+			return 0, err
+		}
+	}
+	{
+		if input.Avatar != nil {
+			if configs.Avatar_max_size < input.Avatar.Size {
+				return 0, fmt.Errorf("Avatar size is bigger than %v MB", configs.Avatar_max_size/1024/1024)
+			}
+			// check type of input.avatar to be a image
+			if input.Avatar.ContentType != "image/jpeg" && input.Avatar.ContentType != "image/png" {
+				return 0, errors.New("image type is not a image")
+			}
+
+			pictureContent, err := io.ReadAll(input.Avatar.File)
+			if err != nil {
+				return 0, err
+			}
+
+			avatarBytes = pictureContent
+			avatarFormat = files.GetFileFormat(input.Avatar.Filename)
+		}
 	}
 
-	userRes, err := r.userConn.NewUser(ctx, &user.NewUserRequest{
-		Name:   input.Name,
-		Email:  input.Email,
-		Gender: input.Gender,
-	})
-	if err != nil {
-		return 0, utils.GetGRPCMSG(err)
+	{
+		userRes, err := r.userConn.NewUser(ctx, &user.NewUserRequest{
+			Name:         input.Name,
+			Email:        input.Email,
+			Gender:       input.Gender,
+			Avatar:       avatarBytes,
+			AvatarFormat: avatarFormat,
+		})
+		if err != nil {
+			return 0, utils.GetGRPCMSG(err)
+		}
+		userId = userRes.Id
 	}
 	{
 		securityRes, err := r.SecurityConn.NewUser(ctx, &securityPb.NewUserRequest{
-			UserId:   userRes.Id,
+			UserId:   userId,
 			Password: input.Password,
 			Device:   security.GetUserAgent(ctx),
 		})
@@ -39,7 +75,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUs
 		security.SetToken(ctx, securityRes.GetToken())
 	}
 
-	return int(userRes.Id), nil
+	return int(userId), nil
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
@@ -55,17 +91,22 @@ func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id int) (*models.User, error) {
+	userId := security.GetUserId(ctx)
+
 	response, err := r.userConn.GetUser(ctx, &user.GetUserRequest{
-		Id: uint64(id),
+		Id:          uint64(id),
+		RequestorId: userId,
 	})
 	if err != nil {
 		return nil, utils.GetGRPCMSG(err)
 	}
 
 	return &models.User{
-		ID:     id,
-		Name:   response.Name,
-		Email:  response.Email,
-		Gender: response.Gender,
+		ID:          id,
+		Name:        response.Name,
+		Email:       response.Email,
+		Gender:      response.Gender,
+		IsFollowing: response.IsFollowing,
+		Avatar:      response.AvatarPath,
 	}, nil
 }

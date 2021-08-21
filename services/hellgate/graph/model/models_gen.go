@@ -21,6 +21,7 @@ type User struct {
 	Email       string `json:"email"`
 	Gender      string `json:"gender"`
 	IsFollowing bool   `json:"isFollowing"`
+	Avatar      string `json:"avatar"`
 }
 
 type CreatePostInput struct {
@@ -33,10 +34,11 @@ type CreatePostInput struct {
 }
 
 type CreateUserInput struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Gender   string `json:"gender"`
-	Password string `json:"password"`
+	Name     string          `json:"name"`
+	Email    string          `json:"email"`
+	Gender   string          `json:"gender"`
+	Password string          `json:"password"`
+	Avatar   *graphql.Upload `json:"avatar"`
 }
 
 type DeletePostInput struct {

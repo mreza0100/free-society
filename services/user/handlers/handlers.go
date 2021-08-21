@@ -32,7 +32,7 @@ type handlers struct {
 }
 
 func (h *handlers) NewUser(ctx context.Context, in *pb.NewUserRequest) (*pb.NewUserResponse, error) {
-	id, err := h.srv.NewUser(in)
+	id, err := h.srv.NewUser(in.Name, in.Email, in.Gender, in.AvatarFormat, in.Avatar)
 
 	return &pb.NewUserResponse{
 		Id: id,
@@ -40,7 +40,7 @@ func (h *handlers) NewUser(ctx context.Context, in *pb.NewUserRequest) (*pb.NewU
 }
 
 func (h *handlers) GetUser(ctx context.Context, in *pb.GetUserRequest) (*pb.GetUserResponse, error) {
-	return h.srv.GetUser(in.Id, in.Email)
+	return h.srv.GetUser(in.RequestorId, in.Id, in.Email)
 }
 
 func (h *handlers) DeleteUser(ctx context.Context, in *pb.DeleteUserRequest) (*pb.DeleteUserResponse, error) {

@@ -1,5 +1,5 @@
 extend type Query {
-	getUser(id: Int!): User
+	getUser(id: Int!): User @optional
 }
 
 extend type Mutation {
@@ -13,6 +13,7 @@ type User {
 	email: String!
 	gender: String!
 	isFollowing: Boolean!
+	avatar: String!
 }
 
 input createUserInput {
@@ -20,4 +21,5 @@ input createUserInput {
 	email: String!
 	gender: String!
 	password: String!
+	avatar: Upload
 }
