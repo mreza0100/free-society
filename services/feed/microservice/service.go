@@ -1,15 +1,15 @@
 package microservice
 
 import (
+	pb "freeSociety/proto/generated/feed"
 	"freeSociety/services/feed/domain"
 	"freeSociety/services/feed/handlers"
-	"freeSociety/services/feed/instances"
 	feedNats "freeSociety/services/feed/nats"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewFeedService(lgr *golog.Core) instances.Handlers {
+func NewFeedService(lgr *golog.Core) pb.FeedServiceServer {
 	publishers, setServices := feedNats.InitNats(lgr)
 
 	services := domain.New(&domain.NewOpts{

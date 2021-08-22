@@ -1,15 +1,15 @@
 package microservice
 
 import (
+	pb "freeSociety/proto/generated/user"
 	"freeSociety/services/user/domain"
 	"freeSociety/services/user/handlers"
-	"freeSociety/services/user/instances"
 	userNats "freeSociety/services/user/nats"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewUserService(lgr *golog.Core) instances.Handlers {
+func NewUserService(lgr *golog.Core) pb.UserServiceServer {
 	publishers, setServices := userNats.InitNats(lgr)
 
 	services := domain.New(&domain.NewOpts{

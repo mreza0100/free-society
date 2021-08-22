@@ -1,15 +1,15 @@
 package microservice
 
 import (
+	pb "freeSociety/proto/generated/security"
 	"freeSociety/services/security/domain"
 	"freeSociety/services/security/handlers"
-	"freeSociety/services/security/instances"
 	securityNats "freeSociety/services/security/nats"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewSecurityService(lgr *golog.Core) instances.Handlers {
+func NewSecurityService(lgr *golog.Core) pb.SecurityServiceServer {
 	publishers, setServices := securityNats.InitNats(lgr)
 
 	services := domain.New(&domain.NewOpts{

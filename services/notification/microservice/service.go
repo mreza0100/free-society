@@ -1,15 +1,15 @@
 package microservice
 
 import (
+	pb "freeSociety/proto/generated/notification"
 	"freeSociety/services/notification/domain"
 	"freeSociety/services/notification/handlers"
-	"freeSociety/services/notification/instances"
 	notificationNats "freeSociety/services/notification/nats"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewNotificationService(lgr *golog.Core) instances.Handlers {
+func NewNotificationService(lgr *golog.Core) pb.NotificationServiceServer {
 	publishers, setServices := notificationNats.InitNats(lgr)
 
 	services := domain.New(&domain.NewOpts{

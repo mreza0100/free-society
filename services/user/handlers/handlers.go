@@ -15,7 +15,7 @@ type NewOpts struct {
 	Publishers instances.Publishers
 }
 
-func New(opts *NewOpts) instances.Handlers {
+func New(opts *NewOpts) pb.UserServiceServer {
 	return &handlers{
 		lgr:        opts.Lgr.With("In handlers->"),
 		srv:        opts.Srv,

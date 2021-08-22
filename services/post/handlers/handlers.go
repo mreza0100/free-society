@@ -14,7 +14,7 @@ type NewOpts struct {
 	Publishers instances.Publishers
 }
 
-func New(opts *NewOpts) instances.Handlers {
+func New(opts *NewOpts) pb.PostServiceServer {
 	return &handlers{
 		srv:        opts.Srv,
 		lgr:        opts.Lgr,

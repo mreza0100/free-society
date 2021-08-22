@@ -1,15 +1,15 @@
 package microservice
 
 import (
+	pb "freeSociety/proto/generated/relation"
 	"freeSociety/services/relation/domain"
 	"freeSociety/services/relation/handlers"
-	"freeSociety/services/relation/instances"
 	relationNats "freeSociety/services/relation/nats"
 
 	"github.com/mreza0100/golog"
 )
 
-func NewRelationService(lgr *golog.Core) instances.Handlers {
+func NewRelationService(lgr *golog.Core) pb.RelationServiceServer {
 	publishers, setServices := relationNats.InitNats(lgr)
 
 	services := domain.New(&domain.NewOpts{
