@@ -14,19 +14,19 @@ type write struct {
 	db  *gorm.DB
 }
 
-func (w *write) NewPost(title, body string, userId uint64, picturesName []string) (uint64, error) {
+func (w *write) NewPost(title, body string, userId uint64, picturesNames []string) (uint64, error) {
 	const query = `INSERT INTO posts (title, body, owner_id, pictures_name) VALUES (?, ?, ?, ? ) RETURNING id`
 	params := []interface{}{title, body, userId}
 
-	if len(picturesName) > 0 {
-		params = append(params, strings.Join(picturesName, ","))
+	if len(picturesNames) > 0 {
+		params = append(params, strings.Join(picturesNames, ","))
 	} else {
 		params = append(params, nil)
 	}
 
 	for i := 0; i < configs.Max_picture_per_post; i++ {
-		if len(picturesName) > i {
-			params = append(params, picturesName[i])
+		if len(picturesNames) > i {
+			params = append(params, picturesNames[i])
 		} else {
 			params = append(params, nil)
 		}

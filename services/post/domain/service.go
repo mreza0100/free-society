@@ -37,8 +37,8 @@ type service struct {
 
 func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Picture) (uint64, error) {
 	var (
-		picturesPath = make([]string, len(pictures))
-		postId       uint64
+		picturesNames = make([]string, len(pictures))
+		postId        uint64
 	)
 
 	{
@@ -49,19 +49,19 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 			format := files.GetFileFormat(pictures[i].Name)
 			id := utils.GenerateUuid()
 
-			picturesPath[i] = id + format
+			picturesNames[i] = id + format
 		}
 	}
 	{
 		var err error
-		postId, err = s.repo.Write.NewPost(title, body, userId, picturesPath)
+		postId, err = s.repo.Write.NewPost(title, body, userId, picturesNames)
 		if err != nil {
 			return 0, err
 		}
 	}
 	{
 		for i := 0; i < len(pictures); i++ {
-			p := costume.GetFullPathPicture(picturesPath[i])
+			p := costume.GetFullPathPicture(picturesNames[i])
 
 			err := files.CreateAndWriteFile(p, pictures[i].Content)
 			if err != nil {
@@ -73,12 +73,12 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 }
 
 func (s *service) DeletePost(postId, userId uint64) error {
-	rawPicturesPaths, err := s.repo.Write.DeletePost(postId, userId)
+	rawPicturesNames, err := s.repo.Write.DeletePost(postId, userId)
 	if err != nil {
 		return err
 	}
 
-	picturesNames := strings.Split(rawPicturesPaths, configs.DB_picture_sep)
+	picturesNames := strings.Split(rawPicturesNames, configs.DB_picture_sep)
 	for i := 0; i < len(picturesNames); i++ {
 		if err = costume.DeletPicture(picturesNames[i]); err != nil {
 			return err
@@ -204,11 +204,11 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 			}
 
 			{
-				pictureNames := strings.Split(rawPost.PicturesName, configs.DB_picture_sep)
-				pictureUrls := make([]string, 0, len(pictureNames))
-				for i := 0; i < len(pictureNames); i++ {
-					if pictureNames[i] != "" {
-						pictureUrls = append(pictureUrls, costume.ExportPicture(pictureNames[i]))
+				picturesNames := strings.Split(rawPost.PicturesName, configs.DB_picture_sep)
+				pictureUrls := make([]string, 0, len(picturesNames))
+				for i := 0; i < len(picturesNames); i++ {
+					if picturesNames[i] != "" {
+						pictureUrls = append(pictureUrls, costume.ExportPicture(picturesNames[i]))
 					}
 				}
 				converted.PictureUrls = pictureUrls

@@ -52,8 +52,8 @@ func (r *read) IsPictureExist(name string) (bool, error) {
 		return false, tx.Error
 	}
 
-	data := struct{ PicturesPath string }{}
+	data := struct{ PicturesNames string }{}
 	tx.Scan(&data)
 
-	return data.PicturesPath != "", tx.Error
+	return data.PicturesNames != "", tx.Error
 }
