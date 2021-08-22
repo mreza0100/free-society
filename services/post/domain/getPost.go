@@ -1,113 +1,15 @@
 package domain
 
 import (
-	"fmt"
 	"freeSociety/configs"
 	pb "freeSociety/proto/generated/post"
-	"freeSociety/services/post/instances"
 	"freeSociety/services/post/models"
-	"freeSociety/services/post/repository"
 	"freeSociety/utils"
-	"freeSociety/utils/files"
 	"freeSociety/utils/files/costume"
 	"strings"
 
-	"github.com/mreza0100/golog"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
-
-type NewOpts struct {
-	Lgr        *golog.Core
-	Publishers instances.Publishers
-}
-
-func New(opts *NewOpts) instances.Sevice {
-	return &service{
-		lgr:        opts.Lgr.With("In domain->"),
-		repo:       repository.NewRepo(opts.Lgr),
-		publishers: opts.Publishers,
-	}
-}
-
-type service struct {
-	lgr        *golog.Core
-	repo       *instances.Repository
-	publishers instances.Publishers
-}
-
-func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Picture) (uint64, error) {
-	var (
-		picturesNames = make([]string, len(pictures))
-		postId        uint64
-	)
-
-	{
-		if len(pictures) > configs.Max_picture_per_post {
-			return 0, fmt.Errorf("more then %v pictures", configs.Max_picture_per_post)
-		}
-		for i := 0; i < len(pictures); i++ {
-			format := files.GetFileFormat(pictures[i].Name)
-			id := utils.GenerateUuid()
-
-			picturesNames[i] = id + format
-		}
-	}
-	{
-		var err error
-		postId, err = s.repo.Write.NewPost(title, body, userId, picturesNames)
-		if err != nil {
-			return 0, err
-		}
-	}
-	{
-		for i := 0; i < len(pictures); i++ {
-			p := costume.GetFullPathPicture(picturesNames[i])
-
-			err := files.CreateAndWriteFile(p, pictures[i].Content)
-			if err != nil {
-				return 0, err
-			}
-		}
-	}
-	return postId, nil
-}
-
-func (s *service) DeletePost(postId, userId uint64) error {
-	rawPicturesNames, err := s.repo.Write.DeletePost(postId, userId)
-	if err != nil {
-		return err
-	}
-
-	picturesNames := strings.Split(rawPicturesNames, configs.DB_picture_sep)
-	for i := 0; i < len(picturesNames); i++ {
-		if err = costume.DeletPicture(picturesNames[i]); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (s *service) DeleteUserPosts(userId uint64) error {
-	picturesName, err := s.repo.Write.DeleteUserPosts(userId)
-	if err != nil {
-		return err
-	}
-
-	for _, rawPicNmaes := range picturesName {
-		for _, picName := range strings.Split(rawPicNmaes.PicturesName, configs.DB_picture_sep) {
-			if costume.DeletPicture(picName) != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func (s *service) IsPostsExists(postIds []uint64) ([]uint64, error) {
-	return s.repo.Read.IsExists(postIds)
-}
 
 func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, error) {
 	if len(postIds) == 0 {

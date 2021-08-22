@@ -36,7 +36,3 @@ func (h *handlers) Like(_ context.Context, in *pb.LikeRequest) (*empty.Empty, er
 
 	return &emptypb.Empty{}, nil
 }
-
-func (h *handlers) UndoLike(_ context.Context, in *pb.UndoLikeRequest) (*empty.Empty, error) {
-	return &emptypb.Empty{}, h.srv.UndoLike(in.LikerId, in.PostId)
-}

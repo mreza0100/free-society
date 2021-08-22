@@ -1,8 +1,8 @@
 package domain
 
 import (
-	"freeSociety/services/feed/instances"
-	"freeSociety/services/feed/repository"
+	"freeSociety/services/post/instances"
+	"freeSociety/services/post/repository"
 
 	"github.com/mreza0100/golog"
 )
@@ -14,14 +14,14 @@ type NewOpts struct {
 
 func New(opts *NewOpts) instances.Sevice {
 	return &service{
-		repo:       repository.New(opts.Lgr),
 		lgr:        opts.Lgr.With("In domain->"),
+		repo:       repository.NewRepo(opts.Lgr),
 		publishers: opts.Publishers,
 	}
 }
 
 type service struct {
-	repo       *instances.Repository
 	lgr        *golog.Core
+	repo       *instances.Repository
 	publishers instances.Publishers
 }
