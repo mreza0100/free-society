@@ -21,6 +21,6 @@ do
       echo '--------------------------------------------------------------------'
 done
 
-bash $ROOT/scripts/develop/nats/start.sh --detach
+bash $ROOT/scripts/develop/common/start.sh --detach
 
 exit 0

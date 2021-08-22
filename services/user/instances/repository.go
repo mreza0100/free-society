@@ -13,6 +13,7 @@ type (
 	write interface {
 		NewUser(name, gender, email, avatarPath string) (uint64, error)
 		DeleteUser(userId uint64) (picturePath string, err error)
+		UpdateUser(userId uint64, name, gender, avatarPath string) error
 	}
 
 	Repository struct {

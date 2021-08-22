@@ -9,8 +9,7 @@ import (
 	"freeSociety/services/post/repository"
 	"freeSociety/utils"
 	"freeSociety/utils/files"
-	"freeSociety/utils/hash"
-	"path"
+	"freeSociety/utils/files/costume"
 	"strings"
 
 	"github.com/mreza0100/golog"
@@ -48,9 +47,9 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 		}
 		for i := 0; i < len(pictures); i++ {
 			format := files.GetFileFormat(pictures[i].Name)
-			hash := hash.Hash512(pictures[i].Content)
+			id := utils.GenerateUuid()
 
-			picturesPath[i] = hash + format
+			picturesPath[i] = id + format
 		}
 	}
 	{
@@ -62,11 +61,8 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 	}
 	{
 		for i := 0; i < len(pictures); i++ {
-			p := path.Join(configs.ROOT, configs.PicturesPath, picturesPath[i])
+			p := costume.GetFullPathPicture(picturesPath[i])
 
-			if files.FileExist(p) {
-				continue
-			}
 			err := files.CreateAndWriteFile(p, pictures[i].Content)
 			if err != nil {
 				return 0, err
@@ -82,18 +78,9 @@ func (s *service) DeletePost(postId, userId uint64) error {
 		return err
 	}
 
-	picturesPaths := strings.Split(rawPicturesPaths, configs.DB_picture_sep)
-	for i := 0; i < len(picturesPaths); i++ {
-		exist, err := s.repo.Read.IsPictureExist(picturesPaths[i])
-		s.lgr.InfoLog(exist, "---", err)
-		if err != nil {
-			return err
-		}
-		if exist {
-			continue
-		}
-
-		if files.DeleteFile(path.Join(configs.ROOT, configs.PicturesPath, picturesPaths[i])) != nil {
+	picturesNames := strings.Split(rawPicturesPaths, configs.DB_picture_sep)
+	for i := 0; i < len(picturesNames); i++ {
+		if err = costume.DeletPicture(picturesNames[i]); err != nil {
 			return err
 		}
 	}
@@ -102,7 +89,20 @@ func (s *service) DeletePost(postId, userId uint64) error {
 }
 
 func (s *service) DeleteUserPosts(userId uint64) error {
-	return s.repo.Write.DeleteUserPosts(userId)
+	picturesName, err := s.repo.Write.DeleteUserPosts(userId)
+	if err != nil {
+		return err
+	}
+
+	for _, rawPicNmaes := range picturesName {
+		for _, picName := range strings.Split(rawPicNmaes.PicturesName, configs.DB_picture_sep) {
+			if costume.DeletPicture(picName) != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (s *service) IsPostsExists(postIds []uint64) ([]uint64, error) {
@@ -204,10 +204,14 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 			}
 
 			{
-				picPaths := strings.Split(rawPost.PicturesPath, configs.DB_picture_sep)
-				for i := 0; i < len(picPaths); i++ {
-					picPaths[i] = configs.PicturesPath + picPaths[i]
+				pictureNames := strings.Split(rawPost.PicturesName, configs.DB_picture_sep)
+				pictureUrls := make([]string, 0, len(pictureNames))
+				for i := 0; i < len(pictureNames); i++ {
+					if pictureNames[i] != "" {
+						pictureUrls = append(pictureUrls, costume.ExportPicture(pictureNames[i]))
+					}
 				}
+				converted.PictureUrls = pictureUrls
 			}
 			{
 				_, found := likedGroup[converted.Id]

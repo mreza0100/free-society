@@ -55,8 +55,5 @@ func (r *read) IsPictureExist(name string) (bool, error) {
 	data := struct{ PicturesPath string }{}
 	tx.Scan(&data)
 
-	r.lgr.InfoLog(name)
-	r.lgr.InfoLog("data.PicturesPath: ", data.PicturesPath)
-
 	return data.PicturesPath != "", tx.Error
 }

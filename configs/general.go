@@ -16,17 +16,17 @@ const (
 
 	DB_picture_sep  = ","
 	Avatar_max_size = 1024 * 1024 * 5 // 5 MB
+
+	FemaleDefaultAvatarPath = "default_female.jpg"
+	MaleDefaultAvatarPath   = "default_male.jpeg"
+	PicturesPath            = "/images/"
+	AvatarPath              = "/avatars/"
+	FilesDomain             = "localhost:8000"
 )
 
 var (
 	ROOT    = os.Getenv("ROOT")
-	LogPath = ROOT + "/logs/all.log"
-
-	PicturesPath = "/public/images/"
-	AvatarPath   = "/public/avatars"
-
-	FemaleDefaultAvatarPath = path.Join(AvatarPath, "default_female.jpg")
-	MaleDefaultAvatarPath   = path.Join(AvatarPath, "default_male.jpeg")
+	LogPath = path.Join(ROOT, "/logs/all.log")
 )
 
 func init() {

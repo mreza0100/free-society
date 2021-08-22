@@ -5,12 +5,11 @@ import (
 	pb "freeSociety/proto/generated/user"
 	"freeSociety/services/user/models"
 	"freeSociety/services/user/repository"
-	"freeSociety/utils/files"
-	"path"
+	"freeSociety/utils"
+	"freeSociety/utils/files/costume"
 
 	"freeSociety/services/user/instances"
 
-	"github.com/gofrs/uuid"
 	"github.com/mreza0100/golog"
 )
 
@@ -46,20 +45,19 @@ func (s *service) NewUser(name, email, gender, avatarFormat string, avatar []byt
 				avatarName = configs.FemaleDefaultAvatarPath
 			}
 		} else {
-			id, err := uuid.NewV4()
-			if err != nil {
-				return 0, err
-			}
-			avatarName = id.String() + avatarFormat
-
-			err = files.CreateAndWriteFile(path.Join(configs.ROOT, configs.AvatarPath, avatarName), avatar)
-			if err != nil {
-				return 0, err
-			}
+			id := utils.GenerateUuid()
+			avatarName = id + avatarFormat
 		}
 	}
 
-	return s.repo.Write.NewUser(name, gender, email, avatarName)
+	userId, err := s.repo.Write.NewUser(name, gender, email, avatarName)
+	if err != nil {
+		return 0, err
+	}
+
+	err = costume.SaveAvatar(avatarName, avatar)
+
+	return userId, err
 }
 
 func (s *service) GetUser(requestorId, id uint64, email string) (*pb.GetUserResponse, error) {
@@ -96,7 +94,7 @@ func (s *service) GetUser(requestorId, id uint64, email string) (*pb.GetUserResp
 		Name:        user.Name,
 		Email:       user.Email,
 		Gender:      user.Gender,
-		AvatarPath:  user.AvatarPath,
+		AvatarPath:  costume.ExportAvatar(user.AvatarName),
 		IsFollowing: isFollowing,
 	}, nil
 }
@@ -111,7 +109,7 @@ func (s *service) DeleteUser(id uint64) error {
 		return nil
 	}
 
-	return files.DeleteFile(path.Join(configs.ROOT, configs.AvatarPath, avatarName))
+	return costume.DeletAvatar(avatarName)
 }
 
 func (s *service) IsUserExist(userId uint64) bool {
@@ -140,11 +138,49 @@ func (s *service) GetUsers(ids []uint64) (map[uint64]*models.User, error) {
 				Email:      u.Email,
 				ID:         u.ID,
 				Gender:     u.Gender,
-				AvatarPath: u.AvatarPath,
+				AvatarName: costume.ExportAvatar(u.AvatarName),
 				CreatedAt:  u.CreatedAt,
 			}
 		}
 	}
 
 	return result, err
+}
+
+func (s *service) UpdateUser(userId uint64, name, gender, avatarFormat string, avatar []byte) error {
+	var (
+		avatarName string
+	)
+
+	{
+		prevData, err := s.repo.Read.GetUserById(userId)
+		if err != nil {
+			return err
+		}
+		if !(prevData.AvatarName == configs.MaleDefaultAvatarPath || prevData.AvatarName == configs.FemaleDefaultAvatarPath) {
+			err = costume.DeletAvatar(prevData.AvatarName)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	{
+		if len(avatar) != 0 {
+			id := utils.GenerateUuid()
+			avatarName = id + avatarFormat
+		} else {
+			if gender == "male" {
+				avatarName = configs.MaleDefaultAvatarPath
+			} else {
+				avatarName = configs.FemaleDefaultAvatarPath
+			}
+		}
+	}
+
+	err := s.repo.Write.UpdateUser(userId, name, gender, avatarName)
+	if err != nil {
+		return err
+	}
+	return costume.SaveAvatar(avatarName, avatar)
+
 }

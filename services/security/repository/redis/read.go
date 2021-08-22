@@ -14,7 +14,6 @@ type read struct {
 func (r *read) GetSession(token string) (uint64, error) {
 	cmd := r.db.Get(r.h.addPrefixS(token))
 	if cmd.Err() != nil {
-		r.lgr.InfoLog(cmd.Err())
 		return 0, cmd.Err()
 	}
 

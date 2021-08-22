@@ -13,15 +13,15 @@ type write struct {
 	read *read
 }
 
-func (w *write) NewUser(name, gender, email, avatarPath string) (uint64, error) {
+func (w *write) NewUser(name, gender, email, avatarName string) (uint64, error) {
 	{
 		if w.read.IsUserExistByEmail(email) {
 			return 0, status.Error(codes.AlreadyExists, "there is already a user with this email")
 		}
 	}
 	{
-		const query = `INSERT INTO users (name, gender, email, avatar_path) VALUES (?, ?, ?, ?) RETURNING id`
-		params := []interface{}{name, gender, email, avatarPath}
+		const query = `INSERT INTO users (name, gender, email, avatar_name) VALUES (?, ?, ?, ?) RETURNING id`
+		params := []interface{}{name, gender, email, avatarName}
 
 		tx := w.db.Raw(query, params...)
 		if tx.Error != nil {
@@ -35,8 +35,8 @@ func (w *write) NewUser(name, gender, email, avatarPath string) (uint64, error) 
 	}
 }
 
-func (w *write) DeleteUser(userId uint64) (picturePath string, err error) {
-	const query = `DELETE FROM users WHERE id=? RETURNING avatar_path`
+func (w *write) DeleteUser(userId uint64) (avatarName string, err error) {
+	const query = `DELETE FROM users WHERE id=? RETURNING avatar_name`
 	params := []interface{}{userId}
 
 	tx := w.db.Raw(query, params...)
@@ -45,8 +45,17 @@ func (w *write) DeleteUser(userId uint64) (picturePath string, err error) {
 		return "", status.Error(codes.NotFound, "cant find user")
 	}
 
-	data := struct{ AvatarPath string }{}
+	data := struct{ AvatarName string }{}
 	tx.Scan(&data)
 
-	return data.AvatarPath, nil
+	return data.AvatarName, nil
+}
+
+func (w *write) UpdateUser(userId uint64, name, gender, avatarName string) error {
+	const query = `UPDATE users SET name = ?, gender = ?, avatar_name = ? WHERE id = ?`
+	params := []interface{}{name, gender, avatarName, userId}
+
+	tx := w.db.Exec(query, params...)
+
+	return tx.Error
 }

@@ -14,13 +14,19 @@ type write struct {
 	db  *gorm.DB
 }
 
-func (w *write) NewPost(title, body string, userId uint64, imagePaths []string) (uint64, error) {
-	const query = `INSERT INTO posts (title, body, owner_id, pictures_path) VALUES (?, ?, ?, ? ) RETURNING id`
-	params := []interface{}{title, body, userId, strings.Join(imagePaths, configs.DB_picture_sep)}
+func (w *write) NewPost(title, body string, userId uint64, picturesName []string) (uint64, error) {
+	const query = `INSERT INTO posts (title, body, owner_id, pictures_name) VALUES (?, ?, ?, ? ) RETURNING id`
+	params := []interface{}{title, body, userId}
+
+	if len(picturesName) > 0 {
+		params = append(params, strings.Join(picturesName, ","))
+	} else {
+		params = append(params, nil)
+	}
 
 	for i := 0; i < configs.Max_picture_per_post; i++ {
-		if len(imagePaths) > i {
-			params = append(params, imagePaths[i])
+		if len(picturesName) > i {
+			params = append(params, picturesName[i])
 		} else {
 			params = append(params, nil)
 		}
@@ -37,8 +43,8 @@ func (w *write) NewPost(title, body string, userId uint64, imagePaths []string) 
 	return result.Id, nil
 }
 
-func (w *write) DeletePost(postId, userId uint64) (picturesPath string, err error) {
-	const query = `DELETE FROM posts WHERE id=? AND owner_id=? RETURNING pictures_path`
+func (w *write) DeletePost(postId, userId uint64) (picturesName string, err error) {
+	const query = `DELETE FROM posts WHERE id=? AND owner_id=? RETURNING pictures_name`
 	params := []interface{}{postId, userId}
 
 	tx := w.db.Raw(query, params...)
@@ -46,21 +52,26 @@ func (w *write) DeletePost(postId, userId uint64) (picturesPath string, err erro
 		return "", tx.Error
 	}
 
-	result := struct{ PicturesPath string }{}
+	result := struct{ PicturesName string }{}
 	tx.Scan(&result)
 
 	if tx.RowsAffected != 1 {
 		return "", errors.New("Cant find post")
 	}
 
-	return result.PicturesPath, tx.Error
+	return result.PicturesName, tx.Error
 }
 
-func (w *write) DeleteUserPosts(userId uint64) error {
-	const query = `DELETE FROM posts WHERE owner_id=?`
+func (w *write) DeleteUserPosts(userId uint64) ([]struct{ PicturesName string }, error) {
+	const query = `DELETE FROM posts WHERE owner_id= ? RETURNING pictures_name`
 	params := []interface{}{userId}
 
-	tx := w.db.Exec(query, params...)
+	tx := w.db.Raw(query, params...)
+	if tx.Error != nil {
+		return []struct{ PicturesName string }{}, tx.Error
+	}
+	result := make([]struct{ PicturesName string }, 0)
+	tx.Scan(&result)
 
-	return tx.Error
+	return result, tx.Error
 }

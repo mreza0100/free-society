@@ -9,8 +9,20 @@ option go_package = "/user";
 service UserService {
       rpc NewUser(NewUserRequest) returns (NewUserResponse);
       rpc GetUser(GetUserRequest) returns (GetUserResponse);
+      rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
       rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
 }
+
+message UpdateUserRequest {
+      uint64 id       = 1;
+
+      string name     = 2;
+      string gender   = 3;
+
+      string avatarFormat = 4;
+      bytes  avatar       = 5;
+}
+message UpdateUserResponse {}
 
 
 

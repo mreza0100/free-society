@@ -18,7 +18,7 @@ import (
 	"io"
 )
 
-func (r *mutationResolver) CreateUser(ctx context.Context, input models.CreateUserInput) (int, error) {
+func (r *mutationResolver) CreateUser(ctx context.Context, input models.UserInput) (int, error) {
 	var (
 		avatarFormat = ""
 		avatarBytes  = []byte{}
@@ -88,6 +88,39 @@ func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
 	security.DeleteToken(ctx)
 
 	return response.GetOk(), utils.GetGRPCMSG(err)
+}
+
+func (r *mutationResolver) EditUser(ctx context.Context, userData models.UpdateUserInput) (bool, error) {
+	userId := security.GetUserId(ctx)
+
+	var (
+		avatarFormat string
+		avatarBytes  = []byte{}
+	)
+
+	if userData.Avatar != nil {
+		var err error
+
+		if userData.Avatar.ContentType != "image/jpeg" && userData.Avatar.ContentType != "image/png" {
+			return false, errors.New("image type is not a image")
+		}
+		avatarFormat = files.GetFileFormat(userData.Avatar.Filename)
+		avatarBytes, err = io.ReadAll(userData.Avatar.File)
+		if err != nil {
+			return false, err
+		}
+	}
+
+	_, err := r.userConn.UpdateUser(ctx, &user.UpdateUserRequest{
+		Id:     userId,
+		Name:   userData.Name,
+		Gender: userData.Gender,
+
+		AvatarFormat: avatarFormat,
+		Avatar:       avatarBytes,
+	})
+
+	return err == nil, err
 }
 
 func (r *queryResolver) GetUser(ctx context.Context, id int) (*models.User, error) {

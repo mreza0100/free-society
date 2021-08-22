@@ -3,8 +3,15 @@ extend type Query {
 }
 
 extend type Mutation {
-	createUser(input: createUserInput!): Int!
+	createUser(input: UserInput!): Int!
 	deleteUser: Boolean! @private
+	editUser(userData: UpdateUserInput!): Boolean! @private
+}
+
+input UpdateUserInput {
+	name: String!
+	gender: String!
+	avatar: Upload
 }
 
 type User {
@@ -16,7 +23,7 @@ type User {
 	avatar: String!
 }
 
-input createUserInput {
+input UserInput {
 	name: String!
 	email: String!
 	gender: String!

@@ -40,7 +40,6 @@ func (p *publishers) LikeNotify(userId, likerId, postId uint64) (uint64, error) 
 		{
 			msg, err := p.nc.Request(subject, request, configs.NatsConfigs.Timeout)
 			if dbug("p.nc.Request")(err) != nil {
-				p.lgr.InfoLog(22)
 				return 0, err
 			}
 			byteResponse = msg.Data

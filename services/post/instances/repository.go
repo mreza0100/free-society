@@ -9,9 +9,9 @@ type read interface {
 }
 
 type write interface {
-	NewPost(title, body string, userId uint64, imagePaths []string) (uint64, error)
-	DeletePost(postId, userId uint64) (picturesPath string, err error)
-	DeleteUserPosts(userId uint64) error
+	NewPost(title, body string, userId uint64, picturesName []string) (uint64, error)
+	DeletePost(postId, userId uint64) (picturesName string, err error)
+	DeleteUserPosts(userId uint64) ([]struct{ PicturesName string }, error)
 }
 
 type Repository struct {

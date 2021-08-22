@@ -126,7 +126,7 @@ func (r *queryResolver) GetPost(ctx context.Context, ids []int) ([]*models.Post,
 
 	{
 		if len(ids) > 50 {
-			return []*models.Post{}, errors.New("too many ids")
+			return nil, errors.New("too many ids")
 		}
 		requestorId, _ = security.GetOptionalId(ctx)
 	}

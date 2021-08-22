@@ -9,7 +9,7 @@ type Post struct {
 	Title string `gorm:"type:text;NOT NULL"`
 	Body  string `gorm:"type:text;NOT NULL"`
 
-	PicturesPath string `gorm:""`
+	PicturesName string `gorm:""`
 
 	CreatedAt time.Time `gorm:"default:NOW();NOT NULL"`
 }

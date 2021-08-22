@@ -8,7 +8,7 @@ import (
 	"github.com/go-ozzo/ozzo-validation/is"
 )
 
-func CreateUser(data *models.CreateUserInput) error {
+func CreateUser(data *models.UserInput) error {
 	return validation.ValidateStruct(data,
 		validation.Field(&data.Name, validation.Length(1, 32)),
 		validation.Field(&data.Gender, validation.By(func(value interface{}) error {

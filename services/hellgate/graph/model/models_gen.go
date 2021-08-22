@@ -15,6 +15,12 @@ type Notification struct {
 	Time    string `json:"Time"`
 }
 
+type UpdateUserInput struct {
+	Name   string          `json:"name"`
+	Gender string          `json:"gender"`
+	Avatar *graphql.Upload `json:"avatar"`
+}
+
 type User struct {
 	ID          int    `json:"id"`
 	Name        string `json:"name"`
@@ -24,6 +30,14 @@ type User struct {
 	Avatar      string `json:"avatar"`
 }
 
+type UserInput struct {
+	Name     string          `json:"name"`
+	Email    string          `json:"email"`
+	Gender   string          `json:"gender"`
+	Password string          `json:"password"`
+	Avatar   *graphql.Upload `json:"avatar"`
+}
+
 type CreatePostInput struct {
 	Title  string          `json:"title"`
 	Body   string          `json:"body"`
@@ -31,14 +45,6 @@ type CreatePostInput struct {
 	Image2 *graphql.Upload `json:"image2"`
 	Image3 *graphql.Upload `json:"image3"`
 	Image4 *graphql.Upload `json:"image4"`
-}
-
-type CreateUserInput struct {
-	Name     string          `json:"name"`
-	Email    string          `json:"email"`
-	Gender   string          `json:"gender"`
-	Password string          `json:"password"`
-	Avatar   *graphql.Upload `json:"avatar"`
 }
 
 type DeletePostInput struct {

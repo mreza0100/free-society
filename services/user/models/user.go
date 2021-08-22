@@ -8,5 +8,5 @@ type User struct {
 	Name       string    `gorm:"type:text;NOT NULL"`
 	Gender     string    `gorm:"type:text;NOT NULL"`
 	Email      string    `gorm:"index:unique;NOT NULL"`
-	AvatarPath string    `gorm:"NOT NULL"`
+	AvatarName string    `gorm:"NOT NULL"`
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
+	"github.com/gofrs/uuid"
 	"google.golang.org/grpc/status"
 )
 
@@ -63,6 +64,12 @@ func IsInclude(subject uint64, arr []uint64) bool {
 	}
 	return false
 }
+
 func ParseDateForDb(t time.Time) string {
 	return t.Format(time.RFC3339)
+}
+
+func GenerateUuid() string {
+	rawId, _ := uuid.NewV4()
+	return rawId.String()
 }

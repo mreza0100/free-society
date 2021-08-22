@@ -7,3 +7,13 @@ services:
                   - "4222:4222"
             hostname: nats-server
             command: "--debug"
+
+      files:
+            image: nginx
+            volumes:
+                  - "../../../public/:/usr/share/nginx/html/"
+            ports:
+                  - "8000:80"
+            environment:
+                  # - NGINX_HOST=foobar.com
+                  - NGINX_PORT=80
