@@ -5,6 +5,7 @@
 
 ### Used technologies:
   Nats<br />
+  DDD<br />
   GRPC<br />
   Docker<br />
   Gqlgen<br />
