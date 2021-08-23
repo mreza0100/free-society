@@ -21,6 +21,8 @@
   Session management<br />
   Follow<br />
   Timeline<br />
+  Reshare post with your followers<br />
+  Avatar for user<br />
 
 ## In order to use this project first clone it
 ```
