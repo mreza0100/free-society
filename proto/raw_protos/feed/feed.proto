@@ -7,6 +7,15 @@ option go_package = "/feed";
 
 service FeedService {
 	rpc GetFeed(GetFeedRequest) returns (GetFeedResponse);
+	rpc Reshare(ReshareRequest) returns (ReshareResponse);
+}
+
+message ReshareRequest {
+	uint64 userId = 1;
+	uint64 postId  = 2;
+}
+message ReshareResponse {
+
 }
 
 // GetFeed
@@ -18,4 +27,3 @@ message GetFeedRequest {
 message GetFeedResponse {
 	repeated uint64 postIds = 2;
 }
-//

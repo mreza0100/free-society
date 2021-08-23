@@ -116,6 +116,17 @@ func (r *mutationResolver) UndoLike(ctx context.Context, postID int) (bool, erro
 	return err == nil, nil
 }
 
+func (r *mutationResolver) ResharePost(ctx context.Context, postID int) (bool, error) {
+	userId := security.GetUserId(ctx)
+
+	_, err := r.feedConn.Reshare(ctx, &feed.ReshareRequest{
+		UserId: userId,
+		PostId: uint64(postID),
+	})
+
+	return err == nil, err
+}
+
 func (r *queryResolver) GetPost(ctx context.Context, ids []int) ([]*models.Post, error) {
 	var (
 		uIds        []uint64

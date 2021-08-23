@@ -59,6 +59,7 @@ type ComplexityRoot struct {
 		Like               func(childComplexity int, postID int, ownerID int) int
 		Login              func(childComplexity int, email string, password string) int
 		Logout             func(childComplexity int) int
+		ResharePost        func(childComplexity int, postID int) int
 		UndoLike           func(childComplexity int, postID int) int
 		Unfollow           func(childComplexity int, following int) int
 	}
@@ -117,6 +118,7 @@ type MutationResolver interface {
 	DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error)
 	Like(ctx context.Context, postID int, ownerID int) (bool, error)
 	UndoLike(ctx context.Context, postID int) (bool, error)
+	ResharePost(ctx context.Context, postID int) (bool, error)
 	Follow(ctx context.Context, following int) (bool, error)
 	Unfollow(ctx context.Context, following int) (bool, error)
 	CreateUser(ctx context.Context, input models.UserInput) (int, error)
@@ -274,6 +276,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Logout(childComplexity), true
+
+	case "Mutation.resharePost":
+		if e.complexity.Mutation.ResharePost == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_resharePost_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ResharePost(childComplexity, args["postId"].(int)), true
 
 	case "Mutation.undoLike":
 		if e.complexity.Mutation.UndoLike == nil {
@@ -624,6 +638,7 @@ extend type Mutation {
 
 	like(postId: Int!, ownerId: Int!): Boolean! @private
 	undoLike(postId: Int!): Boolean! @private
+	resharePost(postId: Int!): Boolean! @private
 }
 
 type post {
@@ -866,6 +881,21 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 		}
 	}
 	args["password"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_resharePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["postId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["postId"] = arg0
 	return args, nil
 }
 
@@ -1519,6 +1549,68 @@ func (ec *executionContext) _Mutation_undoLike(ctx context.Context, field graphq
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
 			return ec.resolvers.Mutation().UndoLike(rctx, args["postId"].(int))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Private == nil {
+				return nil, errors.New("directive private is not implemented")
+			}
+			return ec.directives.Private(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_resharePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_resharePost_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ResharePost(rctx, args["postId"].(int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -4330,6 +4422,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "undoLike":
 			out.Values[i] = ec._Mutation_undoLike(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "resharePost":
+			out.Values[i] = ec._Mutation_resharePost(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

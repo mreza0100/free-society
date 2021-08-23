@@ -9,6 +9,7 @@ extend type Mutation {
 
 	like(postId: Int!, ownerId: Int!): Boolean! @private
 	undoLike(postId: Int!): Boolean! @private
+	resharePost(postId: Int!): Boolean! @private
 }
 
 type post {

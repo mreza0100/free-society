@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FeedServiceClient interface {
 	GetFeed(ctx context.Context, in *GetFeedRequest, opts ...grpc.CallOption) (*GetFeedResponse, error)
+	Reshare(ctx context.Context, in *ReshareRequest, opts ...grpc.CallOption) (*ReshareResponse, error)
 }
 
 type feedServiceClient struct {
@@ -38,11 +39,21 @@ func (c *feedServiceClient) GetFeed(ctx context.Context, in *GetFeedRequest, opt
 	return out, nil
 }
 
+func (c *feedServiceClient) Reshare(ctx context.Context, in *ReshareRequest, opts ...grpc.CallOption) (*ReshareResponse, error) {
+	out := new(ReshareResponse)
+	err := c.cc.Invoke(ctx, "/feed.FeedService/Reshare", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FeedServiceServer is the server API for FeedService service.
 // All implementations must embed UnimplementedFeedServiceServer
 // for forward compatibility
 type FeedServiceServer interface {
 	GetFeed(context.Context, *GetFeedRequest) (*GetFeedResponse, error)
+	Reshare(context.Context, *ReshareRequest) (*ReshareResponse, error)
 	mustEmbedUnimplementedFeedServiceServer()
 }
 
@@ -52,6 +63,9 @@ type UnimplementedFeedServiceServer struct {
 
 func (UnimplementedFeedServiceServer) GetFeed(context.Context, *GetFeedRequest) (*GetFeedResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFeed not implemented")
+}
+func (UnimplementedFeedServiceServer) Reshare(context.Context, *ReshareRequest) (*ReshareResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reshare not implemented")
 }
 func (UnimplementedFeedServiceServer) mustEmbedUnimplementedFeedServiceServer() {}
 
@@ -84,6 +98,24 @@ func _FeedService_GetFeed_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FeedService_Reshare_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReshareRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FeedServiceServer).Reshare(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/feed.FeedService/Reshare",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FeedServiceServer).Reshare(ctx, req.(*ReshareRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FeedService_ServiceDesc is the grpc.ServiceDesc for FeedService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -94,6 +126,10 @@ var FeedService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFeed",
 			Handler:    _FeedService_GetFeed_Handler,
+		},
+		{
+			MethodName: "Reshare",
+			Handler:    _FeedService_Reshare_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
