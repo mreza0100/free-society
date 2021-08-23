@@ -4,7 +4,6 @@ clear
 
 
 
-psql --host localhost --user postgres --port 5433
-
+docker container exec -ti docker_user_service_postgres_1 /bin/bash -c 'psql -U postgres -p 5433'
 
 
