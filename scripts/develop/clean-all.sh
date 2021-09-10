@@ -13,6 +13,7 @@ for db in ${DBS[@]};
 do
       echo "Cleaning $db"
       bash $ROOT/scripts/develop/db/$db/clean.sh
+      echo "--------"
 done
 
 

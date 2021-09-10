@@ -1,38 +1,43 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"freeSociety/services/post/configs"
 	"freeSociety/services/post/instances"
-	"freeSociety/services/post/models"
+	"time"
 
 	"github.com/mreza0100/golog"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-	"gorm.io/gorm/schema"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func NewRepo(lgr *golog.Core) *instances.Repository {
 	var (
-		db     *gorm.DB
-		readQ  *read
-		writeQ *write
+		db             *mongo.Client
+		postCollection *mongo.Collection
+		readQ          *read
+		writeQ         *write
 	)
 
 	{
 		db = getConnection(lgr)
+		postCollection = db.Database("posts").Collection("posts")
 		lgr = lgr.With("In Repository ->")
 	}
 	{
 		readQ = &read{
-			lgr: lgr.With("In Read ->"),
-			db:  db,
+			lgr:         lgr.With("In Read ->"),
+			db:          db,
+			pCollection: postCollection,
 		}
 		writeQ = &write{
-			lgr: lgr.With("In Read ->"),
-			db:  db,
+			lgr:         lgr.With("In Read ->"),
+			db:          db,
+			pCollection: postCollection,
 		}
+		readQ.write = writeQ
+		writeQ.read = readQ
 	}
 
 	return &instances.Repository{
@@ -41,41 +46,23 @@ func NewRepo(lgr *golog.Core) *instances.Repository {
 	}
 }
 
-func getConnection(lgr *golog.Core) *gorm.DB {
-	var (
-		err error
-		db  *gorm.DB
+func getConnection(lgr *golog.Core) *mongo.Client {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	mongoPort := configs.Configs.Mongo_port
+	client, err := mongo.Connect(ctx,
+		options.Client().ApplyURI(fmt.Sprintf("mongodb://localhost:%v", mongoPort)),
+		options.Client().SetMaxPoolSize(10),
 	)
-
-	{
-		db, err = gorm.Open(getConfigs())
-		if err != nil {
-			lgr.Fatal(err)
-		}
-	}
-	{
-		if err := db.AutoMigrate(&models.Post{}); err != nil {
-			lgr.Fatal(err)
-		}
+	if err != nil {
+		lgr.Fatal("mongo connection failed ", err)
 	}
 
-	lgr.SuccessLog("Connected to DB")
-
-	return db
-}
-
-func getConfigs() (driverConfigs gorm.Dialector, gormConfigs *gorm.Config) {
-	DSN := fmt.Sprintf("host=localhost user=postgres dbname=postgres port=%v", configs.Configs.Postgres_port)
-	driverConfigs = postgres.New(postgres.Config{
-		DSN: DSN,
-	})
-
-	gormConfigs = &gorm.Config{
-		NamingStrategy:         schema.NamingStrategy{},
-		SkipDefaultTransaction: true,
-		Logger:                 logger.Default,
-		// PrepareStmt:            false,
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		lgr.Fatal("mongo ping failed ", err)
 	}
 
-	return
+	return client
 }

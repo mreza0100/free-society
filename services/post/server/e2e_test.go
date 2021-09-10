@@ -39,7 +39,7 @@ const (
 
 var (
 	userId  uint64
-	postIds []uint64
+	postIds []string
 )
 
 func TestMain(m *testing.M) {
@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 }
 
 func Test_createPost(t *testing.T) {
-	postIds = make([]uint64, 0, countPost)
+	postIds = make([]string, 0, countPost)
 
 	for i := 0; i < countPost; i++ {
 		t.Run(fmt.Sprintf("creat post round: %v", i), func(t *testing.T) {
@@ -129,7 +129,7 @@ func Test_getPostsMultipleTimesAndCheck(t *testing.T) {
 		t.Run("check with requestorId", func(t *testing.T) {
 			response, err := postConn.GetPost(ctx, &post.GetPostRequest{
 				RequestorId: userId,
-				Ids:         []uint64{subject},
+				Ids:         []string{subject},
 			})
 			post := response.Posts[0]
 
@@ -142,7 +142,7 @@ func Test_getPostsMultipleTimesAndCheck(t *testing.T) {
 		t.Run("check without requestorId", func(t *testing.T) {
 			response, err := postConn.GetPost(ctx, &post.GetPostRequest{
 				RequestorId: 0,
-				Ids:         []uint64{subject},
+				Ids:         []string{subject},
 			})
 			post := response.Posts[0]
 
@@ -161,7 +161,7 @@ func Test_deletePost(t *testing.T) {
 		wg.Add(1)
 		t.Run(fmt.Sprintf("delete post id: %v", postId), func(t *testing.T) {
 
-			go func(id uint64) {
+			go func(id string) {
 				defer wg.Done()
 
 				_, err := postConn.DeletePost(ctx, &post.DeletePostRequest{

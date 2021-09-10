@@ -1,15 +1,13 @@
 package models
 
-import "time"
-
 type Post struct {
-	ID      uint64 `gorm:"primarykey;autoIncrement:true"`
-	OwnerId uint64 `gorm:"NOT NULL;"`
+	ID      string `bson:"_id"`
+	OwnerId uint64
 
-	Title string `gorm:"type:text;NOT NULL"`
-	Body  string `gorm:"type:text;NOT NULL"`
+	Title string
+	Body  string
 
-	PicturesName string `gorm:""`
+	PicturesName []string
 
-	CreatedAt time.Time `gorm:"default:NOW();NOT NULL"`
+	CreatedAt string
 }

@@ -1,8 +1,12 @@
 #!/bin/bash
 
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+cd $DIR
+cd ../../../../
+ROOT=$(pwd)
 
 
-psql --host localhost --user postgres --port 5434 --command="DROP TABLE posts"
-
+docker container exec -ti docker_post_service_mongo_1 bash -c "printf 'use posts \n db.dropDatabase()' | mongo"
 

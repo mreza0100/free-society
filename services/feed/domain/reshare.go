@@ -1,6 +1,6 @@
 package domain
 
-func (s *service) Reshare(userId, postId uint64) error {
+func (s *service) Reshare(userId uint64, postId string) error {
 	followers, err := s.publishers.GetFollowers(userId)
 	if err != nil {
 		return err

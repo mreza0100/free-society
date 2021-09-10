@@ -12,7 +12,7 @@ type likes_write struct {
 	db  *gorm.DB
 }
 
-func (w *likes_write) Like(likerId, ownerId, postId uint64) error {
+func (w *likes_write) Like(likerId, ownerId uint64, postId string) error {
 	const query = `INSERT INTO likes (liker_id, owner_id, post_id) VALUES (?, ?, ?)`
 	params := []interface{}{likerId, ownerId, postId}
 
@@ -21,7 +21,7 @@ func (w *likes_write) Like(likerId, ownerId, postId uint64) error {
 	return tx.Error
 }
 
-func (w *likes_write) UndoLike(likerId, postId uint64) error {
+func (w *likes_write) UndoLike(likerId uint64, postId string) error {
 	const query = `DELETE FROM likes WHERE liker_id=? AND post_id=?`
 	params := []interface{}{likerId, postId}
 

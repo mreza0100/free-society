@@ -19,7 +19,7 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
-func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (int, error) {
+func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePostInput) (string, error) {
 	var (
 		userId      = security.GetUserId(ctx)
 		rawPictures = make([]*graphql.Upload, 0, 4)
@@ -43,27 +43,27 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePo
 	{ // check if the user is allowed to upload this pictures
 		for _, image := range rawPictures {
 			if image.Size > configs.Picture_size_limit {
-				return 0, errors.New("image size is too large")
+				return "", errors.New("image size is too large")
 			}
 		}
 
 		for _, image := range rawPictures {
 			// check image content type to be exacly an image
 			if image.ContentType != "image/jpeg" && image.ContentType != "image/png" {
-				return 0, errors.New("image type is not a image")
+				return "", errors.New("image type is not a image")
 			}
 		}
 	}
 	{
 		if err := validation.CreatePost(&input); err != nil {
-			return 0, err
+			return "", err
 		}
 	}
 	{
 		for _, image := range rawPictures {
 			pictureContent, err := io.ReadAll(image.File)
 			if err != nil {
-				return 0, err
+				return "", err
 			}
 			pictures = append(pictures, &post.Picture{
 				Name:    image.Filename,
@@ -79,74 +79,74 @@ func (r *mutationResolver) CreatePost(ctx context.Context, input models.CreatePo
 		Pictures: pictures,
 	})
 
-	return int(response.Id), utils.GetGRPCMSG(err)
+	return response.Id, utils.GetGRPCMSG(err)
 }
 
-func (r *mutationResolver) DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error) {
+func (r *mutationResolver) DeletePost(ctx context.Context, postID string) (bool, error) {
 	userId := security.GetUserId(ctx)
 
 	_, err := r.postConn.DeletePost(ctx, &post.DeletePostRequest{
-		PostId: uint64(input.PostID),
+		PostId: postID,
 		UserId: userId,
 	})
 
 	return err == nil, utils.GetGRPCMSG(err)
 }
 
-func (r *mutationResolver) Like(ctx context.Context, postID int, ownerID int) (bool, error) {
+func (r *mutationResolver) Like(ctx context.Context, postID string, ownerID int) (bool, error) {
 	userId := security.GetUserId(ctx)
 
 	_, err := r.relationConn.Like(ctx, &relation.LikeRequest{
 		LikerId: userId,
-		PostId:  uint64(postID),
+		PostId:  postID,
 		OwnerId: uint64(ownerID),
 	})
 
 	return err == nil, nil
 }
 
-func (r *mutationResolver) UndoLike(ctx context.Context, postID int) (bool, error) {
+func (r *mutationResolver) UndoLike(ctx context.Context, postID string) (bool, error) {
 	userId := security.GetUserId(ctx)
 
 	_, err := r.relationConn.UndoLike(ctx, &relation.UndoLikeRequest{
 		LikerId: userId,
-		PostId:  uint64(postID),
+		PostId:  postID,
 	})
 
 	return err == nil, nil
 }
 
-func (r *mutationResolver) ResharePost(ctx context.Context, postID int) (bool, error) {
+func (r *mutationResolver) ResharePost(ctx context.Context, postID string) (bool, error) {
 	userId := security.GetUserId(ctx)
 
 	_, err := r.feedConn.Reshare(ctx, &feed.ReshareRequest{
 		UserId: userId,
-		PostId: uint64(postID),
+		PostId: postID,
 	})
 
 	return err == nil, err
 }
 
-func (r *queryResolver) GetPost(ctx context.Context, ids []int) ([]*models.Post, error) {
+func (r *queryResolver) GetPost(ctx context.Context, postIds []string) ([]*models.Post, error) {
 	var (
-		uIds        []uint64
+		uIds        []string
 		requestorId uint64
 		rawPosts    []*post.Post
 		posts       []*models.Post
 	)
 
 	{
-		if len(ids) > 50 {
-			return nil, errors.New("too many ids")
+		if len(postIds) > 50 {
+			return nil, errors.New("too many postIds")
 		}
 		requestorId, _ = security.GetOptionalId(ctx)
 	}
 
 	{
-		uIds = make([]uint64, len(ids))
+		uIds = make([]string, len(postIds))
 		{
-			for i := 0; i < len(ids); i++ {
-				uIds[i] = uint64(ids[i])
+			for i := 0; i < len(postIds); i++ {
+				uIds[i] = postIds[i]
 			}
 		}
 	}
@@ -166,7 +166,7 @@ func (r *queryResolver) GetPost(ctx context.Context, ids []int) ([]*models.Post,
 			posts[idx] = &models.Post{
 				Title: p.Title,
 				Body:  p.Body,
-				ID:    int(p.Id),
+				ID:    p.Id,
 
 				OwnerID:     int(p.OwnerId),
 				Likes:       int(p.Likes),
@@ -191,7 +191,7 @@ func (r *queryResolver) GetPost(ctx context.Context, ids []int) ([]*models.Post,
 func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error) {
 	var (
 		userId   uint64
-		postIds  []uint64
+		postIds  []string
 		rawPosts []*post.Post
 		posts    []*models.Post
 	)
@@ -230,11 +230,12 @@ func (r *queryResolver) GetFeed(ctx context.Context, offset int, limit int) ([]*
 			posts[idx] = &models.Post{
 				Title: p.Title,
 				Body:  p.Body,
-				ID:    int(p.Id),
+				ID:    p.Id,
 
-				OwnerID: int(p.OwnerId),
-				Likes:   int(p.Likes),
-				IsLiked: p.IsLiked,
+				OwnerID:     int(p.OwnerId),
+				Likes:       int(p.Likes),
+				IsLiked:     p.IsLiked,
+				PictureUrls: p.PictureUrls,
 
 				User: &models.User{
 					IsFollowing: p.IsFollowing,

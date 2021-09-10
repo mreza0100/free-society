@@ -14,7 +14,7 @@ type publishers struct {
 	nc  *nats.Conn
 }
 
-func (p *publishers) LikeNotify(userId, likerId, postId uint64) (uint64, error) {
+func (p *publishers) LikeNotify(userId, likerId uint64, postId string) (uint64, error) {
 	subject := configs.NatsConfigs.Subjects.SetLikeNotification
 	dbug, success := p.lgr.DebugPKG("LikeNotify", false)
 
@@ -56,7 +56,7 @@ func (p *publishers) LikeNotify(userId, likerId, postId uint64) (uint64, error) 
 	}
 }
 
-func (p *publishers) IsPostsExists(postIds ...uint64) ([]uint64, error) {
+func (p *publishers) IsPostsExists(postIds ...string) ([]string, error) {
 	subject := configs.NatsConfigs.Subjects.IsPostsExists
 	dbug, success := p.lgr.DebugPKG("IsPostsExists", false)
 

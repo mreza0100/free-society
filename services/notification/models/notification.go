@@ -10,7 +10,7 @@ type Notification struct {
 
 	IsLike  bool   `gorm:"NOT NULL;default:FALSE"`
 	LikerId uint64 `gorm:""`
-	PostId  uint64 `gorm:""`
+	PostId  string `gorm:""`
 
 	Seen bool `gorm:"NOT NULL;default:FALSE"`
 }

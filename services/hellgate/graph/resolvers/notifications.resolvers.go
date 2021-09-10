@@ -39,11 +39,12 @@ func (r *queryResolver) GetNotifications(ctx context.Context, offset int, limit 
 
 			IsLike:  response.Notifications[i].IsLike,
 			LikerID: int(response.Notifications[i].LikerId),
-			PostID:  int(response.Notifications[i].PostId),
+			PostID:  response.Notifications[i].PostId,
 
 			Seen: response.Notifications[i].Seen,
 			Time: response.Notifications[i].Time,
 		}
+		r.Lgr.InfoLog(notifications[i].PostID)
 	}
 
 	return notifications, nil

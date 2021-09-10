@@ -1,21 +1,21 @@
 extend type Query {
-	getPost(ids: [Int!]!): [post!]! @optional
+	getPost(postIds: [String!]!): [post!]! @optional
 	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 
 extend type Mutation {
-	createPost(input: createPostInput!): Int! @private
-	deletePost(input: deletePostInput!): Boolean! @private
+	createPost(input: createPostInput!): String! @private
+	deletePost(postId: String!): Boolean! @private
 
-	like(postId: Int!, ownerId: Int!): Boolean! @private
-	undoLike(postId: Int!): Boolean! @private
-	resharePost(postId: Int!): Boolean! @private
+	like(postId: String!, ownerId: Int!): Boolean! @private
+	undoLike(postId: String!): Boolean! @private
+	resharePost(postId: String!): Boolean! @private
 }
 
 type post {
 	title: String!
 	body: String!
-	id: Int!
+	id: String!
 	ownerId: Int!
 	isLiked: Boolean!
 	likes: Int!
@@ -31,7 +31,4 @@ input createPostInput {
 	image2: Upload
 	image3: Upload
 	image4: Upload
-}
-input deletePostInput {
-	postId: Int!
 }

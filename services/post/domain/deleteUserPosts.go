@@ -1,9 +1,7 @@
 package domain
 
 import (
-	"freeSociety/configs"
 	"freeSociety/utils/files/costume"
-	"strings"
 )
 
 func (s *service) DeleteUserPosts(userId uint64) error {
@@ -13,7 +11,7 @@ func (s *service) DeleteUserPosts(userId uint64) error {
 	}
 
 	for _, rawPicNmaes := range picturesName {
-		for _, picName := range strings.Split(rawPicNmaes.PicturesName, configs.DB_picture_sep) {
+		for _, picName := range rawPicNmaes.PicturesName {
 			if costume.DeletPicture(picName) != nil {
 				return err
 			}

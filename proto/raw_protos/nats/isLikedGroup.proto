@@ -6,10 +6,10 @@ import "google/protobuf/empty.proto";
 option go_package = "/natsPb";
 
 message IsLikedGroup_REQUEST_request {
-      repeated uint64 postIds = 1;
+      repeated string postIds = 1;
       uint64 liker = 2;
 }
 
 message IsLikedGroup_REQUEST_response {
-      map<uint64, google.protobuf.Empty> result = 1;
+      map<string, google.protobuf.Empty> result = 1;
 }

@@ -18,6 +18,9 @@ require (
 	github.com/onsi/ginkgo v1.15.0 // indirect
 	github.com/onsi/gomega v1.10.5 // indirect
 	github.com/vektah/gqlparser/v2 v2.1.0
+	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
+	github.com/xdg/stringprep v0.0.0-20180714160509-73f8eece6fdc // indirect
+	go.mongodb.org/mongo-driver v1.7.1 // indirect
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0
 	gorm.io/driver/postgres v1.0.8

@@ -1,17 +1,15 @@
 package domain
 
 import (
-	"freeSociety/configs"
 	pb "freeSociety/proto/generated/post"
 	"freeSociety/services/post/models"
 	"freeSociety/utils"
 	"freeSociety/utils/files/costume"
-	"strings"
 
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, error) {
+func (s *service) GetPost(requestorId uint64, postIds []string) ([]*pb.Post, error) {
 	if len(postIds) == 0 {
 		return nil, nil
 	}
@@ -22,8 +20,8 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 
 		ownerIds       []uint64
 		users          map[uint64]*pb.User
-		likeCount      map[uint64]uint64
-		likedGroup     map[uint64]*emptypb.Empty
+		likeCount      map[string]uint64
+		likedGroup     map[string]*emptypb.Empty
 		followingGroup map[uint64]bool
 
 		hasRequestorId bool
@@ -101,16 +99,15 @@ func (s *service) GetPost(requestorId uint64, postIds []uint64) ([]*pb.Post, err
 				Id:          rawPost.ID,
 				OwnerId:     rawPost.OwnerId,
 				Likes:       likeCount[rawPost.ID],
-				IsFollowing: followingGroup[rawPost.ID],
+				IsFollowing: followingGroup[rawPost.OwnerId],
 				User:        users[rawPost.OwnerId],
 			}
 
 			{
-				picturesNames := strings.Split(rawPost.PicturesName, configs.DB_picture_sep)
-				pictureUrls := make([]string, 0, len(picturesNames))
-				for i := 0; i < len(picturesNames); i++ {
-					if picturesNames[i] != "" {
-						pictureUrls = append(pictureUrls, costume.ExportPicture(picturesNames[i]))
+				pictureUrls := make([]string, 0, len(rawPost.PicturesName))
+				for i := 0; i < len(rawPost.PicturesName); i++ {
+					if rawPost.PicturesName[i] != "" {
+						pictureUrls = append(pictureUrls, costume.ExportPicture(rawPost.PicturesName[i]))
 					}
 				}
 				converted.PictureUrls = pictureUrls

@@ -12,7 +12,7 @@ service FeedService {
 
 message ReshareRequest {
 	uint64 userId = 1;
-	uint64 postId  = 2;
+	string postId  = 2;
 }
 message ReshareResponse {
 
@@ -25,5 +25,5 @@ message GetFeedRequest {
 	uint64 limit  = 3;
 }
 message GetFeedResponse {
-	repeated uint64 postIds = 2;
+	repeated string postIds = 2;
 }

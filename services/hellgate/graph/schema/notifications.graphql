@@ -10,7 +10,7 @@ type Notification {
 	id: Int!
 	IsLike: Boolean!
 	LikerId: Int!
-	PostId: Int!
+	PostId: String!
 	Seen: Boolean!
 	Time: String!
 }

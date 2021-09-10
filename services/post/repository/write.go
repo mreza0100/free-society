@@ -1,77 +1,102 @@
 package repository
 
 import (
+	"context"
 	"errors"
-	"freeSociety/configs"
-	"strings"
+	"freeSociety/services/post/models"
+	"time"
 
 	"github.com/mreza0100/golog"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type write struct {
-	lgr *golog.Core
-	db  *gorm.DB
+	lgr         *golog.Core
+	db          *mongo.Client
+	pCollection *mongo.Collection
+	read        *read
 }
 
-func (w *write) NewPost(title, body string, userId uint64, picturesNames []string) (uint64, error) {
-	const query = `INSERT INTO posts (title, body, owner_id, pictures_name) VALUES (?, ?, ?, ? ) RETURNING id`
-	params := []interface{}{title, body, userId}
-
-	if len(picturesNames) > 0 {
-		params = append(params, strings.Join(picturesNames, ","))
-	} else {
-		params = append(params, nil)
+func (w *write) NewPost(title, body string, userId uint64, picturesNames []string) (string, error) {
+	query := bson.M{
+		"OwnerId":      userId,
+		"Title":        title,
+		"Body":         body,
+		"PicturesName": picturesNames,
+		"CreatedAt":    time.Now().String(),
 	}
 
-	for i := 0; i < configs.Max_picture_per_post; i++ {
-		if len(picturesNames) > i {
-			params = append(params, picturesNames[i])
-		} else {
-			params = append(params, nil)
+	result, err := w.pCollection.InsertOne(context.Background(), query)
+	if err != nil {
+		return "", err
+	}
+
+	objectId, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return "", errors.New("Cant convert object id")
+	}
+
+	return objectId.Hex(), nil
+}
+
+func (w *write) DeletePost(rawPostId string, userId uint64) (picturesName []string, err error) {
+	postID, err := primitive.ObjectIDFromHex(rawPostId)
+	if err != nil {
+		return nil, err
+	}
+
+	query := bson.M{
+		"_id":     postID,
+		"OwnerId": userId,
+	}
+
+	result := w.pCollection.FindOneAndDelete(context.Background(), query)
+	if err := result.Err(); err != nil {
+		return nil, err
+	}
+
+	post := new(models.Post)
+
+	return post.PicturesName, result.Decode(post)
+}
+
+func (w *write) DeleteUserPosts(userId uint64) ([]struct{ PicturesName []string }, error) {
+	result := make([]struct {
+		PicturesName []string
+	}, 0)
+
+	{
+		query := bson.M{
+			"OwnerId": userId,
+		}
+
+		cursor, err := w.pCollection.Find(context.Background(), query,
+			options.Find().SetProjection(bson.M{"picturesName": 1}),
+		)
+		if err != nil {
+			return nil, err
+		}
+		defer cursor.Close(context.Background())
+
+		err = cursor.All(context.Background(), &result)
+		if err != nil {
+			return nil, err
 		}
 	}
 
-	tx := w.db.Raw(query, params...)
-	if tx.Error != nil {
-		return 0, tx.Error
-	}
+	go func() {
+		query := bson.M{
+			"OwnerId": userId,
+		}
 
-	result := struct{ Id uint64 }{}
-	tx.Scan(&result)
+		_, err := w.pCollection.DeleteMany(context.Background(), query)
+		if err != nil {
+			panic(err)
+		}
+	}()
 
-	return result.Id, nil
-}
-
-func (w *write) DeletePost(postId, userId uint64) (picturesName string, err error) {
-	const query = `DELETE FROM posts WHERE id=? AND owner_id=? RETURNING pictures_name`
-	params := []interface{}{postId, userId}
-
-	tx := w.db.Raw(query, params...)
-	if tx.Error != nil {
-		return "", tx.Error
-	}
-
-	result := struct{ PicturesName string }{}
-	tx.Scan(&result)
-
-	if tx.RowsAffected != 1 {
-		return "", errors.New("Cant find post")
-	}
-
-	return result.PicturesName, tx.Error
-}
-
-func (w *write) DeleteUserPosts(userId uint64) ([]struct{ PicturesName string }, error) {
-	const query = `DELETE FROM posts WHERE owner_id= ? RETURNING pictures_name`
-	params := []interface{}{userId}
-
-	tx := w.db.Raw(query, params...)
-	if tx.Error != nil {
-		return []struct{ PicturesName string }{}, tx.Error
-	}
-	result := make([]struct{ PicturesName string }, 0)
-	tx.Scan(&result)
-
-	return result, tx.Error
+	return result, nil
 }

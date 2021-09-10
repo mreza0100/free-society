@@ -9,15 +9,15 @@ import (
 	"freeSociety/utils/files/costume"
 )
 
-func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Picture) (uint64, error) {
+func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Picture) (string, error) {
 	var (
 		picturesNames = make([]string, len(pictures))
-		postId        uint64
+		postId        string
 	)
 
 	{
 		if len(pictures) > configs.Max_picture_per_post {
-			return 0, fmt.Errorf("more then %v pictures", configs.Max_picture_per_post)
+			return "", fmt.Errorf("more then %v pictures", configs.Max_picture_per_post)
 		}
 		for i := 0; i < len(pictures); i++ {
 			format := files.GetFileFormat(pictures[i].Name)
@@ -30,7 +30,7 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 		var err error
 		postId, err = s.repo.Write.NewPost(title, body, userId, picturesNames)
 		if err != nil {
-			return 0, err
+			return "", err
 		}
 	}
 	{
@@ -39,7 +39,7 @@ func (s *service) NewPost(title, body string, userId uint64, pictures []*pb.Pict
 
 			err := files.CreateAndWriteFile(p, pictures[i].Content)
 			if err != nil {
-				return 0, err
+				return "", err
 			}
 		}
 	}

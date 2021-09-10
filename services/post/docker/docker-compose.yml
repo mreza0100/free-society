@@ -1,15 +1,12 @@
 version: "2.8"
 
 services:
-      post_service_postgres:
-            image: postgres
+      post_service_mongo:
+            image: mongo:4.4.8
             restart: always
-            environment:
-                  POSTGRES_HOST_AUTH_METHOD: trust
             expose:
-                  - 5434
+                  - 27017
             ports:
-                  - 5434:5434
-            command: -p 5434
+                  - 27017:27017
             volumes:
-                  - ~/databases/posts:/var/lib/postgresql/data
+                  - ~/databases/posts:/data/db"

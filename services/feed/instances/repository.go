@@ -1,10 +1,10 @@
 package instances
 
 type read interface {
-	GetFeed(userId, offset, limit uint64) ([]uint64, error)
+	GetFeed(userId, offset, limit uint64) ([]string, error)
 }
 type write interface {
-	SetPostOnFeeds(userId, postId uint64, followers []uint64) error
+	SetPostOnFeeds(userId uint64, postId string, followers []uint64) error
 	DeleteFeed(userId uint64) error
 }
 

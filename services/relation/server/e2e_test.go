@@ -53,8 +53,8 @@ var (
 	user1 uint64
 	user2 uint64
 
-	user1Post uint64
-	user2Post uint64
+	user1Post string
+	user2Post string
 )
 
 func TestMain(m *testing.M) {

@@ -51,16 +51,16 @@ type ComplexityRoot struct {
 		ClearNotifications func(childComplexity int) int
 		CreatePost         func(childComplexity int, input models.CreatePostInput) int
 		CreateUser         func(childComplexity int, input models.UserInput) int
-		DeletePost         func(childComplexity int, input models.DeletePostInput) int
+		DeletePost         func(childComplexity int, postID string) int
 		DeleteSession      func(childComplexity int, sessionID int) int
 		DeleteUser         func(childComplexity int) int
 		EditUser           func(childComplexity int, userData models.UpdateUserInput) int
 		Follow             func(childComplexity int, following int) int
-		Like               func(childComplexity int, postID int, ownerID int) int
+		Like               func(childComplexity int, postID string, ownerID int) int
 		Login              func(childComplexity int, email string, password string) int
 		Logout             func(childComplexity int) int
-		ResharePost        func(childComplexity int, postID int) int
-		UndoLike           func(childComplexity int, postID int) int
+		ResharePost        func(childComplexity int, postID string) int
+		UndoLike           func(childComplexity int, postID string) int
 		Unfollow           func(childComplexity int, following int) int
 	}
 
@@ -76,7 +76,7 @@ type ComplexityRoot struct {
 	Query struct {
 		GetFeed          func(childComplexity int, offset int, limit int) int
 		GetNotifications func(childComplexity int, offset int, limit int) int
-		GetPost          func(childComplexity int, ids []int) int
+		GetPost          func(childComplexity int, postIds []string) int
 		GetUser          func(childComplexity int, id int) int
 		Sessions         func(childComplexity int) int
 	}
@@ -114,11 +114,11 @@ type MutationResolver interface {
 	DeleteSession(ctx context.Context, sessionID int) (bool, error)
 	ChangePassword(ctx context.Context, prevPassword string, newPassword string) (bool, error)
 	ClearNotifications(ctx context.Context) (bool, error)
-	CreatePost(ctx context.Context, input models.CreatePostInput) (int, error)
-	DeletePost(ctx context.Context, input models.DeletePostInput) (bool, error)
-	Like(ctx context.Context, postID int, ownerID int) (bool, error)
-	UndoLike(ctx context.Context, postID int) (bool, error)
-	ResharePost(ctx context.Context, postID int) (bool, error)
+	CreatePost(ctx context.Context, input models.CreatePostInput) (string, error)
+	DeletePost(ctx context.Context, postID string) (bool, error)
+	Like(ctx context.Context, postID string, ownerID int) (bool, error)
+	UndoLike(ctx context.Context, postID string) (bool, error)
+	ResharePost(ctx context.Context, postID string) (bool, error)
 	Follow(ctx context.Context, following int) (bool, error)
 	Unfollow(ctx context.Context, following int) (bool, error)
 	CreateUser(ctx context.Context, input models.UserInput) (int, error)
@@ -128,7 +128,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Sessions(ctx context.Context) ([]*models.Session, error)
 	GetNotifications(ctx context.Context, offset int, limit int) ([]*models.Notification, error)
-	GetPost(ctx context.Context, ids []int) ([]*models.Post, error)
+	GetPost(ctx context.Context, postIds []string) ([]*models.Post, error)
 	GetFeed(ctx context.Context, offset int, limit int) ([]*models.Post, error)
 	GetUser(ctx context.Context, id int) (*models.User, error)
 }
@@ -201,7 +201,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeletePost(childComplexity, args["input"].(models.DeletePostInput)), true
+		return e.complexity.Mutation.DeletePost(childComplexity, args["postId"].(string)), true
 
 	case "Mutation.deleteSession":
 		if e.complexity.Mutation.DeleteSession == nil {
@@ -256,7 +256,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Like(childComplexity, args["postId"].(int), args["ownerId"].(int)), true
+		return e.complexity.Mutation.Like(childComplexity, args["postId"].(string), args["ownerId"].(int)), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -287,7 +287,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.ResharePost(childComplexity, args["postId"].(int)), true
+		return e.complexity.Mutation.ResharePost(childComplexity, args["postId"].(string)), true
 
 	case "Mutation.undoLike":
 		if e.complexity.Mutation.UndoLike == nil {
@@ -299,7 +299,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UndoLike(childComplexity, args["postId"].(int)), true
+		return e.complexity.Mutation.UndoLike(childComplexity, args["postId"].(string)), true
 
 	case "Mutation.unfollow":
 		if e.complexity.Mutation.Unfollow == nil {
@@ -389,7 +389,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetPost(childComplexity, args["ids"].([]int)), true
+		return e.complexity.Query.GetPost(childComplexity, args["postIds"].([]string)), true
 
 	case "Query.getUser":
 		if e.complexity.Query.GetUser == nil {
@@ -622,29 +622,29 @@ type Notification {
 	id: Int!
 	IsLike: Boolean!
 	LikerId: Int!
-	PostId: Int!
+	PostId: String!
 	Seen: Boolean!
 	Time: String!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/post.graphql", Input: `extend type Query {
-	getPost(ids: [Int!]!): [post!]! @optional
+	getPost(postIds: [String!]!): [post!]! @optional
 	getFeed(offset: Int!, limit: Int!): [post!]! @private
 }
 
 extend type Mutation {
-	createPost(input: createPostInput!): Int! @private
-	deletePost(input: deletePostInput!): Boolean! @private
+	createPost(input: createPostInput!): String! @private
+	deletePost(postId: String!): Boolean! @private
 
-	like(postId: Int!, ownerId: Int!): Boolean! @private
-	undoLike(postId: Int!): Boolean! @private
-	resharePost(postId: Int!): Boolean! @private
+	like(postId: String!, ownerId: Int!): Boolean! @private
+	undoLike(postId: String!): Boolean! @private
+	resharePost(postId: String!): Boolean! @private
 }
 
 type post {
 	title: String!
 	body: String!
-	id: Int!
+	id: String!
 	ownerId: Int!
 	isLiked: Boolean!
 	likes: Int!
@@ -660,9 +660,6 @@ input createPostInput {
 	image2: Upload
 	image3: Upload
 	image4: Upload
-}
-input deletePostInput {
-	postId: Int!
 }
 `, BuiltIn: false},
 	{Name: "graph/schema/relations.graphql", Input: `extend type Mutation {
@@ -779,15 +776,15 @@ func (ec *executionContext) field_Mutation_createUser_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_deletePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.DeletePostInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNdeletePostInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐDeletePostInput(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["postId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg0
+	args["postId"] = arg0
 	return args, nil
 }
 
@@ -839,10 +836,10 @@ func (ec *executionContext) field_Mutation_follow_args(ctx context.Context, rawA
 func (ec *executionContext) field_Mutation_like_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
+	var arg0 string
 	if tmp, ok := rawArgs["postId"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -887,10 +884,10 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 func (ec *executionContext) field_Mutation_resharePost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
+	var arg0 string
 	if tmp, ok := rawArgs["postId"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -902,10 +899,10 @@ func (ec *executionContext) field_Mutation_resharePost_args(ctx context.Context,
 func (ec *executionContext) field_Mutation_undoLike_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
+	var arg0 string
 	if tmp, ok := rawArgs["postId"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -995,15 +992,15 @@ func (ec *executionContext) field_Query_getNotifications_args(ctx context.Contex
 func (ec *executionContext) field_Query_getPost_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []int
-	if tmp, ok := rawArgs["ids"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
-		arg0, err = ec.unmarshalNInt2ᚕintᚄ(ctx, tmp)
+	var arg0 []string
+	if tmp, ok := rawArgs["postIds"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postIds"))
+		arg0, err = ec.unmarshalNString2ᚕstringᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["ids"] = arg0
+	args["postIds"] = arg0
 	return args, nil
 }
 
@@ -1378,10 +1375,10 @@ func (ec *executionContext) _Mutation_createPost(ctx context.Context, field grap
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(int); ok {
+		if data, ok := tmp.(string); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be int`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1393,9 +1390,9 @@ func (ec *executionContext) _Mutation_createPost(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1424,7 +1421,7 @@ func (ec *executionContext) _Mutation_deletePost(ctx context.Context, field grap
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().DeletePost(rctx, args["input"].(models.DeletePostInput))
+			return ec.resolvers.Mutation().DeletePost(rctx, args["postId"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -1486,7 +1483,7 @@ func (ec *executionContext) _Mutation_like(ctx context.Context, field graphql.Co
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().Like(rctx, args["postId"].(int), args["ownerId"].(int))
+			return ec.resolvers.Mutation().Like(rctx, args["postId"].(string), args["ownerId"].(int))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -1548,7 +1545,7 @@ func (ec *executionContext) _Mutation_undoLike(ctx context.Context, field graphq
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UndoLike(rctx, args["postId"].(int))
+			return ec.resolvers.Mutation().UndoLike(rctx, args["postId"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -1610,7 +1607,7 @@ func (ec *executionContext) _Mutation_resharePost(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().ResharePost(rctx, args["postId"].(int))
+			return ec.resolvers.Mutation().ResharePost(rctx, args["postId"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Private == nil {
@@ -2064,9 +2061,9 @@ func (ec *executionContext) _Notification_PostId(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Notification_Seen(ctx context.Context, field graphql.CollectedField, obj *models.Notification) (ret graphql.Marshaler) {
@@ -2282,7 +2279,7 @@ func (ec *executionContext) _Query_getPost(ctx context.Context, field graphql.Co
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().GetPost(rctx, args["ids"].([]int))
+			return ec.resolvers.Query().GetPost(rctx, args["postIds"].([]string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Optional == nil {
@@ -3903,9 +3900,9 @@ func (ec *executionContext) _post_id(ctx context.Context, field graphql.Collecte
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _post_ownerId(ctx context.Context, field graphql.CollectedField, obj *models.Post) (ret graphql.Marshaler) {
@@ -4328,26 +4325,6 @@ func (ec *executionContext) unmarshalInputcreatePostInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image4"))
 			it.Image4, err = ec.unmarshalOUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputdeletePostInput(ctx context.Context, obj interface{}) (models.DeletePostInput, error) {
-	var it models.DeletePostInput
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "postId":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("postId"))
-			it.PostID, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5038,36 +5015,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
-	var vSlice []interface{}
-	if v != nil {
-		if tmp1, ok := v.([]interface{}); ok {
-			vSlice = tmp1
-		} else {
-			vSlice = []interface{}{v}
-		}
-	}
-	var err error
-	res := make([]int, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) marshalNInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	for i := range v {
-		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
-	}
-
-	return ret
-}
-
 func (ec *executionContext) marshalNNotification2ᚕᚖfreeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐNotificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Notification) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -5128,6 +5075,36 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalNUpdateUserInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐUpdateUserInput(ctx context.Context, v interface{}) (models.UpdateUserInput, error) {
@@ -5381,11 +5358,6 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 
 func (ec *executionContext) unmarshalNcreatePostInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐCreatePostInput(ctx context.Context, v interface{}) (models.CreatePostInput, error) {
 	res, err := ec.unmarshalInputcreatePostInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNdeletePostInput2freeSocietyᚋservicesᚋhellgateᚋgraphᚋmodelᚐDeletePostInput(ctx context.Context, v interface{}) (models.DeletePostInput, error) {
-	res, err := ec.unmarshalInputdeletePostInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

@@ -11,17 +11,17 @@ type read struct {
 	helpers *helpers
 }
 
-func (r *read) GetFeed(userId, offset, limit uint64) ([]uint64, error) {
+func (r *read) GetFeed(userId, offset, limit uint64) ([]string, error) {
 	var (
 		start int64
 		stop  int64
-		ids   []uint64
+		ids   []string
 	)
 
 	{
 		start = int64(offset)
 		stop = int64(offset + limit)
-		ids = make([]uint64, 0, int(limit))
+		ids = make([]string, 0, int(limit))
 	}
 
 	{

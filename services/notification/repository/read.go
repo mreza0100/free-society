@@ -22,7 +22,7 @@ func (r *read) GetNotifications(userId uint64, limit, offset int64) ([]models.No
 		return nil, tx.Error
 	}
 
-	var notifications = make([]models.Notification, 0)
+	notifications := make([]models.Notification, 0)
 	tx.Scan(&notifications)
 
 	return notifications, nil

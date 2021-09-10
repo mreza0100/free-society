@@ -31,7 +31,7 @@ message Notification {
       bool   isLike  = 2;
       uint64 likerId = 3;
 
-      uint64 postId  = 4;
+      string postId  = 4;
 
       bool   seen    = 5;
       string time    = 6;

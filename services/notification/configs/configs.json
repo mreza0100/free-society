@@ -1,5 +1,6 @@
 {
 	"service_port": 9095,
 	"postgres_port": 5437,
-	"redis_port": 0
+	"redis_port": 0,
+	"mongo_port": 0
 }

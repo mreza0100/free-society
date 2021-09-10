@@ -15,9 +15,10 @@ type ServiceConfigs struct {
 	LogPath           string
 	ConnectionTimeout time.Duration
 
-	Service_port  int
-	Postgres_port int
-	Redis_port    int
+	Service_port  int `json:"service_port"`
+	Postgres_port int `json:"postgres_port"`
+	Mongo_port    int `json:"mongo_port"`
+	Redis_port    int `json:"redis_port"`
 }
 
 func ConfigToMap(path string) (rawConfigs map[string]interface{}) {
@@ -49,6 +50,7 @@ func (sc *ServiceConfigs) SetConfigFile() {
 		sc.Service_port = int(rawConfigs["service_port"].(float64))
 		sc.Postgres_port = int(rawConfigs["postgres_port"].(float64))
 		sc.Redis_port = int(rawConfigs["redis_port"].(float64))
+		sc.Mongo_port = int(rawConfigs["mongo_port"].(float64))
 
 		sc.Addr = fmt.Sprintf("localhost:%v", sc.Service_port)
 	}

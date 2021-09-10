@@ -11,7 +11,7 @@ message SetNotificationRequest {
       uint64 userId  = 2;
       uint64 likerId = 3;
 
-      uint64 postId  = 4;
+      string postId  = 4;
 }
 
 message SetNotificationResponse {

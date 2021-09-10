@@ -7,7 +7,7 @@ type read interface {
 }
 
 type write interface {
-	SetLikeNotification(userId, likerId, postId uint64) (notificationId uint64, err error)
+	SetLikeNotification(userId, likerId uint64, postId string) (notificationId uint64, err error)
 	ClearNotifications(userId uint64) error
 }
 

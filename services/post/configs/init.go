@@ -4,7 +4,7 @@ import (
 	"freeSociety/configs"
 )
 
-const serviceName = "relation"
+const serviceName = "post"
 
 var Configs *configs.ServiceConfigs
 

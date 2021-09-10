@@ -8,8 +8,8 @@ option go_package = "/natsPb";
 
 
 message IsPostsExists_REQUEST_request {
-      repeated uint64 postIds = 1;
+      repeated string postIds = 1;
 }
 message IsPostsExists_REQUEST_response {
-      repeated uint64 exists = 1;
+      repeated string exists = 1;
 }

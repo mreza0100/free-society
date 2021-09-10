@@ -6,9 +6,9 @@ option go_package = "/natsPb";
 
 
 message CountLikes_REQUEST_request {
-      repeated uint64 postId = 1;
+      repeated string postId = 1;
 }
 
 message CountLikes_REQUEST_response {
-      map<uint64, uint64> counts = 1;
+      map<string, uint64> counts = 1;
 }

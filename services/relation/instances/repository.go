@@ -16,20 +16,20 @@ type (
 
 type (
 	likes_read interface {
-		IsLikedGroup(userId uint64, postIds []uint64) ([]uint64, error)
-		CountLikes(postIds []uint64) (CountResult, error)
+		IsLikedGroup(userId uint64, postIds []string) ([]string, error)
+		CountLikes(postIds []string) (CountResult, error)
 	}
 
 	likes_write interface {
-		Like(likerId, ownerId, postId uint64) error
-		UndoLike(likerId, postId uint64) error
+		Like(likerId, ownerId uint64, postId string) error
+		UndoLike(likerId uint64, postId string) error
 		PurgeUserLikes(liker uint64) error
 	}
 )
 
 type CountResult []*struct {
 	Count   uint
-	Post_id uint64
+	Post_id string
 }
 
 type Repository struct {

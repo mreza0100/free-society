@@ -10,7 +10,7 @@ type Notification struct {
 	ID      int    `json:"id"`
 	IsLike  bool   `json:"IsLike"`
 	LikerID int    `json:"LikerId"`
-	PostID  int    `json:"PostId"`
+	PostID  string `json:"PostId"`
 	Seen    bool   `json:"Seen"`
 	Time    string `json:"Time"`
 }
@@ -47,14 +47,10 @@ type CreatePostInput struct {
 	Image4 *graphql.Upload `json:"image4"`
 }
 
-type DeletePostInput struct {
-	PostID int `json:"postId"`
-}
-
 type Post struct {
 	Title       string   `json:"title"`
 	Body        string   `json:"body"`
-	ID          int      `json:"id"`
+	ID          string   `json:"id"`
 	OwnerID     int      `json:"ownerId"`
 	IsLiked     bool     `json:"isLiked"`
 	Likes       int      `json:"likes"`

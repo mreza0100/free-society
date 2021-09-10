@@ -146,7 +146,7 @@ func (s *subscribers) isLikedGroup() {
 		s.nc.Subscribe(subject, func(msg *nats.Msg) {
 			var (
 				request         *natsPb.IsLikedGroup_REQUESTRequest
-				convertedResult map[uint64]*empty.Empty
+				convertedResult map[string]*empty.Empty
 			)
 
 			{
@@ -162,7 +162,7 @@ func (s *subscribers) isLikedGroup() {
 					return
 				}
 
-				convertedResult = make(map[uint64]*empty.Empty)
+				convertedResult = make(map[string]*empty.Empty)
 				for _, id := range result {
 					convertedResult[id] = &empty.Empty{}
 				}
@@ -191,7 +191,7 @@ func (s *subscribers) countLikes() {
 			var (
 				request         *natsPb.CountLikes_REQUESTRequest
 				counts          instances.CountResult
-				convertedCounts map[uint64]uint64
+				convertedCounts map[string]uint64
 
 				err error
 			)
@@ -210,7 +210,7 @@ func (s *subscribers) countLikes() {
 				}
 			}
 			{
-				convertedCounts = make(map[uint64]uint64)
+				convertedCounts = make(map[string]uint64)
 				for _, c := range counts {
 					convertedCounts[c.Post_id] = uint64(c.Count)
 				}

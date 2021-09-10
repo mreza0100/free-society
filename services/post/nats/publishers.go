@@ -16,7 +16,7 @@ type publishers struct {
 	nc  *nats.Conn
 }
 
-func (p *publishers) NewPost(userId, postId uint64) error {
+func (p *publishers) NewPost(userId uint64, postId string) error {
 	subject := configs.NatsConfigs.Subjects.NewPost
 	dbug, sussess := p.lgr.DebugPKG("NewPost", false)
 
@@ -142,7 +142,7 @@ func (p *publishers) IsFollowingGroup(userId uint64, followings []uint64) (map[u
 	}
 }
 
-func (p *publishers) GetCounts(postIds []uint64) (map[uint64]uint64, error) {
+func (p *publishers) GetCounts(postIds []string) (map[string]uint64, error) {
 	subject := configs.NatsConfigs.Subjects.CountLikes
 	dbug, success := p.lgr.DebugPKG("GetCounts", false)
 
@@ -181,7 +181,7 @@ func (p *publishers) GetCounts(postIds []uint64) (map[uint64]uint64, error) {
 	}
 }
 
-func (p *publishers) IsLikedGroup(liker uint64, postIds []uint64) (map[uint64]*emptypb.Empty, error) {
+func (p *publishers) IsLikedGroup(liker uint64, postIds []string) (map[string]*emptypb.Empty, error) {
 	subject := configs.NatsConfigs.Subjects.IsLikedGroup
 	dbug, sussess := p.lgr.DebugPKG("IsLikedGroup", false)
 

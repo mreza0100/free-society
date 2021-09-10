@@ -1,59 +1,73 @@
 package repository
 
 import (
+	"context"
 	"freeSociety/services/post/models"
 
 	"github.com/mreza0100/golog"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type read struct {
-	lgr *golog.Core
-	db  *gorm.DB
+	lgr         *golog.Core
+	db          *mongo.Client
+	pCollection *mongo.Collection
+	write       *write
 }
 
-func (r *read) GetPost(postIds []uint64) ([]*models.Post, error) {
-	const query = `SELECT * FROM posts WHERE id IN(?)`
-	params := []interface{}{postIds}
+func (r *read) GetPost(rawPostIds []string) ([]*models.Post, error) {
+	postIds := make([]primitive.ObjectID, len(rawPostIds))
 
-	tx := r.db.Raw(query, params...)
-
-	if tx.Error != nil {
-		return nil, tx.Error
+	for i := 0; i < len(rawPostIds); i++ {
+		var err error
+		postIds[i], err = primitive.ObjectIDFromHex(rawPostIds[i])
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	result := make([]*models.Post, 0, len(postIds))
-	tx.Scan(&result)
+	query := bson.M{
+		"_id": bson.M{"$in": postIds},
+	}
 
-	return result, nil
+	cursor, err := r.pCollection.Find(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
+
+	posts := make([]*models.Post, 0, len(postIds))
+	if err := cursor.All(context.Background(), &posts); err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }
 
-func (r *read) IsExists(postIds []uint64) ([]uint64, error) {
-	const query = `SELECT id FROM posts WHERE id IN (?)`
-	params := []interface{}{postIds}
-
-	tx := r.db.Raw(query, params...)
-	if tx.Error != nil {
-		return nil, tx.Error
+func (r *read) IsExists(postIds []string) ([]string, error) {
+	result, err := r.GetPost(postIds)
+	if err != nil {
+		return nil, err
 	}
 
-	result := make([]uint64, 0)
-	tx.Scan(&result)
+	exists := make([]string, 0, len(postIds))
+	for _, post := range result {
+		exists = append(exists, post.ID)
+	}
 
-	return result, nil
+	return exists, nil
+
 }
 
 func (r *read) IsPictureExist(name string) (bool, error) {
-	const query = `SELECT pictures_path FROM posts WHERE pictures_path LIKE '%'|| ? ||'%'`
-	params := []interface{}{name}
-
-	tx := r.db.Raw(query, params...)
-	if tx.Error != nil {
-		return false, tx.Error
+	query := bson.M{
+		"PicturesName": name,
 	}
 
-	data := struct{ PicturesNames string }{}
-	tx.Scan(&data)
+	exists, err := r.pCollection.CountDocuments(context.Background(), query, options.Count().SetLimit(1))
 
-	return data.PicturesNames != "", tx.Error
+	return exists > 0, err
 }

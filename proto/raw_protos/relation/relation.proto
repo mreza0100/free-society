@@ -16,7 +16,7 @@ service RelationService {
 // UndoLike
 message UndoLikeRequest {
       uint64 likerId = 1;
-      uint64 postId = 2;
+      string postId = 2;
 }
 //
 
@@ -24,7 +24,7 @@ message UndoLikeRequest {
 message LikeRequest {
       uint64 likerId = 1;
       uint64 ownerId = 2;
-      uint64 postId  = 3;
+      string postId  = 3;
 }
 //
 

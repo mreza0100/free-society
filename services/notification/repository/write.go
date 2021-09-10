@@ -10,7 +10,7 @@ type write struct {
 	db  *gorm.DB
 }
 
-func (w *write) SetLikeNotification(userId, likerId, postId uint64) (notificationId uint64, err error) {
+func (w *write) SetLikeNotification(userId, likerId uint64, postId string) (notificationId uint64, err error) {
 	const query = `INSERT INTO notifications (user_id, is_like, liker_id, post_id) VALUES (?, ?, ?, ?) RETURNING id`
 	params := []interface{}{userId, true, likerId, postId}
 
