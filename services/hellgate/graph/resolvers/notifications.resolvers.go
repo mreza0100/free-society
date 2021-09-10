@@ -44,7 +44,6 @@ func (r *queryResolver) GetNotifications(ctx context.Context, offset int, limit 
 			Seen: response.Notifications[i].Seen,
 			Time: response.Notifications[i].Time,
 		}
-		r.Lgr.InfoLog(notifications[i].PostID)
 	}
 
 	return notifications, nil
