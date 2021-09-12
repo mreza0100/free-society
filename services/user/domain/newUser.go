@@ -9,6 +9,7 @@ import (
 func (s *service) NewUser(name, email, gender, avatarFormat string, avatar []byte) (uint64, error) {
 	var (
 		avatarName string
+		isCostume  bool
 	)
 
 	{
@@ -18,9 +19,11 @@ func (s *service) NewUser(name, email, gender, avatarFormat string, avatar []byt
 			} else {
 				avatarName = configs.FemaleDefaultAvatarPath
 			}
+			isCostume = false
 		} else {
 			id := utils.GenerateUuid()
 			avatarName = id + avatarFormat
+			isCostume = true
 		}
 	}
 
@@ -29,7 +32,9 @@ func (s *service) NewUser(name, email, gender, avatarFormat string, avatar []byt
 		return 0, err
 	}
 
-	err = costume.SaveAvatar(avatarName, avatar)
+	if isCostume {
+		err = costume.SaveAvatar(avatarName, avatar)
+	}
 
 	return userId, err
 }
