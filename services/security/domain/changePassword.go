@@ -2,13 +2,20 @@ package domain
 
 import (
 	"errors"
+	dbhelper "freeSociety/utils/dbHelper"
 	"freeSociety/utils/security"
 )
 
-func (s *service) ChangePassword(userId uint64, prevPassword, newPassword string) error {
+func (s *service) ChangePassword(userId uint64, prevPassword, newPassword string) (err error) {
 	var (
 		tokens []string
+		cc1    dbhelper.CommandController
+		cc2    dbhelper.CommandController
 	)
+	defer func() {
+		cc1.Done(err)
+		cc2.Done(err)
+	}()
 
 	{
 		hashPass, err := s.postgresRepo.Read.GetHashPass(userId)
@@ -22,14 +29,16 @@ func (s *service) ChangePassword(userId uint64, prevPassword, newPassword string
 	}
 
 	{
-		err := s.postgresRepo.Write.ChangeHashPass(userId, security.HashSha1(newPassword))
+		cc, err := s.postgresRepo.Write.ChangeHashPass(userId, security.HashSha1(newPassword))
+		cc1 = cc
 		if err != nil {
 			return err
 		}
 	}
 
 	{
-		sessions, err := s.postgresRepo.Write.DeleteUserSessions(userId)
+		sessions, cc, err := s.postgresRepo.Write.DeleteUserSessions(userId)
+		cc2 = cc
 		if err != nil {
 			return err
 		}

@@ -80,12 +80,15 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input models.UserInpu
 
 func (r *mutationResolver) DeleteUser(ctx context.Context) (bool, error) {
 	userId := security.GetUserId(ctx)
+	fmt.Println(userId)
 
 	response, err := r.userConn.DeleteUser(ctx, &user.DeleteUserRequest{
 		Id: userId,
 	})
 
-	security.DeleteToken(ctx)
+	if err == nil {
+		security.DeleteToken(ctx)
+	}
 
 	return response.GetOk(), utils.GetGRPCMSG(err)
 }

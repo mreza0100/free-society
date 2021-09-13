@@ -11,9 +11,7 @@ func GetFullPathPicture(name string) string {
 }
 
 func SavePicture(name string, content []byte) error {
-	p := path.Join(GetFullPathPicture(name))
-
-	return files.CreateAndWriteFile(p, content)
+	return files.CreateAndWriteFile(GetFullPathPicture(name), content)
 }
 
 func ExportPicture(name string) string {
@@ -21,7 +19,5 @@ func ExportPicture(name string) string {
 }
 
 func DeletPicture(name string) error {
-	p := path.Join(GetFullPathPicture(name))
-
-	return files.DeleteFile(p)
+	return files.DeleteFile(GetFullPathPicture(name))
 }

@@ -1,6 +1,9 @@
 package repository
 
 import (
+	dbHelper "freeSociety/utils/dbHelper"
+	dbhelper "freeSociety/utils/dbHelper"
+
 	"github.com/mreza0100/golog"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,49 +16,55 @@ type write struct {
 	read *read
 }
 
-func (w *write) NewUser(name, gender, email, avatarName string) (uint64, error) {
-	{
-		if w.read.IsUserExistByEmail(email) {
-			return 0, status.Error(codes.AlreadyExists, "there is already a user with this email")
-		}
+func (w *write) NewUser(name, gender, email, avatarName string) (id uint64, cc dbhelper.CommandController, err error) {
+	if w.read.IsUserExistByEmail(email) {
+		return 0, dbHelper.FakeCC(), status.Error(codes.AlreadyExists, "there is already a user with this email")
 	}
-	{
+
+	cc, err = dbHelper.Transaction(w.db, func(tx *gorm.DB) error {
 		const query = `INSERT INTO users (name, gender, email, avatar_name) VALUES (?, ?, ?, ?) RETURNING id`
 		params := []interface{}{name, gender, email, avatarName}
 
-		tx := w.db.Raw(query, params...)
+		tx = tx.Raw(query, params...)
+
 		if tx.Error != nil {
-			return 0, tx.Error
+			return tx.Error
 		}
+		result := new(struct{ Id uint64 })
+		tx = tx.Scan(result)
+		id = result.Id
 
-		data := struct{ Id uint64 }{}
-		tx = tx.Scan(&data)
+		return nil
+	})
 
-		return data.Id, tx.Error
-	}
+	return id, cc, err
 }
 
-func (w *write) DeleteUser(userId uint64) (avatarName string, err error) {
-	const query = `DELETE FROM users WHERE id=? RETURNING avatar_name`
-	params := []interface{}{userId}
+func (w *write) DeleteUser(userId uint64) (avatarName string, cc dbhelper.CommandController, err error) {
+	cc, err = dbHelper.Transaction(w.db, func(tx *gorm.DB) error {
+		const query = `DELETE FROM users WHERE id=? RETURNING avatar_name`
+		params := []interface{}{userId}
 
-	tx := w.db.Raw(query, params...)
+		tx = tx.Raw(query, params...)
 
-	if tx.RowsAffected == 0 {
-		return "", status.Error(codes.NotFound, "cant find user")
-	}
+		result := new(struct{ AvatarName string })
+		tx = tx.Scan(&result)
+		avatarName = result.AvatarName
 
-	data := struct{ AvatarName string }{}
-	tx.Scan(&data)
+		return tx.Error
+	})
 
-	return data.AvatarName, nil
+	return avatarName, cc, err
 }
 
-func (w *write) UpdateUser(userId uint64, name, gender, avatarName string) error {
-	const query = `UPDATE users SET name = ?, gender = ?, avatar_name = ? WHERE id = ?`
-	params := []interface{}{name, gender, avatarName, userId}
+func (w *write) UpdateUser(userId uint64, name, gender, avatarName string) (dbhelper.CommandController, error) {
+	cc, err := dbHelper.Transaction(w.db, func(tx *gorm.DB) error {
+		const query = `UPDATE users SET name = ?, gender = ?, avatar_name = ? WHERE id = ?`
+		params := []interface{}{name, gender, avatarName, userId}
 
-	tx := w.db.Exec(query, params...)
+		tx = w.db.Exec(query, params...)
+		return tx.Error
+	})
 
-	return tx.Error
+	return cc, err
 }

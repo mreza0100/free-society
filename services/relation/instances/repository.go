@@ -1,5 +1,7 @@
 package instances
 
+import dbhelper "freeSociety/utils/dbHelper"
+
 type (
 	followers_read interface {
 		GetFollowers(userId uint64) []uint64
@@ -8,9 +10,9 @@ type (
 	}
 
 	followers_write interface {
-		SetFollower(follower, following uint64) error
-		RemoveFollow(follower, following uint64) error
-		DeleteAllRelations(userId uint64) error
+		SetFollower(follower, following uint64) (cc dbhelper.CommandController, err error)
+		RemoveFollow(follower, following uint64) (cc dbhelper.CommandController, err error)
+		DeleteAllRelations(userId uint64) (cc dbhelper.CommandController, err error)
 	}
 )
 
@@ -21,9 +23,9 @@ type (
 	}
 
 	likes_write interface {
-		Like(likerId, ownerId uint64, postId string) error
-		UndoLike(likerId uint64, postId string) error
-		PurgeUserLikes(liker uint64) error
+		Like(likerId, ownerId uint64, postId string) (cc dbhelper.CommandController, err error)
+		UndoLike(likerId uint64, postId string) (cc dbhelper.CommandController, err error)
+		PurgeUserLikes(liker uint64) (cc dbhelper.CommandController, err error)
 	}
 )
 

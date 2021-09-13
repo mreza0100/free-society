@@ -1,5 +1,7 @@
 package domain
 
 func (s *service) ClearNotifications(userId uint64) error {
-	return s.repo.Write.ClearNotifications(userId)
+	cc, err := s.repo.Write.ClearNotifications(userId)
+	cc.Commit()
+	return err
 }

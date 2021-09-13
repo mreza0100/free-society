@@ -16,5 +16,7 @@ func (s *service) Follow(follower, following uint64) error {
 		return status.Error(codes.AlreadyExists, "already following")
 	}
 
-	return s.repo.Followers_write.SetFollower(follower, following)
+	cc, err := s.repo.Followers_write.SetFollower(follower, following)
+	cc.Commit()
+	return err
 }

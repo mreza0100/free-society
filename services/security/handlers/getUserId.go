@@ -6,21 +6,9 @@ import (
 )
 
 func (h *handlers) GetUserId(_ context.Context, in *pb.GetUserIdRequest) (*pb.GetUserIdResponse, error) {
-	var (
-		userId uint64
-		err    error
-		result *pb.GetUserIdResponse
-	)
+	userId, err := h.srv.GetUserId(in.Token)
 
-	{
-		userId, err = h.srv.GetUserId(in.Token)
-	}
-
-	{
-		result = &pb.GetUserIdResponse{
-			UserId: userId,
-		}
-	}
-
-	return result, err
+	return &pb.GetUserIdResponse{
+		UserId: userId,
+	}, err
 }

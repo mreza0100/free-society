@@ -1,6 +1,9 @@
 package instances
 
-import "freeSociety/services/user/models"
+import (
+	"freeSociety/services/user/models"
+	dbhelper "freeSociety/utils/dbHelper"
+)
 
 type (
 	read interface {
@@ -11,9 +14,9 @@ type (
 		GetUsersByIds(userIds []uint64) ([]*models.User, error)
 	}
 	write interface {
-		NewUser(name, gender, email, avatarPath string) (uint64, error)
-		DeleteUser(userId uint64) (picturePath string, err error)
-		UpdateUser(userId uint64, name, gender, avatarPath string) error
+		NewUser(name, gender, email, avatarName string) (uint64, dbhelper.CommandController, error)
+		DeleteUser(userId uint64) (avatarName string, cc dbhelper.CommandController, err error)
+		UpdateUser(userId uint64, name, gender, avatarName string) (dbhelper.CommandController, error)
 	}
 
 	Repository struct {

@@ -11,15 +11,13 @@ func GetFullPathAvatar(name string) string {
 }
 
 func SaveAvatar(name string, content []byte) error {
-	p := path.Join(GetFullPathAvatar(name))
-	return files.CreateAndWriteFile(p, content)
+	return files.CreateAndWriteFile(GetFullPathAvatar(name), content)
 }
 
 func ExportAvatar(name string) string {
 	return path.Join(configs.FilesDomain, configs.AvatarPath, name)
 }
 
-func DeletAvatar(name string) error {
-	p := path.Join(GetFullPathAvatar(name))
-	return files.DeleteFile(p)
+func DeleteAvatar(name string) error {
+	return files.DeleteFile(GetFullPathAvatar(name))
 }

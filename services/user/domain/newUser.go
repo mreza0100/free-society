@@ -3,14 +3,20 @@ package domain
 import (
 	"freeSociety/configs"
 	"freeSociety/utils"
+	dbhelper "freeSociety/utils/dbHelper"
 	"freeSociety/utils/files/costume"
 )
 
-func (s *service) NewUser(name, email, gender, avatarFormat string, avatar []byte) (uint64, error) {
+func (s *service) NewUser(name, email, gender, avatarFormat string, avatar []byte) (userId uint64, err error) {
 	var (
 		avatarName string
 		isCostume  bool
+		cc         dbhelper.CommandController
 	)
+
+	defer func() {
+		cc.Done(err)
+	}()
 
 	{
 		if len(avatar) == 0 {
@@ -27,7 +33,7 @@ func (s *service) NewUser(name, email, gender, avatarFormat string, avatar []byt
 		}
 	}
 
-	userId, err := s.repo.Write.NewUser(name, gender, email, avatarName)
+	userId, cc, err = s.repo.Write.NewUser(name, gender, email, avatarName)
 	if err != nil {
 		return 0, err
 	}

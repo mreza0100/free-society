@@ -9,7 +9,6 @@ import (
 	"github.com/mreza0100/golog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 )
 
@@ -75,8 +74,6 @@ func getConfigs() (driverConfigs gorm.Dialector, gormConfigs *gorm.Config) {
 	gormConfigs = &gorm.Config{
 		NamingStrategy:         schema.NamingStrategy{},
 		SkipDefaultTransaction: true,
-		Logger:                 logger.Default,
-		// PrepareStmt:            false,
 	}
 
 	return
