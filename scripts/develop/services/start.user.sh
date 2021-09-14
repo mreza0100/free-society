@@ -7,8 +7,21 @@ cd $DIR/../../../
 ROOT=$(pwd)
 
 
-source $ROOT/scripts/develop/env.sh
 
 
 
-go run $ROOT/services/user/server/server.go
+if [[ "$1" == "--from-modd" ]];
+then
+      source $ROOT/scripts/develop/env.sh
+      if ! go run $ROOT/services/user/server/server.go
+      then
+            # there was an error from go program
+            tput bel
+            sleep 5s
+      fi
+fi
+
+if [[ "$1" == "" ]];
+then
+      cd $ROOT/services/user && modd -bn
+fi
