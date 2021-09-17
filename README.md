@@ -4,49 +4,67 @@
 ## A social media with graphql written in golang with microservices architecture
 
 ### Used technologies:
-  Nats<br />
-  DDD<br />
-  GRPC<br />
-  Docker<br />
-  Gqlgen<br />
-  Postgresql<br />
-  Redis<br />
-  Gin<br />
+	Nats
+	GRPC
+	Docker
+	GraphQL&Gqlgen
+	Postgresql
+	Redis
+	Gin
+
+### Design patterns:
+	DDD
+	Repository based
+	Saga
+  
+### Principles:
+	12 Factor
+
 
 ### Features:
-  Post<br />
-  Upload 4 pictures for every post<br />
-  Like<br />
-  Notification for like<br />
-  Advanced security<br />
-  Session management<br />
-  Follow<br />
-  Timeline<br />
-  Reshare post with your followers<br />
-  Avatar for user<br />
+	Post
+	Upload 4 pictures for every post
+	Like
+	Notification for like
+	Advanced security
+	Session management
+	Follow
+	Timeline
+	Reshare post with your followers
+	Avatar for user
+	Database rollback on error
+	Server side cookies
+  
+### Task list:
+      Add more e2e tests
+      TDD
+      Notification for follow
+      Notification for posts
+      Kubernetes for deployment
+      Using node.js for hellgate service
+      Graphdb for follower suggestion
+      Block feature  
 
-## In order to use this project first clone it
-```
-git clone https://github.com/mreza0100/free-society
-cd ./free-society
-```
+## In order to use this project, clone it first
+	git clone https://github.com/mreza0100/free-society
+	cd ./free-society
+
 
 #### Requirements
-<pre> Unix like OS</pre>
-<pre> Golang +1.16</pre>
-<pre> Docker</pre>
-<pre> Docker-compose</pre>
+	Unix like OS
+	Golang +1.16
+	Docker
+	Docker-compose
 
-## Run development
-### <pre>Running databases and other requirements like nats server</pre>
-<pre>  bash ./scripts/develop/fire-requirements.sh </pre>
-### <pre>Running services</pre>
-<pre>  scripts provided for running each service is in /scripts/develop/services directory
-  Each service has it's own process and terminal
-  For running Hellgate service you should start all other services and then starting Hellgate service
-  My recommendation is <a href="https://github.com/tmux/tmux">tmux</a>
-  Now if Hellgate is up without any error you can go to <a href="http://localhost:10000">localhost:10000</a>
+## Development
+### Running databases and other requirements, like nats server
+	bash ./scripts/develop/fire-requirements.sh 
+
+### Running services 
+<pre>scripts provided for running each service is in /scripts/develop/services directory.
+Each service has it's own process and terminal and it's restarting the process on file saving.
+For running Hellgate service you should start all other services and then starting Hellgate service.
+My recommendation is <a href="https://github.com/tmux/tmux">tmux.</a>
+Now if Hellgate is up without any error you can go to <a href="http://localhost:10000">localhost:10000.</a>
 </pre>
 ### You can find more information about instructions in [Hellgate models](https://github.com/mreza0100/golang-microService-boilerplate/tree/master/services/hellgate/graph/schema)
-  
-
