@@ -14,7 +14,7 @@
 
 ### Design patterns:
 	DDD
-	Repository based
+	Repository based(CQRS)
 	Saga
   
 ### Principles:
